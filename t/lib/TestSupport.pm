@@ -25,26 +25,26 @@ TestSupport - Common test stuff
 =cut
 
 BEGIN {
-  if ( defined( my $seed = $ENV{LINTILLA_ADHOCUMENT_SEED} ) ) {
+  if ( defined( my $seed = $ENV{FENCHURCH_ADHOCUMENT_SEED} ) ) {
     srand $seed;
     *CORE::GLOBAL::srand = sub(;$) { 1 };
   }
 }
 
 sub preflight() {
-  unless ( defined $ENV{LINTILLA_ADHOCUMENT_DSN} ) {
-    plan skip_all => 'LINTILLA_ADHOCUMENT_DSN not set';
+  unless ( defined $ENV{FENCHURCH_ADHOCUMENT_DSN} ) {
+    plan skip_all => 'FENCHURCH_ADHOCUMENT_DSN not set';
     exit;
   }
 }
 
 sub database() {
-  die 'LINTILLA_ADHOCUMENT_DSN not set'
-   unless $ENV{LINTILLA_ADHOCUMENT_DSN};
+  die 'FENCHURCH_ADHOCUMENT_DSN not set'
+   unless $ENV{FENCHURCH_ADHOCUMENT_DSN};
   my $dbh = DBI->connect(
-    $ENV{LINTILLA_ADHOCUMENT_DSN},
-    $ENV{LINTILLA_ADHOCUMENT_USER} // 'root',
-    $ENV{LINTILLA_ADHOCUMENT_PASS} // ''
+    $ENV{FENCHURCH_ADHOCUMENT_DSN},
+    $ENV{FENCHURCH_ADHOCUMENT_USER} // 'root',
+    $ENV{FENCHURCH_ADHOCUMENT_PASS} // ''
   );
   $dbh->do('SET NAMES utf8');
   return $dbh;
@@ -101,7 +101,7 @@ sub make_rand_uuid {
 }
 
 sub make_uuid {
-  return make_seq_uuid() if $ENV{LINTILLA_ADHOCUMENT_SEQ_UUID};
+  return make_seq_uuid() if $ENV{FENCHURCH_ADHOCUMENT_SEQ_UUID};
   return make_rand_uuid();
 }
 
