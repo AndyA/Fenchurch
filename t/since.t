@@ -8,11 +8,11 @@ use warnings;
 use lib qw( t/lib );
 
 use JSON;
+use Storable qw( dclone );
+use Sys::Hostname;
 use Test::Differences;
 use Test::More;
 use TestSupport;
-use Storable qw( dclone );
-use Sys::Hostname;
 
 use Fenchurch::Core::DB;
 use Fenchurch::Adhocument::Schema;

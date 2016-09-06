@@ -7,10 +7,11 @@ use warnings;
 
 use lib qw( t/lib );
 
+use Storable qw( dclone );
+use Sys::Hostname;
 use Test::Differences;
 use Test::More;
 use TestSupport;
-use Storable qw( dclone );
 
 use Fenchurch::Core::DB;
 use Fenchurch::Adhocument;
@@ -38,17 +39,20 @@ preflight;
   my @docs = (
     { _uuid => "9531e3af-fc61-49eb-b047-bf32b834c94e",
       name  => "Test item 1",
-      tags => [{ index => "1", name => "test" }, { index => "2", name => "item" }],
+      tags =>
+       [{ index => "1", name => "test" }, { index => "2", name => "item" }],
       nodes => []
     },
     { _uuid => "221fe567-d4db-42e8-b354-b00baba07823",
       name  => "Test item 2",
-      tags => [{ index => "1", name => "test" }, { index => "2", name => "item" }],
+      tags =>
+       [{ index => "1", name => "test" }, { index => "2", name => "item" }],
       nodes => []
     },
     { _uuid => "4e57c124-c805-496f-a306-f332a1a0dc65",
       name  => "Test item 3",
-      tags => [{ index => "1", name => "test" }, { index => "2", name => "item" }],
+      tags =>
+       [{ index => "1", name => "test" }, { index => "2", name => "item" }],
       nodes => [] }
   );
 
@@ -100,7 +104,8 @@ preflight;
       old_data => {
         _uuid => "4364ed63-310d-4315-83b2-ec60e1ed4296",
         name  => "Test item 4",
-        tags => [{ index => "1", name => "test" }, { index => "2", name => "item" }],
+        tags =>
+         [{ index => "1", name => "test" }, { index => "2", name => "item" }],
         nodes => []
       },
       new_data => {
@@ -150,7 +155,7 @@ preflight;
   my @want = (
     { kind     => "item",
       new_data => undef,
-      node     => "emit",
+      node     => hostname,
       object   => "221fe567-d4db-42e8-b354-b00baba07823",
       old_data => {
         _uuid => "221fe567-d4db-42e8-b354-b00baba07823",
@@ -183,7 +188,7 @@ preflight;
           }
         ]
       },
-      node     => "emit",
+      node     => hostname,
       object   => "4364ed63-310d-4315-83b2-ec60e1ed4296",
       old_data => undef,
       schema   => $schema,
@@ -201,7 +206,7 @@ preflight;
           }
         ]
       },
-      node     => "emit",
+      node     => hostname,
       object   => "4e57c124-c805-496f-a306-f332a1a0dc65",
       old_data => {
         _uuid => "4e57c124-c805-496f-a306-f332a1a0dc65",
