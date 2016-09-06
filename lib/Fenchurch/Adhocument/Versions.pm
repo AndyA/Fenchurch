@@ -1,20 +1,20 @@
-package Lintilla::Adhocument::Versions;
+package Fenchurch::Adhocument::Versions;
 
 use Moose;
 use Moose::Util::TypeConstraints;
 
 use Carp qw( croak confess );
 use DateTime::Format::MySQL;
-use Lintilla::Adhocument::Schema;
-use Lintilla::Adhocument;
-use Lintilla::Event::Emitter;
+use Fenchurch::Adhocument::Schema;
+use Fenchurch::Adhocument;
+use Fenchurch::Event::Emitter;
 use Storable qw( freeze );
 use Sys::Hostname;
 use UUID::Tiny ':std';
 
-with 'Lintilla::Core::Role::DB';
-with 'Lintilla::Adhocument::Role::Schema';
-with 'Lintilla::Core::Role::JSON';
+with 'Fenchurch::Core::Role::DB';
+with 'Fenchurch::Adhocument::Role::Schema';
+with 'Fenchurch::Core::Role::JSON';
 
 has version_table => ( is => 'ro', isa => 'Str', required => 1 );
 
@@ -37,28 +37,28 @@ has conflict_resolver => (
 
 has _engine => (
   is      => 'ro',
-  isa     => 'Lintilla::Adhocument',
+  isa     => 'Fenchurch::Adhocument',
   lazy    => 1,
   builder => '_b_engine',
-  handles => ['load', 'exists', Lintilla::Event::Emitter->interface]
+  handles => ['load', 'exists', Fenchurch::Event::Emitter->interface]
 );
 
 has _version_engine => (
   is      => 'ro',
-  isa     => 'Lintilla::Adhocument',
+  isa     => 'Fenchurch::Adhocument',
   lazy    => 1,
   builder => '_b_version_engine'
 );
 
 =head1 NAME
 
-Lintilla::Adhocument::Versions - Versioned documents
+Fenchurch::Adhocument::Versions - Versioned documents
 
 =cut
 
 sub _b_engine {
   my $self = shift;
-  return Lintilla::Adhocument->new(
+  return Fenchurch::Adhocument->new(
     db     => $self->db,
     schema => $self->schema
   );
@@ -78,10 +78,10 @@ sub _version_schema {
 
 sub _b_version_engine {
   my $self = shift;
-  return Lintilla::Adhocument->new(
+  return Fenchurch::Adhocument->new(
     db => $self->db,
     schema =>
-     Lintilla::Adhocument::Schema->new( schema => $self->_version_schema )
+     Fenchurch::Adhocument::Schema->new( schema => $self->_version_schema )
   );
 }
 
@@ -336,12 +336,12 @@ sub _find_edits {
 sub _versions_for_schema {
   my ( $self, $schema ) = @_;
 
-  my $scm = Lintilla::Adhocument::Schema->new(
+  my $scm = Fenchurch::Adhocument::Schema->new(
     schema => $schema,
     db     => $self->db
   );
 
-  return Lintilla::Adhocument::Versions->new(
+  return Fenchurch::Adhocument::Versions->new(
     schema            => $scm,
     db                => $self->db,
     version_table     => $self->version_table,

@@ -1,10 +1,10 @@
-package Lintilla::Core::DB;
+package Fenchurch::Core::DB;
 
 use Moose;
 
 =head1 NAME
 
-Lintilla::Core::DB - Add a database handle
+Fenchurch::Core::DB - Add a database handle
 
 =cut
 

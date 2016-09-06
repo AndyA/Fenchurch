@@ -5,5 +5,5 @@ use FindBin;
 
 use lib glob "$FindBin::Bin/../../*/lib";
 
-use Lintilla::Syncotron::Site;
+use Fenchurch::Syncotron::Site;
 dance;

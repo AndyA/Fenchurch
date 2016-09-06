@@ -1,4 +1,4 @@
-package Lintilla::Core::Role::JSON;
+package Fenchurch::Core::Role::JSON;
 
 use Moose::Role;
 
@@ -6,7 +6,7 @@ use JSON ();
 
 =head1 NAME
 
-Lintilla::Core::Role::JSON - Create a JSON (de)serialiser
+Fenchurch::Core::Role::JSON - Create a JSON (de)serialiser
 
 =cut
 

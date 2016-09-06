@@ -1,10 +1,10 @@
-package Lintilla::Core::Pipe;
+package Fenchurch::Core::Pipe;
 
 use Moose;
 
 =head1 NAME
 
-Lintilla::Core::Pipe - A simple FIFO object pipe
+Fenchurch::Core::Pipe - A simple FIFO object pipe
 
 =cut
 

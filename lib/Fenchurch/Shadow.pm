@@ -1,14 +1,14 @@
-package Lintilla::Shadow;
+package Fenchurch::Shadow;
 
 use Moose;
 
 =head1 NAME
 
-Lintilla::Shadow - Work with shadow_* tables
+Fenchurch::Shadow - Work with shadow_* tables
 
 =cut
 
-with 'Lintilla::Core::Role::DB';
+with 'Fenchurch::Core::Role::DB';
 
 has prefix => (
   is       => 'ro',

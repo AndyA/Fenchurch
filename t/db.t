@@ -10,12 +10,12 @@ use Test::Differences;
 use Test::More;
 use TestSupport;
 
-use Lintilla::Core::DB;
+use Fenchurch::Core::DB;
 
 preflight;
 
 {
-  my $db = Lintilla::Core::DB->new( dbh => database );
+  my $db = Fenchurch::Core::DB->new( dbh => database );
   my $meta_want = {
     columns => {
       _modified => {

@@ -16,19 +16,19 @@ use Test::Differences;
 use Test::More;
 use TestSupport;
 
-use Lintilla::Core::DB;
-use Lintilla::Adhocument::Versions;
-use Lintilla::Adhocument;
+use Fenchurch::Core::DB;
+use Fenchurch::Adhocument::Versions;
+use Fenchurch::Adhocument;
 
 preflight;
 
 my @profile = (
   { maker  => \&make_ad_schema,
-    type   => 'Lintilla::Adhocument',
+    type   => 'Fenchurch::Adhocument',
     events => { delete => 3, load => 4, save => 2 }
   },
   { maker  => \&make_ver_schema,
-    type   => 'Lintilla::Adhocument::Versions',
+    type   => 'Fenchurch::Adhocument::Versions',
     events => { delete => 3, load => 7, save => 2, version => 3 } }
 );
 
@@ -95,17 +95,17 @@ done_testing();
 
 sub make_ad_schema {
   my $schema = shift;
-  return Lintilla::Adhocument->new(
-    schema => Lintilla::Adhocument::Schema->new( schema => $schema ),
-    db     => Lintilla::Core::DB->new( dbh              => database )
+  return Fenchurch::Adhocument->new(
+    schema => Fenchurch::Adhocument::Schema->new( schema => $schema ),
+    db     => Fenchurch::Core::DB->new( dbh              => database )
   );
 }
 
 sub make_ver_schema {
   my $schema = shift;
-  return Lintilla::Adhocument::Versions->new(
-    schema        => Lintilla::Adhocument::Schema->new( schema => $schema ),
-    db            => Lintilla::Core::DB->new( dbh              => database ),
+  return Fenchurch::Adhocument::Versions->new(
+    schema        => Fenchurch::Adhocument::Schema->new( schema => $schema ),
+    db            => Fenchurch::Core::DB->new( dbh              => database ),
     version_table => 'test_versions'
   );
 }

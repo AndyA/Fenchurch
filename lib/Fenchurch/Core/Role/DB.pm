@@ -1,18 +1,18 @@
-package Lintilla::Core::Role::DB;
+package Fenchurch::Core::Role::DB;
 
 use Moose::Role;
 
-use Lintilla::Core::DB;
+use Fenchurch::Core::DB;
 
 =head1 NAME
 
-Lintilla::Core::Role::DB - A database connection 
+Fenchurch::Core::Role::DB - A database connection 
 
 =cut
 
 has db => (
   is       => 'ro',
-  isa      => 'Lintilla::Core::DB',
+  isa      => 'Fenchurch::Core::DB',
   required => 1,
   handles  => ['dbh']
 );

@@ -1,4 +1,4 @@
-package Lintilla::Adhocument::Schema;
+package Fenchurch::Adhocument::Schema;
 
 use Moose;
 use Moose::Util::TypeConstraints;
@@ -6,17 +6,17 @@ use Moose::Util::TypeConstraints;
 use Carp qw( croak );
 use Storable qw( dclone );
 
-use Lintilla::Core::Util::ValidHash;
+use Fenchurch::Core::Util::ValidHash;
 
 =head1 NAME
 
-Lintilla::Adhocument::Schema - A description of database structure
+Fenchurch::Adhocument::Schema - A description of database structure
 
 =head1 SYNOPSIS
 
-  use Lintilla::Adhocument::Schema;
+  use Fenchurch::Adhocument::Schema;
 
-  my $svm = Lintilla::Adhocument::Schema->new(
+  my $svm = Fenchurch::Adhocument::Schema->new(
     schema => {
       document => {
         table  => 'our_documents',
@@ -72,13 +72,13 @@ has _deps => (
 
 has _valid_spec => (
   is      => 'ro',
-  isa     => 'Lintilla::Core::Util::ValidHash',
+  isa     => 'Fenchurch::Core::Util::ValidHash',
   builder => '_b_valid_spec',
   lazy    => 1
 );
 
 sub _b_valid_spec {
-  return Lintilla::Core::Util::ValidHash->new(
+  return Fenchurch::Core::Util::ValidHash->new(
     required => ['table'],
     optional => ['pkey', 'child_of', 'order', 'plural', 'append']
   );

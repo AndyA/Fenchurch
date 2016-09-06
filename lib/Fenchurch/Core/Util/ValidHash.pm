@@ -1,4 +1,4 @@
-package Lintilla::Core::Util::ValidHash;
+package Fenchurch::Core::Util::ValidHash;
 
 use Moose;
 
@@ -6,7 +6,7 @@ use Carp qw( croak );
 
 =head1 NAME
 
-Lintilla::Core::Util::ValidHash - Validate a hash
+Fenchurch::Core::Util::ValidHash - Validate a hash
 
 =cut
 

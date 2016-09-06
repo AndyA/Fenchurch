@@ -1,4 +1,4 @@
-package Lintilla::Syncotron::Despatcher;
+package Fenchurch::Syncotron::Despatcher;
 
 use v5.10;
 
@@ -18,7 +18,7 @@ has _handlers => (
 
 =head1 NAME
 
-Lintilla::Syncotron::Despatcher - Event despatcher
+Fenchurch::Syncotron::Despatcher - Event despatcher
 
 =cut
 

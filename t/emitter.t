@@ -9,12 +9,12 @@ use Test::More;
 use Test::Differences;
 use MooseX::Test::Role;
 
-use Lintilla::Event::Emitter;
-use Lintilla::Event::Role::Emitter;
+use Fenchurch::Event::Emitter;
+use Fenchurch::Event::Role::Emitter;
 
-test_emitter( 'direct', Lintilla::Event::Emitter->new );
+test_emitter( 'direct', Fenchurch::Event::Emitter->new );
 test_emitter( 'role',
-  consuming_object('Lintilla::Event::Role::Emitter') );
+  consuming_object('Fenchurch::Event::Role::Emitter') );
 
 sub test_emitter {
   my ( $desc, $ee ) = @_;

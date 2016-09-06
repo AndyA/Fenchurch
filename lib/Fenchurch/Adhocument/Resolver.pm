@@ -1,11 +1,11 @@
-package Lintilla::Adhocument::Resolver;
+package Fenchurch::Adhocument::Resolver;
 
 use v5.10;
 
 use Moose;
 use Moose::Util::TypeConstraints;
 
-use Lintilla::Adhocument::Versions;
+use Fenchurch::Adhocument::Versions;
 
 has engine => (
   is       => 'ro',

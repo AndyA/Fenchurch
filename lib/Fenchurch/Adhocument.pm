@@ -1,19 +1,19 @@
-package Lintilla::Adhocument;
+package Fenchurch::Adhocument;
 
 use Moose;
 
 use Carp qw( croak );
-use Lintilla::Adhocument::Schema;
+use Fenchurch::Adhocument::Schema;
 
 =head1 NAME
 
-Lintilla::Adhocument - Document semantics mini-ORM
+Fenchurch::Adhocument - Document semantics mini-ORM
 
 =cut
 
-with 'Lintilla::Core::Role::DB';
-with 'Lintilla::Adhocument::Role::Schema';
-with 'Lintilla::Event::Role::Emitter';
+with 'Fenchurch::Core::Role::DB';
+with 'Fenchurch::Adhocument::Role::Schema';
+with 'Fenchurch::Event::Role::Emitter';
 
 has numify => (
   is       => 'ro',

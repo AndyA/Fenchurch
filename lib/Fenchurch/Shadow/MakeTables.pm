@@ -1,14 +1,14 @@
-package Lintilla::Shadow::MakeTables;
+package Fenchurch::Shadow::MakeTables;
 
 use Moose;
 
 =head1 NAME
 
-Lintilla::Shadow::MakeTables - make shadow_ tables
+Fenchurch::Shadow::MakeTables - make shadow_ tables
 
 =cut
 
-with 'Lintilla::Core::Role::DB';
+with 'Fenchurch::Core::Role::DB';
 
 has prefix => (
   is       => 'ro',

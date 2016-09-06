@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export PERL5LIB=$PWD/../Lintilla-Core/lib
+export PERL5LIB=$PWD/../Fenchurch-Core/lib
 export LINTILLA_ADHOCUMENT_DSN='DBI:mysql:database=test_adhocument;host=localhost'
 export LINTILLA_ADHOCUMENT_USER='root'
 export LINTILLA_ADHOCUMENT_PASS=

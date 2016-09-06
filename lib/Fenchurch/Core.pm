@@ -1,4 +1,4 @@
-package Lintilla::Core;
+package Fenchurch::Core;
 
 use Moose;
 
@@ -6,7 +6,7 @@ use Carp qw( croak );
 
 =head1 NAME
 
-Lintilla::Core - Lintilla core modules
+Fenchurch::Core - Fenchurch core modules
 
 =cut
 

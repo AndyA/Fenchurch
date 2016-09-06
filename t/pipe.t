@@ -9,10 +9,10 @@ use JSON;
 use Test::Differences;
 use Test::More;
 
-use Lintilla::Core::Pipe;
+use Fenchurch::Core::Pipe;
 
 {
-  my $pipe = Lintilla::Core::Pipe->new;
+  my $pipe = Fenchurch::Core::Pipe->new;
   is $pipe->count, 0, 'empty pipe: count == 0';
   ok $pipe->is_empty, "and it's empty";
   is $pipe->get, undef, "and get returns nothing";

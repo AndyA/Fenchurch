@@ -14,9 +14,9 @@ use TestSupport;
 use Storable qw( dclone );
 use Sys::Hostname;
 
-use Lintilla::Core::DB;
-use Lintilla::Adhocument::Schema;
-use Lintilla::Adhocument::Versions;
+use Fenchurch::Core::DB;
+use Fenchurch::Adhocument::Schema;
+use Fenchurch::Adhocument::Versions;
 
 preflight;
 
@@ -39,14 +39,14 @@ preflight;
   my @edits;
 
   {
-    my $db = Lintilla::Core::DB->new( dbh => database );
+    my $db = Fenchurch::Core::DB->new( dbh => database );
 
-    my $scm = Lintilla::Adhocument::Schema->new(
+    my $scm = Fenchurch::Adhocument::Schema->new(
       schema => $schema,
       db     => $db
     );
 
-    my $ad = Lintilla::Adhocument::Versions->new(
+    my $ad = Fenchurch::Adhocument::Versions->new(
       schema        => $scm,
       db            => $db,
       version_table => 'test_versions'
@@ -95,14 +95,14 @@ preflight;
   }
 
   {
-    my $db = Lintilla::Core::DB->new( dbh => database );
+    my $db = Fenchurch::Core::DB->new( dbh => database );
 
-    my $scm = Lintilla::Adhocument::Schema->new(
+    my $scm = Fenchurch::Adhocument::Schema->new(
       schema => $schema,
       db     => $db
     );
 
-    my $ad = Lintilla::Adhocument::Versions->new(
+    my $ad = Fenchurch::Adhocument::Versions->new(
       schema        => $scm,
       db            => $db,
       version_table => 'test_versions',

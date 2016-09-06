@@ -14,9 +14,9 @@ use Test::Differences;
 use Test::More;
 use TestSupport;
 
-use Lintilla::Core::DB;
-use Lintilla::Adhocument::Schema;
-use Lintilla::Adhocument::Versions;
+use Fenchurch::Core::DB;
+use Fenchurch::Adhocument::Schema;
+use Fenchurch::Adhocument::Versions;
 
 preflight;
 
@@ -45,13 +45,13 @@ sub test_versions($$$$$$) {
 
   empty 'test_versions', map { $_->{table} } values %$schema;
 
-  my $db = Lintilla::Core::DB->new( dbh => database );
-  my $scm = Lintilla::Adhocument::Schema->new(
+  my $db = Fenchurch::Core::DB->new( dbh => database );
+  my $scm = Fenchurch::Adhocument::Schema->new(
     schema => $schema,
     db     => $db
   );
 
-  my $ad = Lintilla::Adhocument::Versions->new(
+  my $ad = Fenchurch::Adhocument::Versions->new(
     schema        => $scm,
     db            => $db,
     version_table => 'test_versions'

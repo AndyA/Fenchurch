@@ -5,10 +5,10 @@ use warnings;
 use Test::More;
 use Test::Differences;
 
-use Lintilla::Syncotron::Despatcher;
+use Fenchurch::Syncotron::Despatcher;
 
 {
-  my $de = Lintilla::Syncotron::Despatcher->new;
+  my $de = Fenchurch::Syncotron::Despatcher->new;
 
   my @log = ();
 

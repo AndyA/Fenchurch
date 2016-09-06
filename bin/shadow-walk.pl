@@ -13,9 +13,9 @@ use Dancer ':script';
 use Dancer::Plugin::Database;
 use JSON();
 
-use Lintilla::DB::Genome::Shadow;
+use Fenchurch::DB::Genome::Shadow;
 
-my $shadow = Lintilla::DB::Genome::Shadow->new( dbh => database );
+my $shadow = Fenchurch::DB::Genome::Shadow->new( dbh => database );
 my $json = JSON->new->pretty->canonical;
 
 my $changes = $shadow->_load_changes( 1, 200 );

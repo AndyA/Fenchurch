@@ -1,4 +1,4 @@
-package Lintilla::Event::Emitter;
+package Fenchurch::Event::Emitter;
 
 use Moose;
 
@@ -6,7 +6,7 @@ use Carp qw( croak );
 
 =head1 NAME
 
-Lintilla::Event::Emitter - Node style event emitter
+Fenchurch::Event::Emitter - Node style event emitter
 
 =cut
 

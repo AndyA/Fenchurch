@@ -12,11 +12,11 @@ use Test::More;
 use TestSupport;
 use Storable qw( dclone );
 
-use Lintilla::Core::DB;
-use Lintilla::Adhocument;
-use Lintilla::Adhocument::Resolver;
-use Lintilla::Adhocument::Schema;
-use Lintilla::Adhocument::Versions;
+use Fenchurch::Core::DB;
+use Fenchurch::Adhocument;
+use Fenchurch::Adhocument::Resolver;
+use Fenchurch::Adhocument::Schema;
+use Fenchurch::Adhocument::Versions;
 
 preflight;
 
@@ -246,14 +246,14 @@ sub strip_edits {
 sub make_adhocument {
   my ( $dbh, $schema ) = @_;
 
-  my $db = Lintilla::Core::DB->new( dbh => $dbh );
+  my $db = Fenchurch::Core::DB->new( dbh => $dbh );
 
-  my $scm = Lintilla::Adhocument::Schema->new(
+  my $scm = Fenchurch::Adhocument::Schema->new(
     schema => $schema,
     db     => $db
   );
 
-  return Lintilla::Adhocument->new(
+  return Fenchurch::Adhocument->new(
     schema => $scm,
     db     => $db,
   );
@@ -262,23 +262,23 @@ sub make_adhocument {
 sub make_versions {
   my ( $dbh, $schema ) = @_;
 
-  my $db = Lintilla::Core::DB->new( dbh => $dbh );
+  my $db = Fenchurch::Core::DB->new( dbh => $dbh );
 
-  my $scm = Lintilla::Adhocument::Schema->new(
+  my $scm = Fenchurch::Adhocument::Schema->new(
     schema => $schema,
     db     => $db
   );
 
-  my $conflicts = Lintilla::Adhocument::Versions->new(
+  my $conflicts = Fenchurch::Adhocument::Versions->new(
     schema        => $scm,
     db            => $db,
     version_table => 'test_conflicts'
   );
 
   my $resolver
-   = Lintilla::Adhocument::Resolver->new( engine => $conflicts );
+   = Fenchurch::Adhocument::Resolver->new( engine => $conflicts );
 
-  my $ver = Lintilla::Adhocument::Versions->new(
+  my $ver = Fenchurch::Adhocument::Versions->new(
     schema            => $scm,
     db                => $db,
     version_table     => 'test_versions',

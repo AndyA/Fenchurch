@@ -1,10 +1,10 @@
-package Lintilla::Syncotron::Site;
+package Fenchurch::Syncotron::Site;
 
 use v5.10;
 
 use Dancer ':syntax';
 
-use Lintilla::Adhocument::Versions;
+use Fenchurch::Adhocument::Versions;
 
 our $VERSION = '0.1';
 
