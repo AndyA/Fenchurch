@@ -1,0 +1,64 @@
+[
+   {
+      "_parent" : null,
+      "_uuid" : "586fc972-fbed-cbc4-b0c9-9b9592deb59f",
+      "name" : "root of 2",
+      "nodes" : [
+         {
+            "_uuid" : "7a044a78-dfb5-2234-6149-98d8c00d797e",
+            "name" : "child 1",
+            "nodes" : []
+         },
+         {
+            "_uuid" : "844614b1-5dd0-a154-76ba-c12d5e49ac07",
+            "name" : "child 2",
+            "nodes" : []
+         }
+      ]
+   },
+   {
+      "_parent" : null,
+      "_uuid" : "fad372fc-ed8f-440d-a68b-952c8f646527",
+      "name" : "root of 3",
+      "nodes" : [
+         {
+            "_uuid" : "989941b7-41df-3e94-0fbb-3ebc6e160cc7",
+            "name" : "child 1",
+            "nodes" : [
+               {
+                  "_uuid" : "a85d93d5-385d-a334-1799-73cda855f6e2",
+                  "name" : "child 1.1",
+                  "nodes" : []
+               },
+               {
+                  "_uuid" : "a9e3eae1-5533-daa4-4f6b-de603f72a535",
+                  "name" : "child 1.2",
+                  "nodes" : []
+               }
+            ]
+         },
+         {
+            "_uuid" : "a2c86657-aa7c-d684-262a-93be90f75153",
+            "name" : "child 2",
+            "nodes" : [
+               {
+                  "_uuid" : "ca65617b-5d35-d784-88e9-4fc9e077fe7d",
+                  "name" : "child 2.1",
+                  "nodes" : []
+               },
+               {
+                  "_uuid" : "ce8ab86b-c22e-5b34-b7f8-bae505f09f38",
+                  "name" : "child 2.2",
+                  "nodes" : []
+               }
+            ]
+         }
+      ]
+   },
+   {
+      "_parent" : null,
+      "_uuid" : "688a1f21-2fd1-b5a4-4a28-7c0e781d08ca",
+      "name" : "singleton",
+      "nodes" : []
+   }
+]
