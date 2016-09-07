@@ -4,7 +4,7 @@ use Moose;
 
 =head1 NAME
 
-Fenchurch::Core::DB - Add a database handle
+Fenchurch::Core::DB - Database handling
 
 =cut
 

@@ -22,6 +22,12 @@ has _pipe => (
   }
 );
 
+=head2 C<< take >>
+
+Take n (default all) items from pipe.
+
+=cut
+
 sub take {
   my $self = shift;
   return $self->_splice( 0, shift // $self->count );
