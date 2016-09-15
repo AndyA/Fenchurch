@@ -244,7 +244,7 @@ sub _unpack_version {
 }
 
 sub _unpack_versions {
-  my ( $self, $doc, $versions ) = @_;
+  my ( $self, $kind, $doc, $versions ) = @_;
   my @meta = ();
   my @docs = ();
   for my $ver (@$versions) {
@@ -253,7 +253,7 @@ sub _unpack_versions {
     push @docs, $vdoc;
   }
   push @docs, $doc;
-  unshift @meta, { sequence => 0 };
+  unshift @meta, { sequence => 0, kind => $kind };
   my @out = ();
   push @out, { meta => shift @meta, doc => shift @docs } while @docs;
   return \@out;
@@ -274,7 +274,11 @@ sub versions {
 
   return [
     map {
-      $self->_unpack_versions( ( $docs->{$_} // [] )->[0], $vers->{$_} // [] )
+      $self->_unpack_versions(
+        $kind,
+        ( $docs->{$_} // [] )->[0],
+        $vers->{$_} // []
+       )
     } @ids
   ];
 }
