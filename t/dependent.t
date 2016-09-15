@@ -55,22 +55,26 @@ my $programmes = test_data("stash.json");
   $adv->on(
     version => sub {
       my $vers = shift;
-      my $json = $adv->_json;    # well...
+
       for my $ver (@$vers) {
         if ( $ver->{kind} eq "edit" ) {
           my $old_state = $ver->{old_data}{state} // "missing";
           my $new_state = $ver->{new_data}{state} // "deleted";
 
           if ( $old_state ne "accepted" && $new_state eq "accepted" ) {
+           # Accepting
+           #            say "Accepting ", JSON->new->pretty->canonical->encode($ver);
             my $edit = $ver->{new_data};
-            $adv->save( $edit->{kind}, $edit->{data} );
+            $adv->save( { parents => [$ver->{uuid}] }, $edit->{kind},
+              $edit->{data} );
           }
           elsif ( $old_state eq "accepted" && $new_state ne "accepted" ) {
-           #            say "Rejecting ", JSON->new->pretty->canonical->encode($ver);
+            # Rejecting
+            # say "Rejecting ", JSON->new->pretty->canonical->encode($ver);
             my $kind   = $ver->{new_data}{kind}   // $ver->{old_data}{kind};
             my $object = $ver->{new_data}{object} // $ver->{old_data}{object};
             my $versions = $adv->versions( $kind, $object );
-       #            say "Versions ", JSON->new->pretty->canonical->encode($versions);
+            # say "Versions ", JSON->new->pretty->canonical->encode($versions);
           }
         }
       }
@@ -78,11 +82,10 @@ my $programmes = test_data("stash.json");
     }
   );
 
-  my $prog_edit = dclone $programmes->[0];
-  my $prog_orig = dclone $prog_edit;
+  my @prog = ( dclone $programmes->[0], dclone $programmes->[1] );
 
   # Make some changes
-  push @{ $prog_edit->{contributors} },
+  push @{ $prog[0]{contributors} },
    {code       => undef,
     first_name => "Kathryn",
     group      => "crew",
@@ -92,36 +95,91 @@ my $programmes = test_data("stash.json");
     type       => "Unknown"
    };
 
-  $prog_edit->{title} = "The Föundatiöns öf Music";
+  $prog[0]{title} = "The Föundatiöns öf Music";
+
+  push @{ $prog[1]{contributors} },
+   {code       => undef,
+    first_name => "Gene",
+    group      => "crew",
+    index      => 4,
+    kind       => "member",
+    last_name  => "Simmöns.",
+    type       => "Unknown"
+   };
+
+  $prog[1]{title} = "Kiss: The Wilderness Years";
 
   # An edit
-  my $edit = {
-    uuid   => make_uuid(),
-    kind   => 'programme',
-    object => $prog_edit->{_uuid},
-    state  => 'pending',
-    data   => $prog_edit
-  };
+  my @edit = (
+    map {
+      { uuid   => make_uuid(),
+        kind   => 'programme',
+        object => $_->{_uuid},
+        state  => 'pending',
+        data   => $_
+      }
+    } @prog
+  );
 
-  $adv->save( edit => $edit );
+  $adv->save( edit => @edit );
 
-  eq_or_diff $adv->load( edit => $edit->{uuid} ), [$edit], "edit saved OK";
+  eq_or_diff $adv->load( edit => map { $_->{uuid} } @edit ), [@edit],
+   "edit saved OK";
 
-  $edit->{state} = 'review';
-  $adv->save( edit => $edit );
+  $_->{state} = 'review' for @edit;
+  $adv->save( edit => @edit );
 
-  $edit->{state} = 'accepted';
-  $adv->save( edit => $edit );
+  $_->{state} = 'accepted' for @edit;
+  $adv->save( edit => @edit );
 
   # Check programme
-  eq_or_diff $adv->load( programme => $prog_edit->{_uuid} ), [$prog_edit],
+  eq_or_diff $adv->load( programme => map { $_->{_uuid} } @prog ), [@prog],
    "programme edited OK";
 
-  $edit->{state} = "rejected";
-  $adv->save( edit => $edit );
+  $_->{state} = 'rejected' for @edit;
+  $adv->save( edit => @edit );
 }
 
+debug_versions();
+
 done_testing;
+
+# Some debug
+sub debug_versions {
+  my $vers = database->selectall_arrayref(
+    join( " ",
+      "SELECT `uuid`, `parent`, `kind`, `object`, `serial`, `sequence`, `when`",
+      "  FROM `test_versions`",
+      " ORDER BY `serial`" ),
+    { Slice => {} }
+  );
+  my %by_uuid = ();
+  for my $ver (@$vers) {
+    $by_uuid{ $ver->{uuid} } = $ver;
+  }
+  my @root = ();
+  for my $ver (@$vers) {
+    if ( defined $ver->{parent} ) {
+      my $parent = $by_uuid{ $ver->{parent} };
+      push @{ $parent->{children} }, $ver;
+    }
+    else {
+      push @root, $ver;
+    }
+  }
+  diag "Version tree:";
+  show_versions( 0, @root );
+}
+
+sub show_versions {
+  my $indent = shift // 0;
+  my $pad = "  " x $indent;
+  for my $ver (@_) {
+    diag $pad, join " ",
+     @{$ver}{ 'kind', 'uuid', 'object', 'serial', 'sequence', 'when' };
+    show_versions( $indent + 1, @{ $ver->{children} // [] } );
+  }
+}
 
 sub schema {
   return Fenchurch::Adhocument::Schema->new(
