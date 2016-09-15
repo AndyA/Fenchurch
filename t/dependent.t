@@ -101,17 +101,17 @@ my $programmes = test_data("stash.json");
 
   $prog[0]{title} = "The Föundatiöns öf Music";
 
-  push @{ $prog[1]{contributors} },
+  push @{ $prog[2]{contributors} },
    {code       => undef,
     first_name => "Gene",
     group      => "crew",
-    index      => 4,
+    index      => 15,
     kind       => "member",
     last_name  => "Simmöns.",
     type       => "Unknown"
    };
 
-  $prog[1]{title} = "Kiss: The Wilderness Years";
+  $prog[2]{title} = "Kiss: The Wilderness Years";
 
   # An edit
   my @edit = (
