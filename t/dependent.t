@@ -4,7 +4,6 @@ use v5.10;
 
 use autodie;
 use strict;
-use utf8;
 use warnings;
 
 use lib qw( t/lib );
@@ -64,10 +63,14 @@ my $programmes = test_data("stash.json");
 
           if ( $old_state ne "accepted" && $new_state eq "accepted" ) {
             my $edit = $ver->{new_data};
-            say "Saving ", $edit->{data}{title};
             $adv->save( $edit->{kind}, $edit->{data} );
           }
           elsif ( $old_state eq "accepted" && $new_state ne "accepted" ) {
+           #            say "Rejecting ", JSON->new->pretty->canonical->encode($ver);
+            my $kind   = $ver->{new_data}{kind}   // $ver->{old_data}{kind};
+            my $object = $ver->{new_data}{object} // $ver->{old_data}{object};
+            my $versions = $adv->versions( $kind, $object );
+       #            say "Versions ", JSON->new->pretty->canonical->encode($versions);
           }
         }
       }
@@ -75,30 +78,29 @@ my $programmes = test_data("stash.json");
     }
   );
 
-  my $prog = dclone $programmes->[0];
+  my $prog_edit = dclone $programmes->[0];
+  my $prog_orig = dclone $prog_edit;
 
   # Make some changes
-  push @{ $prog->{contributors} },
+  push @{ $prog_edit->{contributors} },
    {code       => undef,
     first_name => "Kathryn",
     group      => "crew",
     index      => 2,
     kind       => "member",
-    last_name  => "Simm\x{F6}nds.",
+    last_name  => "Simmönds.",
     type       => "Unknown"
    };
 
-  $prog->{title} = "The F\x{F6}undati\x{F6}ns \x{F6}f Music";
-
-  say "Programme title: ", $prog->{title};
+  $prog_edit->{title} = "The Föundatiöns öf Music";
 
   # An edit
   my $edit = {
     uuid   => make_uuid(),
     kind   => 'programme',
-    object => $prog->{_uuid},
+    object => $prog_edit->{_uuid},
     state  => 'pending',
-    data   => $prog
+    data   => $prog_edit
   };
 
   $adv->save( edit => $edit );
@@ -112,8 +114,11 @@ my $programmes = test_data("stash.json");
   $adv->save( edit => $edit );
 
   # Check programme
-  eq_or_diff $adv->load( programme => $prog->{_uuid} ), [$prog],
+  eq_or_diff $adv->load( programme => $prog_edit->{_uuid} ), [$prog_edit],
    "programme edited OK";
+
+  $edit->{state} = "rejected";
+  $adv->save( edit => $edit );
 }
 
 done_testing;
