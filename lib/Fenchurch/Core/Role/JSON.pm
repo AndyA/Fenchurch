@@ -17,7 +17,7 @@ has _json => (
   builder => '_b_json'
 );
 
-sub _b_json { JSON->new->canonical->allow_nonref }
+sub _b_json { JSON->new->utf8->allow_nonref->canonical }
 
 1;
 
