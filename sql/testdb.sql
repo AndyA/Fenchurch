@@ -122,13 +122,13 @@ DROP TABLE IF EXISTS `test_edit`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `test_edit` (
-  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `uuid` varchar(36) NOT NULL COMMENT 'Unique object identifier',
+  `object` varchar(36) NOT NULL COMMENT 'Unique object identifier of target',
   `kind` varchar(64) NOT NULL COMMENT 'The kind of object changed',
   `data` mediumtext NOT NULL COMMENT 'JSON representation of change',
   `state` enum('pending','accepted','rejected','review') NOT NULL DEFAULT 'pending' COMMENT 'Edit state',
-  PRIMARY KEY (`id`),
-  KEY `uuid` (`uuid`),
+  PRIMARY KEY (`uuid`),
+  KEY `object` (`object`),
   KEY `kind` (`kind`),
   KEY `state` (`state`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -299,4 +299,4 @@ CREATE TABLE `test_versions` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-09-15 16:56:52
+-- Dump completed on 2016-09-15 17:01:50
