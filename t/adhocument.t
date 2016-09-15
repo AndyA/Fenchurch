@@ -8,9 +8,6 @@ use warnings;
 use lib qw( t/lib );
 
 use DBI;
-use FindBin;
-use JSON;
-use Path::Class;
 use Storable qw( dclone );
 use Test::Differences;
 use Test::More;
