@@ -12,6 +12,7 @@ Fenchurch::Adhocument - Document semantics mini-ORM
 =cut
 
 with 'Fenchurch::Core::Role::DB';
+with 'Fenchurch::Core::Role::JSON';
 with 'Fenchurch::Adhocument::Role::Schema';
 with 'Fenchurch::Event::Role::Emitter';
 
@@ -73,6 +74,8 @@ sub _load_raw {
 sub _load {
   my ( $self, $spec, $key, @ids ) = @_;
   my $rc = $self->_load_raw( $spec, $key, @ids );
+  return unless $rc;
+
   if ( $self->numify ) {
     my @nc = $self->db->numeric_columns_for( $spec->{table} );
     for my $row (@$rc) {
@@ -81,6 +84,18 @@ sub _load {
       }
     }
   }
+
+  my $json = $spec->{json} // [];
+  if (@$json) {
+    my $js = $self->_json;
+    for my $row (@$rc) {
+      for my $nf (@$json) {
+        $row->{$nf} = $js->decode( $row->{$nf} )
+         if defined $row->{$nf};
+      }
+    }
+  }
+
   return $rc;
 }
 
@@ -193,7 +208,16 @@ sub _insert {
    '(', join( ', ', map { $self->db->quote_name($_) } @cols ),
    ') VALUES', join( ', ', ($vals) x @docs );
 
-  my @bind = map { @{$_}{@cols} } @docs;
+  my %is_json = map { $_ => 1 } @{ $spec->{json} // [] };
+  my $js      = $self->_json;
+  my @bind    = ();
+  for my $doc (@docs) {
+    for my $col (@cols) {
+      my $val = $doc->{$col};
+      push @bind, $is_json{$col} ? $js->encode($val) : $val;
+    }
+  }
+
   $self->dbh->do( $sql, {}, @bind );
 }
 
