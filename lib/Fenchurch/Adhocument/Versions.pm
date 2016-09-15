@@ -20,6 +20,13 @@ has version_table => ( is => 'ro', isa => 'Str', required => 1 );
 
 has disable_checks => ( is => 'ro', isa => 'Bool', default => 0 );
 
+has numify => (
+  is       => 'ro',
+  isa      => 'Bool',
+  required => 1,
+  default  => 0
+);
+
 has node_name => (
   is       => 'ro',
   isa      => 'Str',
@@ -60,7 +67,8 @@ sub _b_engine {
   my $self = shift;
   return Fenchurch::Adhocument->new(
     db     => $self->db,
-    schema => $self->schema
+    schema => $self->schema,
+    numify => $self->numify,
   );
 }
 
