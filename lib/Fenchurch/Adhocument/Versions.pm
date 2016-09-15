@@ -195,16 +195,14 @@ sub _edit_factory {
 
   my $node = $self->node_name;
 
-  my @edits = ();
-  for ( 1 .. $count ) {
-    push @edits,
-     {uuid   => $self->_make_uuid,
-      parent => shift(@parents),
-      node   => $node
-     };
-  }
-
-  return \@edits;
+  return [
+    map {
+      { uuid   => $self->_make_uuid,
+        parent => shift(@parents),
+        node   => $node
+      }
+    } 1 .. $count
+  ];
 }
 
 sub _save {
