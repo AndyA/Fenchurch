@@ -101,8 +101,8 @@ sub make_ad_schema {
 sub make_ver_schema {
   my $schema = shift;
   return Fenchurch::Adhocument::Versions->new(
-    schema        => Fenchurch::Adhocument::Schema->new( schema => $schema ),
-    db            => Fenchurch::Core::DB->new( dbh              => database ),
+    schema => Fenchurch::Adhocument::Schema->new( schema => $schema ),
+    db     => Fenchurch::Core::DB->new( dbh              => database ),
     version_table => 'test_versions'
   );
 }
