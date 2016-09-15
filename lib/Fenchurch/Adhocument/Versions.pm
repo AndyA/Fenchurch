@@ -71,7 +71,8 @@ sub _version_schema {
       table  => $self->version_table,
       pkey   => 'uuid',
       order  => '+sequence',
-      append => 1,                      # Disable deletions
+      append => 1,                                    # Disable deletions
+      json   => ['old_data', 'new_data', 'schema'],
       %extra
     } };
 }
@@ -151,8 +152,7 @@ sub _build_versions {
   my ( $self, $edits, $kind, $old_docs, @docs ) = @_;
 
   my $seq    = $self->_ver_sequence( map { $_->[0] } @docs );
-  my $json   = $self->_json;
-  my $schema = $json->encode( $self->schema_for($kind) );
+  my $schema = $self->schema_for($kind);
   my $when   = $self->_now;
   my @el     = @$edits;
   my @ver    = ();
@@ -170,8 +170,8 @@ sub _build_versions {
       sequence => $sn,
       kind     => $kind,
       schema   => $schema,
-      old_data => $json->encode( $old_docs->{$oid}[0] ),
-      new_data => $json->encode($new_data),
+      old_data => $old_docs->{$oid}[0],
+      new_data => $new_data,
      };
   }
   return @ver;
@@ -237,18 +237,10 @@ sub delete {
   return $self->_delete( $edits, $kind, @ids );
 }
 
-sub _unpack_json {
-  my ( $self, $rec, @fld ) = @_;
-  my $out = {%$rec};
-  $out->{$_} = $self->_json->decode( $out->{$_} ) for @fld;
-  return $out;
-}
-
 sub _unpack_version {
   my ( $self, $ver ) = @_;
-  my $meta = $self->_unpack_json( $ver, 'schema', 'old_data', 'new_data' );
-  my $doc = delete $meta->{old_data};
-  return ( $meta, $doc );
+  my $doc = delete $ver->{old_data};
+  return ( $ver, $doc );
 }
 
 sub _unpack_versions {
