@@ -82,7 +82,8 @@ sub _b_version_engine {
   return Fenchurch::Adhocument->new(
     db => $self->db,
     schema =>
-     Fenchurch::Adhocument::Schema->new( schema => $self->_version_schema )
+     Fenchurch::Adhocument::Schema->new( schema => $self->_version_schema ),
+    numify => 1
   );
 }
 
