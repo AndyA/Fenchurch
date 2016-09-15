@@ -82,7 +82,11 @@ my $programmes = test_data("stash.json");
     }
   );
 
-  my @prog = ( dclone $programmes->[0], dclone $programmes->[1] );
+  my @prog = (
+    dclone $programmes->[0],
+    dclone $programmes->[1],
+    dclone $programmes->[2]
+  );
 
   # Make some changes
   push @{ $prog[0]{contributors} },
