@@ -186,16 +186,22 @@ sub _save_versions {
 }
 
 sub _edit_factory {
-  my ( $self, $count, $parent ) = @_;
+  my ( $self, $count, @parents ) = @_;
 
-  $parent //= $self->_last_leaf;
+  if ( @parents < $count ) {
+    my $leaf = $self->_last_leaf;
+    push @parents, ($leaf) x ( $count - @parents );
+  }
+
   my $node = $self->node_name;
 
   my @edits = ();
   for ( 1 .. $count ) {
-    my $uuid = $self->_make_uuid;
-    push @edits, { uuid => $uuid, parent => $parent, node => $node };
-    $parent = $uuid;
+    push @edits,
+     {uuid   => $self->_make_uuid,
+      parent => shift(@parents),
+      node   => $node
+     };
   }
 
   return \@edits;
@@ -215,8 +221,13 @@ sub _save {
 }
 
 sub save {
-  my ( $self, $kind, @docs ) = @_;
-  my $edits = $self->_edit_factory( scalar @docs );
+  my $self = shift;
+  my $options = ref $_[0] ? shift : {};
+  my ( $kind, @docs ) = @_;
+
+  my @parents = @{ $options->{parents} || [] };
+
+  my $edits = $self->_edit_factory( scalar(@docs), @parents );
   return $self->_save( $edits, $kind, @docs );
 }
 
