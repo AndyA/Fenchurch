@@ -1,19 +1,63 @@
--- MySQL dump 10.15  Distrib 10.0.19-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.15  Distrib 10.0.25-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: test_adhocument
 -- ------------------------------------------------------
--- Server version	10.0.19-MariaDB-1~wheezy
+-- Server version	10.0.25-MariaDB-0ubuntu0.16.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `test_chain`
+--
+
+DROP TABLE IF EXISTS `test_chain`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `test_chain` (
+  `uuid` varchar(36) NOT NULL,
+  `parent` varchar(36) DEFAULT NULL,
+  `serial` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `when` datetime NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `rand` double NOT NULL,
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `test_chain_serial` (`serial`),
+  KEY `test_chain_parent` (`parent`),
+  KEY `test_chain_when` (`when`),
+  KEY `test_chain_rand` (`rand`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `test_chain_linear`
+--
+
+DROP TABLE IF EXISTS `test_chain_linear`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `test_chain_linear` (
+  `uuid` varchar(36) NOT NULL,
+  `parent` varchar(36) DEFAULT NULL,
+  `serial` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `when` datetime NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `rand` double NOT NULL,
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `test_chain_linear_serial` (`serial`),
+  KEY `test_chain_linear_parent` (`parent`),
+  KEY `test_chain_linear_when` (`when`),
+  KEY `test_chain_linear_rand` (`rand`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `test_conflicts`
@@ -67,6 +111,32 @@ CREATE TABLE `test_contributors` (
   KEY `test_contributors_group` (`group`),
   KEY `test_contributors_kind` (`kind`),
   KEY `test_contributors_code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `test_edit`
+--
+
+DROP TABLE IF EXISTS `test_edit`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `test_edit` (
+  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `hash` char(32) DEFAULT NULL,
+  `parent_id` int(10) DEFAULT NULL,
+  `uuid` varchar(36) NOT NULL COMMENT 'Unique object identifier',
+  `kind` varchar(64) NOT NULL COMMENT 'The kind of object changed',
+  `data` mediumtext NOT NULL COMMENT 'JSON representation of change',
+  `state` enum('pending','accepted','rejected','review') NOT NULL DEFAULT 'pending' COMMENT 'Edit state',
+  `alien` enum('N','Y') DEFAULT 'N',
+  `data_hash` char(32) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `hash` (`hash`),
+  KEY `uuid` (`uuid`),
+  KEY `kind` (`kind`),
+  KEY `state` (`state`),
+  KEY `parent_id` (`parent_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -235,4 +305,4 @@ CREATE TABLE `test_versions` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-06-22 13:14:33
+-- Dump completed on 2016-09-15 16:38:29
