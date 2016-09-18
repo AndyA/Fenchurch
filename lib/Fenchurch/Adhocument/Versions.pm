@@ -247,10 +247,13 @@ sub _save_or_delete {
 
   my @parents = @{ $options->{parents} || [] };
 
-  my $edits = $self->_edit_factory( scalar(@things), @parents );
-  return $save
-   ? $self->_save( $edits, $kind, @things )
-   : $self->_delete( $edits, $kind, @things );
+  $self->db->transaction(
+    sub {
+      my $edits = $self->_edit_factory( scalar(@things), @parents );
+      if ($save) { $self->_save( $edits, $kind, @things ) }
+      else       { $self->_delete( $edits, $kind, @things ) }
+    }
+  );
 }
 
 sub save   { shift->_save_or_delete( 1, @_ ) }

@@ -161,16 +161,20 @@ sub _delete_deep {
 
   return unless @ids;
 
-  if ( exists $spec->{children} ) {
-    my @pids = $self->_get_pkeys( $spec, $key, @ids );
-    for my $name ( keys %{ $spec->{children} } ) {
-      my $info  = $spec->{children}{$name};
-      my $cspec = $self->spec_for( $info->{kind} );
-      $self->_delete_deep( $cspec, $info->{fkey}, @pids );
-    }
-  }
+  $self->db->transaction(
+    sub {
+      if ( exists $spec->{children} ) {
+        my @pids = $self->_get_pkeys( $spec, $key, @ids );
+        for my $name ( keys %{ $spec->{children} } ) {
+          my $info  = $spec->{children}{$name};
+          my $cspec = $self->spec_for( $info->{kind} );
+          $self->_delete_deep( $cspec, $info->{fkey}, @pids );
+        }
+      }
 
-  $self->_delete( $spec, $key, @ids );
+      $self->_delete( $spec, $key, @ids );
+    }
+  );
 }
 
 sub _check_columns {
@@ -228,25 +232,29 @@ sub _insert_deep {
 
   my @kids = keys %{ $spec->{children} // {} };
 
-  if (@kids) {
-    my $pkey = $spec->{pkey}
-     // croak "Can't save a kind with no primary key";
+  $self->db->transaction(
+    sub {
+      if (@kids) {
+        my $pkey = $spec->{pkey}
+         // croak "Can't save a kind with no primary key";
 
-    for my $name (@kids) {
-      my $info  = $spec->{children}{$name};
-      my $cspec = $self->spec_for( $info->{kind} );
-      my @kids  = ();
-      for my $doc (@docs) {
-        for my $kid ( @{ $doc->{$name} || [] } ) {
-          push @kids, { %$kid, $info->{fkey} => $doc->{$pkey} };
+        for my $name (@kids) {
+          my $info  = $spec->{children}{$name};
+          my $cspec = $self->spec_for( $info->{kind} );
+          my @kids  = ();
+          for my $doc (@docs) {
+            for my $kid ( @{ $doc->{$name} || [] } ) {
+              push @kids, { %$kid, $info->{fkey} => $doc->{$pkey} };
+            }
+          }
+          $self->_insert_deep( $cspec, @kids );
         }
       }
-      $self->_insert_deep( $cspec, @kids );
-    }
-  }
 
-  $self->_check_columns( $spec, \@kids, @docs );
-  $self->_insert( $spec, @docs );
+      $self->_check_columns( $spec, \@kids, @docs );
+      $self->_insert( $spec, @docs );
+    }
+  );
 }
 
 sub load {
@@ -293,9 +301,13 @@ sub save {
   # Check each id is used only once
   $self->_only_once(@ids);
 
-  $self->delete( $kind, @ids ) unless $spec->{append};
-  $self->_insert_deep( $spec, @docs );
-  $self->emit( 'save', $kind, \@docs );
+  $self->db->transaction(
+    sub {
+      $self->delete( $kind, @ids ) unless $spec->{append};
+      $self->_insert_deep( $spec, @docs );
+      $self->emit( 'save', $kind, \@docs );
+    }
+  );
 }
 
 sub exists {
