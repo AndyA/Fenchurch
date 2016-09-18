@@ -72,9 +72,12 @@ my $programmes = test_data("stash.json");
             $adv->save( { parents => [$ver->{uuid}], expect => [$edit->{new_data}] },
               $edit->{kind}, $edit->{old_data} );
           }
+          elsif ( $old_state eq "accepted" && $new_state eq "accepted" ) {
+            die "Can't alter an edit while it is applied";
+          }
+
         }
       }
-
     }
   );
 
