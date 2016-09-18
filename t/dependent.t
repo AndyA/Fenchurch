@@ -50,7 +50,7 @@ my $programmes = test_data("stash.json");
   );
 
   # Business logic: when an edit moves to 'accepted' apply it; when it
-  # moves out of apply roll it back.
+  # moves out of 'accepted' roll it back.
 
   $adv->on(
     version => sub {
