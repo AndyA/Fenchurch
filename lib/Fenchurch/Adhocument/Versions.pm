@@ -329,6 +329,7 @@ sub versions {
 sub resolve { die "Current data doesn't match edit's expectations" }
 
 # Sync support. Get changes from the global list, apply them.
+# TODO refactor this to use expectations
 
 sub _apply_edit {
   my ( $self, $index, $edit ) = @_;
