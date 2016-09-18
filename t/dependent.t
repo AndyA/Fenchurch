@@ -58,23 +58,19 @@ my $programmes = test_data("stash.json");
 
       for my $ver (@$vers) {
         if ( $ver->{kind} eq "edit" ) {
+          my $edit      = $ver->{new_data};
           my $old_state = $ver->{old_data}{state} // "missing";
-          my $new_state = $ver->{new_data}{state} // "deleted";
+          my $new_state = $edit->{state} // "deleted";
 
           if ( $old_state ne "accepted" && $new_state eq "accepted" ) {
-           # Accepting
-           #            say "Accepting ", JSON->new->pretty->canonical->encode($ver);
-            my $edit = $ver->{new_data};
+            # Accepting
             $adv->save( { parents => [$ver->{uuid}], expect => [$edit->{old_data}] },
               $edit->{kind}, $edit->{new_data} );
           }
           elsif ( $old_state eq "accepted" && $new_state ne "accepted" ) {
             # Rejecting
-            # say "Rejecting ", JSON->new->pretty->canonical->encode($ver);
-            my $kind   = $ver->{new_data}{kind}   // $ver->{old_data}{kind};
-            my $object = $ver->{new_data}{object} // $ver->{old_data}{object};
-            my $versions = $adv->versions( $kind, $object );
-            # say "Versions ", JSON->new->pretty->canonical->encode($versions);
+            $adv->save( { parents => [$ver->{uuid}], expect => [$edit->{new_data}] },
+              $edit->{kind}, $edit->{old_data} );
           }
         }
       }
@@ -151,14 +147,43 @@ my $programmes = test_data("stash.json");
       count_versions( $adv, programme => map { $_->{_uuid} } @prog )
      ],
      [2, 1, 2],
-     "expected number of programme versions";
+     "apply: expected number of programme versions";
 
     eq_or_diff [count_versions( $adv, edit => map { $_->{uuid} } @edit )],
      [4, 4, 4],
-     "expected number of edit versions";
+     "apply: expected number of edit versions";
 
-    #  $_->{state} = 'rejected' for @edit;
-    #  $adv->save( edit => @edit );
+    $_->{state} = 'rejected' for @edit;
+    $adv->save( edit => @edit );
+
+    eq_or_diff $adv->load( programme => map { $_->{_uuid} } @prog ), [@orig],
+     "programme reverted OK";
+
+    eq_or_diff [
+      count_versions( $adv, programme => map { $_->{_uuid} } @prog )
+     ],
+     [3, 1, 3],
+     "revert: expected number of programme versions";
+
+    eq_or_diff [count_versions( $adv, edit => map { $_->{uuid} } @edit )],
+     [5, 5, 5],
+     "revert: expected number of edit versions";
+
+    $_->{state} = 'accepted' for @edit;
+    $adv->save( edit => @edit );
+
+    eq_or_diff $adv->load( programme => map { $_->{_uuid} } @prog ), [@prog],
+     "programme edited again OK";
+
+    eq_or_diff [
+      count_versions( $adv, programme => map { $_->{_uuid} } @prog )
+     ],
+     [4, 1, 4],
+     "apply(2): expected number of programme versions";
+
+    eq_or_diff [count_versions( $adv, edit => map { $_->{uuid} } @edit )],
+     [6, 6, 6],
+     "apply(2): expected number of edit versions";
   }
 
   {
@@ -186,7 +211,7 @@ my $programmes = test_data("stash.json");
     eq_or_diff [
       count_versions( $adv, programme => map { $_->{_uuid} } @prog )
      ],
-     [3, 1, 3],
+     [5, 1, 5],
      "expected number of programme versions";
 
     eq_or_diff [count_versions( $adv, edit => map { $_->{uuid} } @edit )],
@@ -226,7 +251,7 @@ my $programmes = test_data("stash.json");
     eq_or_diff [
       count_versions( $adv, programme => map { $_->{_uuid} } @prog )
      ],
-     [3, 1, 3],
+     [5, 1, 5],
      "expected number of programme versions";
 
     eq_or_diff [count_versions( $adv, edit => map { $_->{uuid} } @edit )],
