@@ -214,12 +214,30 @@ sub _edit_factory {
   ];
 }
 
+sub _old_docs {
+  my ( $self, $options, $kind, @ids ) = @_;
+  my $pkey = $self->pkey_for($kind);
+  my $old_docs = $self->db->stash_by( $self->load( $kind, @ids ), $pkey );
+
+  if ( $options->{expect} ) {
+    for my $doc ( @{ $options->{expect} } ) {
+      my $old = $old_docs->{ $doc->{$pkey} }[0];
+      unless ( $self->_eq( $doc, $old ) ) {
+        my $id = ( $doc && $doc->{$pkey} ) // ( $old && $old->{$pkey} );
+        die "Document [$id] doesn't match expectation";
+      }
+    }
+  }
+
+  return $old_docs;
+}
+
 sub _save {
-  my ( $self, $edits, $kind, @docs ) = @_;
+  my ( $self, $options, $edits, $kind, @docs ) = @_;
 
   my $pkey     = $self->pkey_for($kind);
   my @ids      = map { $_->{$pkey} } @docs;
-  my $old_docs = $self->db->stash_by( $self->load( $kind, @ids ), $pkey );
+  my $old_docs = $self->_old_docs( $options, $kind, @ids );
   my @dirty    = $self->_only_changed( $pkey, $old_docs, @docs );
 
   $self->_engine->save( $kind, @dirty );
@@ -228,11 +246,12 @@ sub _save {
 }
 
 sub _delete {
-  my ( $self, $edits, $kind, @ids ) = @_;
+  my ( $self, $options, $edits, $kind, @ids ) = @_;
 
   my $pkey     = $self->pkey_for($kind);
   my @eids     = @{ $self->exists( $kind => @ids ) };
-  my $old_docs = $self->db->stash_by( $self->load( $kind, @eids ), $pkey );
+  my $old_docs = $self->_old_docs( $options, $kind, @eids );
+
   $self->_engine->delete( $kind, @eids );
   $self->_save_versions( $edits, $kind, $old_docs,
     map { [$_, undef] } @eids );
@@ -250,8 +269,8 @@ sub _save_or_delete {
   $self->db->transaction(
     sub {
       my $edits = $self->_edit_factory( scalar(@things), @parents );
-      if ($save) { $self->_save( $edits, $kind, @things ) }
-      else       { $self->_delete( $edits, $kind, @things ) }
+      if ($save) { $self->_save( $options, $edits, $kind, @things ) }
+      else       { $self->_delete( $options, $edits, $kind, @things ) }
     }
   );
 }
@@ -325,10 +344,10 @@ sub _apply_edit {
   }
 
   if ( defined $edit->{new_data} ) {
-    $self->_save( [$edit], $edit->{kind}, $edit->{new_data} );
+    $self->_save( {}, [$edit], $edit->{kind}, $edit->{new_data} );
   }
   else {
-    $self->_delete( [$edit], $edit->{kind}, $edit->{object} );
+    $self->_delete( {}, [$edit], $edit->{kind}, $edit->{object} );
   }
 }
 

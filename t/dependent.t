@@ -65,8 +65,8 @@ my $programmes = test_data("stash.json");
            # Accepting
            #            say "Accepting ", JSON->new->pretty->canonical->encode($ver);
             my $edit = $ver->{new_data};
-            $adv->save( { parents => [$ver->{uuid}] }, $edit->{kind},
-              $edit->{data} );
+            $adv->save( { parents => [$ver->{uuid}], expect => [$edit->{old_data}] },
+              $edit->{kind}, $edit->{new_data} );
           }
           elsif ( $old_state eq "accepted" && $new_state ne "accepted" ) {
             # Rejecting
@@ -82,6 +82,12 @@ my $programmes = test_data("stash.json");
     }
   );
 
+  my @orig = (
+    dclone $programmes->[0],
+    dclone $programmes->[1],
+    dclone $programmes->[2]
+  );
+
   my @prog = (
     dclone $programmes->[0],
     dclone $programmes->[1],
@@ -93,7 +99,7 @@ my $programmes = test_data("stash.json");
    {code       => undef,
     first_name => "Kathryn",
     group      => "crew",
-    index      => 2,
+    index      => "2",
     kind       => "member",
     last_name  => "Simmönds.",
     type       => "Unknown"
@@ -105,7 +111,7 @@ my $programmes = test_data("stash.json");
    {code       => undef,
     first_name => "Gene",
     group      => "crew",
-    index      => 15,
+    index      => "15",
     kind       => "member",
     last_name  => "Simmöns.",
     type       => "Unknown"
@@ -113,40 +119,130 @@ my $programmes = test_data("stash.json");
 
   $prog[2]{title} = "Kiss: The Wilderness Years";
 
-  # An edit
-  my @edit = (
-    map {
-      { uuid   => make_uuid(),
-        kind   => 'programme',
-        object => $_->{_uuid},
-        state  => 'pending',
-        data   => $_
-      }
-    } @prog
-  );
+  {
+    # Three edits that should succeed
+    my @edit = ();
+    for my $i ( 0 .. $#prog ) {
+      push @edit,
+       {uuid     => make_uuid(),
+        kind     => 'programme',
+        object   => $prog[$i]{_uuid},
+        state    => 'pending',
+        old_data => $orig[$i],
+        new_data => $prog[$i] };
+    }
 
-  $adv->save( edit => @edit );
+    $adv->save( edit => @edit );
 
-  eq_or_diff $adv->load( edit => map { $_->{uuid} } @edit ), [@edit],
-   "edit saved OK";
+    eq_or_diff $adv->load( edit => map { $_->{uuid} } @edit ), [@edit],
+     "edit saved OK";
 
-  $_->{state} = 'review' for @edit;
-  $adv->save( edit => @edit );
+    $_->{state} = 'review' for @edit;
+    $adv->save( edit => @edit );
 
-  $_->{state} = 'accepted' for @edit;
-  $adv->save( edit => @edit );
+    $_->{state} = 'accepted' for @edit;
+    $adv->save( edit => @edit );
 
-  # Check programme
-  eq_or_diff $adv->load( programme => map { $_->{_uuid} } @prog ), [@prog],
-   "programme edited OK";
+    # Check programme
+    eq_or_diff $adv->load( programme => map { $_->{_uuid} } @prog ), [@prog],
+     "programme edited OK";
 
-  $_->{state} = 'rejected' for @edit;
-  $adv->save( edit => @edit );
+    eq_or_diff [
+      count_versions( $adv, programme => map { $_->{_uuid} } @prog )
+     ],
+     [2, 1, 2],
+     "expected number of programme versions";
+
+    eq_or_diff [count_versions( $adv, edit => map { $_->{uuid} } @edit )],
+     [4, 4, 4],
+     "expected number of edit versions";
+
+    #  $_->{state} = 'rejected' for @edit;
+    #  $adv->save( edit => @edit );
+  }
+
+  {
+    my @edit = ();
+    for my $i ( 0 .. $#prog ) {
+      push @edit,
+       {uuid     => make_uuid(),
+        kind     => 'programme',
+        object   => $prog[$i]{_uuid},
+        state    => 'pending',
+        old_data => $prog[$i],
+        new_data => $orig[$i],
+       };
+    }
+
+    $adv->save( edit => @edit );
+
+    $_->{state} = 'accepted' for @edit;
+    $adv->save( edit => @edit );
+
+    # Check programme
+    eq_or_diff $adv->load( programme => map { $_->{_uuid} } @prog ), [@orig],
+     "programme edited OK";
+
+    eq_or_diff [
+      count_versions( $adv, programme => map { $_->{_uuid} } @prog )
+     ],
+     [3, 1, 3],
+     "expected number of programme versions";
+
+    eq_or_diff [count_versions( $adv, edit => map { $_->{uuid} } @edit )],
+     [3, 3, 3],
+     "expected number of edit versions";
+  }
+
+  {
+    my @edit = ();
+    for my $i ( 0 .. $#prog ) {
+      push @edit,
+       {uuid     => make_uuid(),
+        kind     => 'programme',
+        object   => $prog[$i]{_uuid},
+        state    => 'pending',
+        old_data => dclone $orig[$i],
+        new_data => $prog[$i],
+       };
+    }
+
+    # Make the third edit fail
+    $edit[2]{old_data}{title} = "Oops!";
+
+    $adv->save( edit => @edit );
+
+    # Attempt to accept the batch of edits. None of them should
+    # be accepted because the last of the batch has a mismatched
+    # expectation
+    $_->{state} = 'accepted' for @edit;
+    eval { $adv->save( edit => @edit ) };
+    like $@, qr{Document\s+\[}, "error thrown";
+
+    # Check the programmes haven't changed
+    eq_or_diff $adv->load( programme => map { $_->{_uuid} } @prog ), [@orig],
+     "programmes not changed";
+
+    eq_or_diff [
+      count_versions( $adv, programme => map { $_->{_uuid} } @prog )
+     ],
+     [3, 1, 3],
+     "expected number of programme versions";
+
+    eq_or_diff [count_versions( $adv, edit => map { $_->{uuid} } @edit )],
+     [2, 2, 2],
+     "expected number of edit versions";
+  }
 }
 
-debug_versions();
+#debug_versions();
 
 done_testing;
+
+sub count_versions {
+  my ( $ad, $kind, @ids ) = @_;
+  return map { scalar @$_ } @{ $ad->versions( $kind, @ids ) };
+}
 
 # Some debug
 sub debug_versions {
@@ -208,7 +304,7 @@ sub schema {
       edit => {
         table => 'test_edit',
         pkey  => 'uuid',
-        json  => ['data'],
+        json  => ['old_data', 'new_data'],
       },
     }
   );
