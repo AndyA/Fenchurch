@@ -500,8 +500,7 @@ Load versions by UUID.
 
 sub load_versions {
   my ( $self, @ids ) = @_;
-  return $self->_expand_versions(
-    $self->_version_engine->load( version => @ids ) );
+  return $self->_version_engine->load( version => @ids );
 }
 
 =head2 C<since>
