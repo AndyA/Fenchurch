@@ -228,6 +228,6 @@ preflight;
   eq_or_diff [@pkey], [@pkey_want], "pkeys match";
 }
 
-done_testing();
+done_testing;
 
 # vim:ts=2:sw=2:et:ft=perl
