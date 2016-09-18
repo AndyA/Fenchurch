@@ -1,6 +1,9 @@
 package Fenchurch::Core::DB;
 
 use Moose;
+use Moose::Util::TypeConstraints;
+
+use Carp qw( confess );
 
 =head1 NAME
 
@@ -8,7 +11,15 @@ Fenchurch::Core::DB - Database handling
 
 =cut
 
-has dbh => ( is => 'ro', isa => 'DBI::db', required => 1 );
+use Try::Tiny;
+
+has dbh => (
+  is       => 'ro',
+  isa      => duck_type( ['do'] ),
+  required => 1
+);
+
+has in_transaction => ( is => 'rw', isa => 'Bool', default => 0 );
 
 has _meta_cache => (
   is       => 'ro',
@@ -16,6 +27,33 @@ has _meta_cache => (
   required => 1,
   default  => sub { {} }
 );
+
+sub transaction {
+  my ( $self, $cb ) = @_;
+
+  if ( $self->in_transaction ) {
+    $cb->();
+    return;
+  }
+
+  my $dbh = $self->dbh;
+
+  $self->in_transaction(1);
+  $dbh->do('START TRANSACTION');
+
+  try {
+    $cb->();
+    $dbh->do('COMMIT');
+  }
+  catch {
+    my $e = $_;
+    $dbh->do('ROLLBACK');
+    confess $e;
+  }
+  finally {
+    $self->in_transaction(0);
+  };
+}
 
 sub quote_name {
   my ( $self, @name ) = @_;
