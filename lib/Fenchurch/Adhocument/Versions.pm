@@ -227,17 +227,6 @@ sub _save {
     map { [$_->{$pkey}, $_] } @dirty );
 }
 
-sub save {
-  my $self = shift;
-  my $options = ref $_[0] ? shift : {};
-  my ( $kind, @docs ) = @_;
-
-  my @parents = @{ $options->{parents} || [] };
-
-  my $edits = $self->_edit_factory( scalar(@docs), @parents );
-  return $self->_save( $edits, $kind, @docs );
-}
-
 sub _delete {
   my ( $self, $edits, $kind, @ids ) = @_;
 
@@ -249,11 +238,23 @@ sub _delete {
     map { [$_, undef] } @eids );
 }
 
-sub delete {
-  my ( $self, $kind, @ids ) = @_;
-  my $edits = $self->_edit_factory( scalar @ids );
-  return $self->_delete( $edits, $kind, @ids );
+sub _save_or_delete {
+  my $self = shift;
+  my $save = shift;
+
+  my $options = ref $_[0] ? shift : {};
+  my ( $kind, @things ) = @_;
+
+  my @parents = @{ $options->{parents} || [] };
+
+  my $edits = $self->_edit_factory( scalar(@things), @parents );
+  return $save
+   ? $self->_save( $edits, $kind, @things )
+   : $self->_delete( $edits, $kind, @things );
 }
+
+sub save   { shift->_save_or_delete( 1, @_ ) }
+sub delete { shift->_save_or_delete( 0, @_ ) }
 
 sub _unpack_version {
   my ( $self, $ver ) = @_;
