@@ -388,6 +388,49 @@ sub _versions_for_schema {
   );
 }
 
+=head2 C<apply>
+
+Apply a serialised set of changes. Returns the index to be used for the next
+call to C<since>.
+
+  my $index = 0;
+  while () {
+    my $stash = $ver_in->since($index, 10);
+    unless (@$stash) {
+      sleep 1;
+      next;
+    }
+    $index = $ver_out->apply($index, $stash);
+  }
+
+=cut
+
+sub apply {
+  my ( $self, $index, $stash ) = @_;
+
+  my %cache = ();
+
+  # UUIDs of incoming edits
+  my @eids = map { $_->{uuid} } @$stash;
+
+  # Edits that we've already seen
+  my %seen = map { $_ => 1 } $self->_find_edits(@eids);
+
+  for my $edit (@$stash) {
+    unless ( $seen{ $edit->{uuid} } ) {
+      # Build a suitable schema
+      my $ver = $cache{ $self->_json->encode( $edit->{schema} ) } //=
+       $self->_versions_for_schema( $edit->{schema} );
+
+      # Apply the edit
+      $ver->_apply_edit( $index, $edit );
+    }
+    $index = $edit->{serial};
+  }
+
+  return $index;
+}
+
 =head2 C<leaves>
 
 Return a page of the leaf nodes of the version tree.
@@ -490,49 +533,6 @@ sub since {
   );
 
   return $self->_expand_versions($rc);
-}
-
-=head2 C<apply>
-
-Apply a serialised set of changes. Returns the index to be used for the next
-call to C<since>.
-
-  my $index = 0;
-  while () {
-    my $stash = $ver_in->since($index, 10);
-    unless (@$stash) {
-      sleep 1;
-      next;
-    }
-    $index = $ver_out->apply($index, $stash);
-  }
-
-=cut
-
-sub apply {
-  my ( $self, $index, $stash ) = @_;
-
-  my %cache = ();
-
-  # UUIDs of incoming edits
-  my @eids = map { $_->{uuid} } @$stash;
-
-  # Edits that we've already seen
-  my %seen = map { $_ => 1 } $self->_find_edits(@eids);
-
-  for my $edit (@$stash) {
-    unless ( $seen{ $edit->{uuid} } ) {
-      # Build a suitable schema
-      my $ver = $cache{ $self->_json->encode( $edit->{schema} ) } //=
-       $self->_versions_for_schema( $edit->{schema} );
-
-      # Apply the edit
-      $ver->_apply_edit( $index, $edit );
-    }
-    $index = $edit->{serial};
-  }
-
-  return $index;
 }
 
 1;
