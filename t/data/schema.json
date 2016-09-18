@@ -1,0 +1,31 @@
+{
+   "contributor" : {
+      "child_of" : {
+         "programme" : "_parent"
+      },
+      "order" : "+index",
+      "plural" : "contributors",
+      "table" : "test_contributors"
+   },
+   "edit" : {
+      "json" : [
+         "old_data",
+         "new_data"
+      ],
+      "pkey" : "uuid",
+      "table" : "test_edit"
+   },
+   "programme" : {
+      "pkey" : "_uuid",
+      "plural" : "programmes",
+      "table" : "test_programmes_v2"
+   },
+   "related" : {
+      "child_of" : {
+         "programme" : "_parent"
+      },
+      "order" : "+index",
+      "pkey" : "_uuid",
+      "table" : "test_related"
+   }
+}

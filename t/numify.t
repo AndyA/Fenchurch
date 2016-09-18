@@ -69,31 +69,7 @@ sub numify {
 
 sub schema {
   return Fenchurch::Adhocument::Schema->new(
-    schema => {
-      programme => {
-        table  => 'test_programmes_v2',
-        pkey   => '_uuid',
-        plural => 'programmes',
-      },
-      contributor => {
-        table    => 'test_contributors',
-        child_of => { programme => '_parent' },
-        order    => '+index',
-        plural   => 'contributors',
-      },
-      related => {
-        table    => 'test_related',
-        pkey     => '_uuid',
-        order    => '+index',
-        child_of => { programme => '_parent' },
-      },
-      edit => {
-        table => 'test_edit',
-        pkey  => 'uuid',
-        json  => ['old_data', 'new_data'],
-      },
-    }
-  );
+    schema => test_data("schema.json") );
 }
 
 # vim:ts=2:sw=2:et:ft=perl
