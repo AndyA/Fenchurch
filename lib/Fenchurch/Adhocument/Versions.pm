@@ -190,8 +190,7 @@ sub _save_versions {
   my $self = shift;
   my @ver  = $self->_build_versions(@_);
   $self->_version_engine->save( version => @ver );
-  # We delegate most event emitting to our engine
-  $self->_engine->emit( 'version', \@ver );
+  $self->emit( 'version', \@ver );
 }
 
 sub _edit_factory {
