@@ -14,7 +14,7 @@ has db => (
   is       => 'ro',
   isa      => 'Fenchurch::Core::DB',
   required => 1,
-  handles  => ['dbh']
+  handles  => ['dbh', 'transaction']
 );
 
 1;

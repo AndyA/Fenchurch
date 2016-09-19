@@ -265,7 +265,7 @@ sub _save_or_delete {
 
   my @parents = @{ $options->{parents} || [] };
 
-  $self->db->transaction(
+  $self->transaction(
     sub {
       my $edits = $self->_edit_factory( scalar(@things), @parents );
       if ($save) { $self->_save( $options, $edits, $kind, @things ) }
