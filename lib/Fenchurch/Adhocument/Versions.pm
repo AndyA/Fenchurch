@@ -155,16 +155,15 @@ sub _last_leaf {
 
 sub _make_uuid { create_uuid_as_string(UUID_V4) }
 
-sub _now { DateTime::Format::MySQL->format_datetime( DateTime->now ) }
-
 sub _build_versions {
-  my ( $self, $edits, $kind, $old_docs, @docs ) = @_;
+  my ( $self, $options, $edits, $kind, $old_docs, @docs ) = @_;
 
   my $seq    = $self->_ver_sequence( map { $_->[0] } @docs );
   my $schema = $self->schema_for($kind);
-  my $when   = $self->_now;
-  my @el     = @$edits;
-  my @ver    = ();
+  my $when   = DateTime::Format::MySQL->format_datetime( $options->{when}
+     // DateTime->now );
+  my @el  = @$edits;
+  my @ver = ();
 
   for my $doc (@docs) {
     my ( $oid, $new_data ) = @$doc;
@@ -190,8 +189,7 @@ sub _save_versions {
   my $self = shift;
   my @ver  = $self->_build_versions(@_);
   $self->_version_engine->save( version => @ver );
-  # We delegate most event emitting to our engine
-  $self->_engine->emit( 'version', \@ver );
+  $self->emit( 'version', \@ver );
 }
 
 sub _edit_factory {
@@ -241,7 +239,7 @@ sub _save {
   my @dirty    = $self->_only_changed( $pkey, $old_docs, @docs );
 
   $self->_engine->save( $kind, @dirty );
-  $self->_save_versions( $edits, $kind, $old_docs,
+  $self->_save_versions( $options, $edits, $kind, $old_docs,
     map { [$_->{$pkey}, $_] } @dirty );
 }
 
@@ -253,7 +251,7 @@ sub _delete {
   my $old_docs = $self->_old_docs( $options, $kind, @eids );
 
   $self->_engine->delete( $kind, @eids );
-  $self->_save_versions( $edits, $kind, $old_docs,
+  $self->_save_versions( $options, $edits, $kind, $old_docs,
     map { [$_, undef] } @eids );
 }
 
@@ -266,7 +264,7 @@ sub _save_or_delete {
 
   my @parents = @{ $options->{parents} || [] };
 
-  $self->db->transaction(
+  $self->transaction(
     sub {
       my $edits = $self->_edit_factory( scalar(@things), @parents );
       if ($save) { $self->_save( $options, $edits, $kind, @things ) }

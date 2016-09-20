@@ -161,7 +161,7 @@ sub _delete_deep {
 
   return unless @ids;
 
-  $self->db->transaction(
+  $self->transaction(
     sub {
       if ( exists $spec->{children} ) {
         my @pids = $self->_get_pkeys( $spec, $key, @ids );
@@ -232,7 +232,7 @@ sub _insert_deep {
 
   my @kids = keys %{ $spec->{children} // {} };
 
-  $self->db->transaction(
+  $self->transaction(
     sub {
       if (@kids) {
         my $pkey = $spec->{pkey}
@@ -301,7 +301,7 @@ sub save {
   # Check each id is used only once
   $self->_only_once(@ids);
 
-  $self->db->transaction(
+  $self->transaction(
     sub {
       $self->delete( $kind, @ids ) unless $spec->{append};
       $self->_insert_deep( $spec, @docs );
