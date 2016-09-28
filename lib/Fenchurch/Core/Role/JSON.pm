@@ -2,7 +2,7 @@ package Fenchurch::Core::Role::JSON;
 
 use Moose::Role;
 
-use JSON ();
+use JSON::XS ();
 
 =head1 NAME
 
@@ -12,12 +12,12 @@ Fenchurch::Core::Role::JSON - Create a JSON (de)serialiser
 
 has _json => (
   is      => 'ro',
-  isa     => 'JSON',
+  isa     => 'JSON::XS',
   lazy    => 1,
   builder => '_b_json'
 );
 
-sub _b_json { JSON->new->utf8->allow_nonref->canonical }
+sub _b_json { JSON::XS->new->utf8->allow_nonref->canonical }
 
 1;
 
