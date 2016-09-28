@@ -8,7 +8,6 @@ use warnings;
 
 use lib qw( t/lib );
 
-use JSON ();
 use Storable qw( dclone );
 use Test::Differences;
 use Test::More;
