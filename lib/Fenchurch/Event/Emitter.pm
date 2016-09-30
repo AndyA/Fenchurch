@@ -24,10 +24,17 @@ has _namespaces => (
   default  => sub { {} }
 );
 
+has do_default => (
+  is      => 'rw',
+  isa     => 'Bool',
+  default => 1
+);
+
 # Class method: helper for delegation
 sub interface {
   qw( add_listener emit interface off on once
-   remove_all_listeners remove_listener );
+   remove_all_listeners remove_listener
+   do_default prevent_default );
 }
 
 sub _parse_event {
@@ -158,7 +165,7 @@ sub remove_all_listeners {
 
 sub off { shift->remove_all_listeners(@_) }
 
-#sub listeners { }
+sub prevent_default { shift->do_default(0) }
 
 sub _emit {
   my ( $self, $event, @args ) = @_;
@@ -175,6 +182,7 @@ sub _emit {
 sub emit {
   my ( $self, $event, @args ) = @_;
   croak "Can't use namespaces with emit" if $event =~ /\./;
+  $self->do_default(1);
   $self->_emit( $event, @args );
   return $self;
 }

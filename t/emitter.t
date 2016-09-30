@@ -16,6 +16,22 @@ test_emitter( 'direct', Fenchurch::Event::Emitter->new );
 test_emitter( 'role',
   consuming_object('Fenchurch::Event::Role::Emitter') );
 
+# Test prevent_default, do_default
+test_flags( 'direct', Fenchurch::Event::Emitter->new );
+test_flags( 'role',
+  consuming_object('Fenchurch::Event::Role::Emitter') );
+
+sub test_flags {
+  my ( $desc, $ee ) = @_;
+
+  $ee->on( event => sub { } );
+  $ee->emit('event');
+  ok $ee->do_default, "$desc: do_default is set";
+  $ee->on( event => sub { $ee->prevent_default } );
+  $ee->emit('event');
+  ok !$ee->do_default, "$desc: do_default is unset";
+}
+
 sub test_emitter {
   my ( $desc, $ee ) = @_;
   my $stash = [];
