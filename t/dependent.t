@@ -243,8 +243,12 @@ my $programmes = test_data("stash.json");
     # be accepted because the last of the batch has a mismatched
     # expectation
     $_->{state} = 'accepted' for @edit;
+    my $events = 0;
+    $adv->on( conflict => sub { $events++ } );
     eval { $adv->save( edit => @edit ) };
     like $@, qr{Document\s+\[}, "error thrown";
+    $adv->off('conflict');
+    is $events, 1, "conflict event emitted";
 
     # Check the programmes haven't changed
     eq_or_diff $adv->load( programme => map { $_->{_uuid} } @prog ), [@orig],
