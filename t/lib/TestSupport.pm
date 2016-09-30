@@ -7,6 +7,7 @@ use feature 'state';
 
 use DBI;
 use Digest::SHA1 qw( sha1_hex );
+use JSON ();
 use Path::Class;
 use Storable qw( freeze );
 use Test::More;
