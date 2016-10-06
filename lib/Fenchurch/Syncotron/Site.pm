@@ -12,7 +12,7 @@ sub dbv {
 }
 
 get '/' => sub {
-    template 'index';
+  template 'index';
 };
 
 prefix '/sync' => sub {
