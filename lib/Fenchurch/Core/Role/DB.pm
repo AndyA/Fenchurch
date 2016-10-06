@@ -3,6 +3,7 @@ package Fenchurch::Core::Role::DB;
 our $VERSION = "0.01";
 
 use Moose::Role;
+use MooseX::Storage;
 
 use Fenchurch::Core::DB;
 
@@ -16,6 +17,7 @@ has db => (
   is       => 'ro',
   isa      => 'Fenchurch::Core::DB',
   required => 1,
+  traits   => ['DoNotSerialize'],
   handles  => ['dbh', 'transaction']
 );
 

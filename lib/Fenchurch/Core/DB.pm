@@ -4,8 +4,10 @@ our $VERSION = "0.01";
 
 use Moose;
 use Moose::Util::TypeConstraints;
+use MooseX::Storage;
 
 use Carp qw( confess );
+use Try::Tiny;
 
 =head1 NAME
 
@@ -13,11 +15,10 @@ Fenchurch::Core::DB - Database handling
 
 =cut
 
-use Try::Tiny;
-
 has dbh => (
   is       => 'ro',
   isa      => duck_type( ['do'] ),
+  traits   => ['DoNotSerialize'],
   required => 1
 );
 
