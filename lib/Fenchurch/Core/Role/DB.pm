@@ -1,5 +1,7 @@
 package Fenchurch::Core::Role::DB;
 
+our $VERSION = "0.01";
+
 use Moose::Role;
 
 use Fenchurch::Core::DB;

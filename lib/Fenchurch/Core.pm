@@ -1,5 +1,7 @@
 package Fenchurch::Core;
 
+our $VERSION = "0.01";
+
 use Moose;
 
 use Carp qw( croak );

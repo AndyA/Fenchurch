@@ -1,5 +1,7 @@
 package Fenchurch::Syncotron;
 
+our $VERSION = "0.01";
+
 use Moose;
 
 =head1 NAME

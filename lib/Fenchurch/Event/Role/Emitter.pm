@@ -1,5 +1,7 @@
 package Fenchurch::Event::Role::Emitter;
 
+our $VERSION = "0.01";
+
 use Moose::Role;
 use Moose::Util::TypeConstraints;
 

@@ -1,5 +1,7 @@
 package Fenchurch::Core::Pipe;
 
+our $VERSION = "0.01";
+
 use Moose;
 
 =head1 NAME

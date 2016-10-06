@@ -1,12 +1,12 @@
 package Fenchurch::Syncotron::Site;
 
+our $VERSION = "0.01";
+
 use v5.10;
 
 use Dancer ':syntax';
 
 use Fenchurch::Adhocument::Versions;
-
-our $VERSION = '0.1';
 
 sub dbv {
 }

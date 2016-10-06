@@ -1,5 +1,7 @@
 package Fenchurch::Syncotron::Despatcher;
 
+our $VERSION = "0.01";
+
 use v5.10;
 
 use Moose;

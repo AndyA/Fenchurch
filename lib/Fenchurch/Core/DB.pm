@@ -1,5 +1,7 @@
 package Fenchurch::Core::DB;
 
+our $VERSION = "0.01";
+
 use Moose;
 use Moose::Util::TypeConstraints;
 

@@ -1,5 +1,7 @@
 package Fenchurch::Core::Role::JSON;
 
+our $VERSION = "0.01";
+
 use Moose::Role;
 
 use JSON::XS ();
