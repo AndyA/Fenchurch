@@ -221,7 +221,7 @@ sub _old_docs {
     for my $doc ( @{ $options->{expect} } ) {
       my $old = $old_docs->{ $doc->{$pkey} }[0];
       unless ( $self->_eq( $doc, $old ) ) {
-        $self->emit( 'conflict', $old, $doc );
+        $self->emit( 'conflict', $kind, $old, $doc );
         if ( $self->do_default ) {
           my $id = ( $doc && $doc->{$pkey} ) // ( $old && $old->{$pkey} );
           die "Document [$id] doesn't match expectation";
