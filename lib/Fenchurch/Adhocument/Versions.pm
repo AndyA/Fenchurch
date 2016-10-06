@@ -11,12 +11,12 @@ use Fenchurch::Adhocument::Schema;
 use Fenchurch::Adhocument;
 use Fenchurch::Event::Emitter;
 use Storable qw( freeze );
-use Sys::Hostname;
 use UUID::Tiny ':std';
 
 with 'Fenchurch::Core::Role::DB';
 with 'Fenchurch::Adhocument::Role::Schema';
 with 'Fenchurch::Core::Role::JSON';
+with 'Fenchurch::Core::Role::NodeName';
 
 has version_table => ( is => 'ro', isa => 'Str', required => 1 );
 
@@ -27,13 +27,6 @@ has numify => (
   isa      => 'Bool',
   required => 1,
   default  => 0
-);
-
-has node_name => (
-  is       => 'ro',
-  isa      => 'Str',
-  required => 1,
-  default  => sub { hostname }
 );
 
 has conflict_resolver => (
