@@ -82,7 +82,7 @@ Despatch an event to registered handlers
 =cut
 
 sub despatch {
-  my ( $self, $ev ) = @_;
+  my ( $self, $ev, @args ) = @_;
 
   my $type = $ev->{type} // croak "Missing type in event";
   my $matched = 0;
@@ -91,7 +91,7 @@ sub despatch {
     for my $match ( @{ $handler->{m} } ) {
       if ( $type =~ $match ) {
         $matched++;
-        $handler->{h}($ev);
+        $handler->{h}( $ev, @args );
         last;
       }
     }
