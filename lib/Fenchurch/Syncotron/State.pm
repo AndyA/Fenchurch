@@ -32,6 +32,11 @@ after state => sub {
 
 };
 
+sub advance {
+  my ( $self, $amount ) = @_;
+  $self->progress( $self->progress + $amount );
+}
+
 1;
 
 # vim:ts=2:sw=2:sts=2:et:ft=perl

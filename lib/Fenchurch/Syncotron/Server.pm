@@ -30,6 +30,32 @@ Fenchurch::Syncotron::Server - The Syncotron Server
 
 =cut
 
+sub _put_leaves {
+  my ( $self, $start ) = @_;
+
+  my $mq = $self->mq_out;
+  my $ve = $self->versions;
+
+  my $chunk  = $self->page_size;
+  my $serial = $ve->serial;
+  my @leaves = $ve->leaves( $start, $chunk );
+  my $last   = @leaves < $chunk ? 1 : 0;
+
+  # Stuff the last page of results with a random sample
+  # if it's not full
+  push @leaves, $ve->sample( 0, $chunk - @leaves )
+   if $last && $start == 0;
+
+  $mq->send(
+    { type   => 'put.leaves',
+      start  => $start,
+      last   => $last,
+      leaves => \@leaves,
+      serial => $serial
+    }
+  );
+}
+
 sub _build_app {
   my ( $self, $de ) = @_;
 
@@ -44,21 +70,14 @@ sub _build_app {
         }
       );
     }
-   )->on(
+  );
+
+  $de->on(
     'get.leaves' => sub {
-      my $msg    = shift;
-      my $chunk  = $self->page_size;
-      my $serial = $ve->serial;
-      my @leaves = $ve->leaves( $msg->{start}, $chunk );
-      $mq->send(
-        { type   => 'put.leaves',
-          start  => $msg->{start},
-          last   => @leaves < $chunk ? 1 : 0,
-          leaves => \@leaves
-        }
-      );
+      my $msg = shift;
+      $self->_put_leaves( $msg->{start} );
     }
-   );
+  );
 }
 
 sub next {

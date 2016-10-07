@@ -40,7 +40,11 @@ my $db_remote = Fenchurch::Core::DB->new( dbh => database("remote") );
 my $client = make_client($db_local);
 my $server = make_server($db_remote);
 
+$server->versions->save( programme => @$programmes );
+
 iterate( $client, $server, 5 );
+
+debug_versions( $db_remote->dbh );
 
 ok 1, "Boo!";
 
@@ -87,18 +91,20 @@ sub make_server {
     mq_in     => make_mq( $db, 'server', 'test_node', 'other_node' ),
     mq_out    => make_mq( $db, 'server', 'other_node', 'test_node' ),
     versions  => make_versions($db),
+    page_size => 5,
   );
 }
 
 sub make_client {
   my $db = shift;
   return Fenchurch::Syncotron::Client->new(
-    db        => $db,
-    node_name => 'test_node',
-    table     => 'test_state',
-    mq_in     => make_mq( $db, 'client', 'other_node', 'test_node' ),
-    mq_out    => make_mq( $db, 'client', 'test_node', 'other_node' ),
-    versions  => make_versions($db),
+    db               => $db,
+    node_name        => 'test_node',
+    remote_node_name => 'other_node',
+    table            => 'test_state',
+    mq_in            => make_mq( $db, 'client', 'other_node', 'test_node' ),
+    mq_out           => make_mq( $db, 'client', 'test_node', 'other_node' ),
+    versions         => make_versions($db),
   );
 }
 
@@ -117,5 +123,43 @@ sub make_mq {
 sub schema {
   return Fenchurch::Adhocument::Schema->new(
     schema => test_data("schema.json") );
+}
+
+# Some debug
+sub debug_versions {
+  my $db   = shift;
+  my $vers = $db->selectall_arrayref(
+    join( " ",
+      "SELECT `uuid`, `parent`, `kind`, `object`, `serial`, `sequence`, `when`",
+      "  FROM `test_versions`",
+      " ORDER BY `serial`" ),
+    { Slice => {} }
+  );
+  my %by_uuid = ();
+  for my $ver (@$vers) {
+    $by_uuid{ $ver->{uuid} } = $ver;
+  }
+  my @root = ();
+  for my $ver (@$vers) {
+    if ( defined $ver->{parent} ) {
+      my $parent = $by_uuid{ $ver->{parent} };
+      push @{ $parent->{children} }, $ver;
+    }
+    else {
+      push @root, $ver;
+    }
+  }
+  diag "Version tree:";
+  show_versions( 0, @root );
+}
+
+sub show_versions {
+  my $indent = shift // 0;
+  my $pad = "  " x $indent;
+  for my $ver (@_) {
+    diag $pad, join " ",
+     @{$ver}{ 'kind', 'uuid', 'object', 'serial', 'sequence', 'when' };
+    show_versions( $indent + 1, @{ $ver->{children} // [] } );
+  }
 }
 

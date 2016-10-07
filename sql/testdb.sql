@@ -338,9 +338,11 @@ DROP TABLE IF EXISTS `test_state`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `test_state` (
-  `node` varchar(200) NOT NULL COMMENT 'Node name',
+  `local_node` varchar(200) NOT NULL COMMENT 'Local node name',
+  `remote_node` varchar(200) NOT NULL COMMENT 'Remote node name',
+  `updated` datetime NOT NULL,
   `state` text NOT NULL COMMENT 'Serialised sync state',
-  PRIMARY KEY (`node`)
+  PRIMARY KEY (`local_node`, `remote_node`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

@@ -14,6 +14,12 @@ with 'Fenchurch::Core::Role::DB', 'Fenchurch::Core::Role::NodeName',
  'Fenchurch::Syncotron::Role::Application',
  'Fenchurch::Syncotron::Role::QueuePair';
 
+has remote_node_name => (
+  is       => 'ro',
+  isa      => 'Str',
+  required => 1
+);
+
 has table => (
   is       => 'ro',
   isa      => 'Str',
@@ -44,10 +50,15 @@ sub _load_state {
 
   my $table = $self->db->quote_name( $self->table );
 
-  my ($state)
-   = $self->dbh->selectrow_array(
-    $self->db->quote_sql("SELECT {state} FROM $table WHERE {node} = ?"),
-    {}, $self->node_name );
+  my ($state) = $self->dbh->selectrow_array(
+    $self->db->quote_sql(
+      "SELECT {state} FROM $table",
+      " WHERE {local_node} = ? AND {remote_node} = ?"
+    ),
+    {},
+    $self->node_name,
+    $self->remote_node_name
+  );
 
   return unless $state;
   return Fenchurch::Syncotron::State->thaw($state);
@@ -59,7 +70,10 @@ sub save_state {
   my $table = $self->db->quote_name( $self->table );
   $self->dbh->do(
     $self->db->quote_sql(
-      "REPLACE INTO $table ({node}, {state}) VALUES (?, ?)"),
+      "REPLACE INTO $table",
+      "   ({local_node}, {remote_node}, {updated}, {state})",
+      " VALUES (?, ?, NOW(), ?)"
+    ),
     {},
     $self->node_name,
     $self->state->freeze
@@ -79,6 +93,14 @@ sub _build_app {
   $de->on(
     'put.info' => sub {
       $state->state('enumerate');
+    }
+  );
+
+  $de->on(
+    'put.leaves' => sub {
+      my $msg = shift;
+      $state->advance( scalar @{ $msg->{leaves} } );
+      #      $state->state('blah') if $msg->{last};
     }
   );
 }
