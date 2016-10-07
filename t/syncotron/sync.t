@@ -11,8 +11,10 @@ use Test::Differences;
 use Test::More;
 use TestSupport;
 
+use Fenchurch::Core::DB;
 use Fenchurch::Syncotron::Client;
 use Fenchurch::Syncotron::MessageQueue;
+use Fenchurch::Syncotron::Server;
 
 preflight;
 
@@ -59,3 +61,4 @@ sub make_mq {
     table => 'test_queue'
   );
 }
+

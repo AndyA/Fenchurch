@@ -5,14 +5,15 @@ our $VERSION = "0.01";
 use Moose;
 use Moose::Util::TypeConstraints;
 
-use Fenchurch::Syncotron::Controller;
 use Fenchurch::Syncotron::Despatcher;
 use Fenchurch::Syncotron::State;
 
 with 'Fenchurch::Core::Role::DB';
 with 'Fenchurch::Core::Role::NodeName';
+with 'Fenchurch::Syncotron::Role::Application';
+with 'Fenchurch::Syncotron::Role::QueuePair';
 
-has state_table => (
+has table => (
   is       => 'ro',
   isa      => 'Str',
   required => 1
@@ -34,7 +35,7 @@ Fenchurch::Syncotron::Client - The Syncotron Client
 sub _load_state {
   my $self = shift;
 
-  my $table = $self->db->quote_name( $self->state_table );
+  my $table = $self->db->quote_name( $self->table );
 
   my ($state)
    = $self->dbh->selectrow_array(
@@ -48,7 +49,7 @@ sub _load_state {
 sub save_state {
   my $self = shift;
 
-  my $table = $self->db->quote_name( $self->state_table );
+  my $table = $self->db->quote_name( $self->table );
   $self->dbh->do(
     $self->db->quote_sql(
       "REPLACE INTO $table ({node}, {state}) VALUES (?, ?)"),
@@ -61,6 +62,33 @@ sub save_state {
 sub _b_state {
   my $self = shift;
   return $self->_load_state // Fenchurch::Syncotron::State->new;
+}
+
+sub _receive {
+  my $self = shift;
+  my $de   = $self->_despatcher;
+  for my $ev ( $self->mq_in->take ) {
+    $de->despatch($ev);
+  }
+}
+
+sub _transmit {
+  my $self = shift;
+  my $st   = $self->state;
+  my $mq   = $self->mq_out;
+
+  if ( $st->state eq 'init' ) {
+    $mq->send( { type => 'info' } );
+  }
+  else {
+    die "Unhandled state ", $st->state;
+  }
+}
+
+sub next {
+  my $self = shift;
+  $self->_receive;
+  $self->_transmit;
 }
 
 1;
