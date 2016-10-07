@@ -267,6 +267,34 @@ LOCK TABLES `test_programmes_v2` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `test_queue`
+--
+
+DROP TABLE IF EXISTS `test_queue`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `test_queue` (
+  `id` int(12) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique ID',
+  `from` varchar(200) NOT NULL COMMENT 'Sending node name',
+  `to` varchar(200) NOT NULL COMMENT 'Receiving node name',
+  `when` datetime NOT NULL COMMENT 'Message timestamp',
+  `message` text NOT NULL COMMENT 'Serialised message',
+  PRIMARY KEY (`id`),
+  KEY `from` (`from`),
+  KEY `to` (`to`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `test_queue`
+--
+
+LOCK TABLES `test_queue` WRITE;
+/*!40000 ALTER TABLE `test_queue` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_queue` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `test_related`
 --
 
@@ -471,4 +499,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-10-06 18:14:22
+-- Dump completed on 2016-10-07 13:37:37
