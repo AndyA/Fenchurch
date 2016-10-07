@@ -1,8 +1,8 @@
--- MySQL dump 10.15  Distrib 10.0.25-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.15  Distrib 10.0.27-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: test_adhocument
 -- ------------------------------------------------------
--- Server version	10.0.25-MariaDB-0ubuntu0.16.04.1
+-- Server version	10.0.27-MariaDB-0ubuntu0.16.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -38,6 +38,15 @@ CREATE TABLE `test_chain` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `test_chain`
+--
+
+LOCK TABLES `test_chain` WRITE;
+/*!40000 ALTER TABLE `test_chain` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_chain` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `test_chain_linear`
 --
 
@@ -58,6 +67,15 @@ CREATE TABLE `test_chain_linear` (
   KEY `test_chain_linear_rand` (`rand`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `test_chain_linear`
+--
+
+LOCK TABLES `test_chain_linear` WRITE;
+/*!40000 ALTER TABLE `test_chain_linear` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_chain_linear` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `test_conflicts`
@@ -91,6 +109,15 @@ CREATE TABLE `test_conflicts` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `test_conflicts`
+--
+
+LOCK TABLES `test_conflicts` WRITE;
+/*!40000 ALTER TABLE `test_conflicts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_conflicts` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `test_contributors`
 --
 
@@ -115,6 +142,15 @@ CREATE TABLE `test_contributors` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `test_contributors`
+--
+
+LOCK TABLES `test_contributors` WRITE;
+/*!40000 ALTER TABLE `test_contributors` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_contributors` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `test_edit`
 --
 
@@ -136,6 +172,15 @@ CREATE TABLE `test_edit` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `test_edit`
+--
+
+LOCK TABLES `test_edit` WRITE;
+/*!40000 ALTER TABLE `test_edit` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_edit` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `test_item`
 --
 
@@ -148,6 +193,15 @@ CREATE TABLE `test_item` (
   PRIMARY KEY (`_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `test_item`
+--
+
+LOCK TABLES `test_item` WRITE;
+/*!40000 ALTER TABLE `test_item` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_item` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `test_programmes_v2`
@@ -204,6 +258,15 @@ CREATE TABLE `test_programmes_v2` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `test_programmes_v2`
+--
+
+LOCK TABLES `test_programmes_v2` WRITE;
+/*!40000 ALTER TABLE `test_programmes_v2` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_programmes_v2` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `test_related`
 --
 
@@ -229,6 +292,38 @@ CREATE TABLE `test_related` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `test_related`
+--
+
+LOCK TABLES `test_related` WRITE;
+/*!40000 ALTER TABLE `test_related` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_related` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `test_state`
+--
+
+DROP TABLE IF EXISTS `test_state`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `test_state` (
+  `node` varchar(200) NOT NULL COMMENT 'Node name',
+  `state` text NOT NULL COMMENT 'Serialised sync state',
+  PRIMARY KEY (`node`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `test_state`
+--
+
+LOCK TABLES `test_state` WRITE;
+/*!40000 ALTER TABLE `test_state` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_state` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `test_tag`
 --
 
@@ -245,6 +340,15 @@ CREATE TABLE `test_tag` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `test_tag`
+--
+
+LOCK TABLES `test_tag` WRITE;
+/*!40000 ALTER TABLE `test_tag` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_tag` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `test_tree`
 --
 
@@ -259,6 +363,15 @@ CREATE TABLE `test_tree` (
   KEY `test_tree__parent` (`_parent`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `test_tree`
+--
+
+LOCK TABLES `test_tree` WRITE;
+/*!40000 ALTER TABLE `test_tree` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_tree` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `test_versions`
@@ -290,6 +403,64 @@ CREATE TABLE `test_versions` (
   KEY `test_versions_kind` (`kind`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `test_versions`
+--
+
+LOCK TABLES `test_versions` WRITE;
+/*!40000 ALTER TABLE `test_versions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_versions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `utf8_test`
+--
+
+DROP TABLE IF EXISTS `utf8_test`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `utf8_test` (
+  `ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) DEFAULT NULL,
+  `data` text,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `utf8_test`
+--
+
+LOCK TABLES `utf8_test` WRITE;
+/*!40000 ALTER TABLE `utf8_test` DISABLE KEYS */;
+INSERT INTO `utf8_test` VALUES (1,'The Föundatiöns öf Music (non utf8, text field)','{\"text\":\"The FÃ¶undatiÃ¶ns Ã¶f Music (non utf8, text field)\"}'),(2,'The Föundatiöns öf Music (utf8, text field)','{\"text\":\"The FÃ¶undatiÃ¶ns Ã¶f Music (utf8, text field)\"}');
+/*!40000 ALTER TABLE `utf8_test` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `utf8_test_chars`
+--
+
+DROP TABLE IF EXISTS `utf8_test_chars`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `utf8_test_chars` (
+  `ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) DEFAULT NULL,
+  `data` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `utf8_test_chars`
+--
+
+LOCK TABLES `utf8_test_chars` WRITE;
+/*!40000 ALTER TABLE `utf8_test_chars` DISABLE KEYS */;
+/*!40000 ALTER TABLE `utf8_test_chars` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -300,4 +471,4 @@ CREATE TABLE `test_versions` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-09-15 17:01:50
+-- Dump completed on 2016-10-06 18:14:22
