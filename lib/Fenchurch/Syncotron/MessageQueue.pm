@@ -7,7 +7,7 @@ use Moose;
 with 'Fenchurch::Core::Role::DB';
 with 'Fenchurch::Core::Role::JSON';
 
-has ['from', 'to'] => (
+has ['role', 'from', 'to'] => (
   is       => 'ro',
   isa      => 'Str',
   required => 1
@@ -35,17 +35,18 @@ sub send {
   my ( $self, @msgs ) = @_;
 
   my $table = $self->db->quote_name( $self->table );
+  my $role  = $self->role;
   my $from  = $self->from;
   my $to    = $self->to;
   my $json  = $self->_json;
 
   $self->dbh->do(
     $self->db->quote_sql(
-      "INSERT INTO $table ({from}, {to}, {when}, {message}) VALUES ",
-      join( ", ", map "(?, ?, NOW(), ?)", @msgs )
+      "INSERT INTO $table ({role}, {from}, {to}, {when}, {message}) VALUES ",
+      join( ", ", map "(?, ?, ?, NOW(), ?)", @msgs )
     ),
     {},
-    map { ( $from, $to, $json->encode($_) ) } @msgs
+    map { ( $role, $from, $to, $json->encode($_) ) } @msgs
   );
 
   return $self;
@@ -65,9 +66,10 @@ sub available {
   my ($avail) = $self->dbh->selectrow_array(
     $self->db->quote_sql(
       "SELECT COUNT(*) FROM $table",
-      " WHERE {from} = ? AND {to} = ?"
+      " WHERE {role} = ? AND {from} = ? AND {to} = ?"
     ),
     {},
+    $self->role,
     $self->from,
     $self->to
   );
@@ -83,11 +85,12 @@ sub _peek {
   return $self->dbh->selectall_arrayref(
     $self->db->quote_sql(
       "SELECT {id}, {message} FROM $table",
-      " WHERE {from} = ? AND {to} = ?",
+      " WHERE {role} = ? AND {from} = ? AND {to} = ?",
       " ORDER BY {id} ASC",
       ( defined $count ? (" LIMIT ?") : () )
     ),
     { Slice => {} },
+    $self->role,
     $self->from,
     $self->to,
     grep { defined } $count
