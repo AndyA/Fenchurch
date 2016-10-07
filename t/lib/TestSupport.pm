@@ -33,20 +33,24 @@ BEGIN {
 }
 
 sub preflight() {
-  unless ( defined $ENV{FENCHURCH_ADHOCUMENT_DSN} ) {
-    plan skip_all => 'FENCHURCH_ADHOCUMENT_DSN not set';
+  unless ( defined $ENV{FENCHURCH_ADHOCUMENT_LOCAL_DSN} ) {
+    plan skip_all => 'FENCHURCH_ADHOCUMENT_LOCAL_DSN not set';
     exit;
   }
 }
 
-sub database() {
-  die 'FENCHURCH_ADHOCUMENT_DSN not set'
-   unless $ENV{FENCHURCH_ADHOCUMENT_DSN};
+sub database(@) {
+  my $conn = uc( shift // 'local' );
+  my $var = "FENCHURCH_ADHOCUMENT_${conn}_";
+
+  die "${var}DSN not set" unless $ENV{"${var}DSN"};
+
   my $dbh = DBI->connect(
-    $ENV{FENCHURCH_ADHOCUMENT_DSN},
-    $ENV{FENCHURCH_ADHOCUMENT_USER} // 'root',
-    $ENV{FENCHURCH_ADHOCUMENT_PASS} // ''
+    $ENV{"${var}DSN"},
+    $ENV{"${var}USER"} // 'root',
+    $ENV{"${var}PASS"} // ''
   );
+
   $dbh->do('SET NAMES utf8');
   return $dbh;
 }

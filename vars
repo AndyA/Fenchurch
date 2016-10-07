@@ -1,9 +1,11 @@
 #!/bin/sh
 
-export PERL5LIB=$PWD/../Fenchurch-Core/lib
-export FENCHURCH_ADHOCUMENT_DSN='DBI:mysql:database=test_adhocument;host=localhost'
-export FENCHURCH_ADHOCUMENT_USER='root'
-export FENCHURCH_ADHOCUMENT_PASS=
+export FENCHURCH_ADHOCUMENT_LOCAL_DSN='DBI:mysql:database=test_adhocument_local;host=localhost'
+export FENCHURCH_ADHOCUMENT_LOCAL_USER='root'
+export FENCHURCH_ADHOCUMENT_LOCAL_PASS=
+export FENCHURCH_ADHOCUMENT_REMOTE_DSN='DBI:mysql:database=test_adhocument_remote;host=localhost'
+export FENCHURCH_ADHOCUMENT_REMOTE_USER='root'
+export FENCHURCH_ADHOCUMENT_REMOTE_PASS=
 #export FENCHURCH_ADHOCUMENT_SEED=1
 unset FENCHURCH_ADHOCUMENT_SEED
 #export FENCHURCH_ADHOCUMENT_SEQ_UUID=1
