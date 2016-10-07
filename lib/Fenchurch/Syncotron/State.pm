@@ -16,7 +16,7 @@ Fenchurch::Syncotron::State - Sync state
 
 has state => (
   is      => 'rw',
-  isa     => enum( ['init', 'leaves'] ),
+  isa     => enum( ['init', 'enumerate'] ),
   default => 'init'
 );
 

@@ -12,6 +12,8 @@ has _despatcher => (
   builder => '_b_despatcher'
 );
 
+requires '_build_app';
+
 =head1 NAME
 
 Fenchurch::Syncotron::Role::Application - A message despatching application
@@ -23,6 +25,7 @@ sub _b_despatcher {
   my $de   = Fenchurch::Syncotron::Despatcher->new;
 
   # Application logic
+  $self->_build_app($de);
 
   return $de;
 }

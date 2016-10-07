@@ -2,16 +2,17 @@ package Fenchurch::Syncotron::Client;
 
 our $VERSION = "0.01";
 
+use v5.10;
+
 use Moose;
 use Moose::Util::TypeConstraints;
 
 use Fenchurch::Syncotron::Despatcher;
 use Fenchurch::Syncotron::State;
 
-with 'Fenchurch::Core::Role::DB';
-with 'Fenchurch::Core::Role::NodeName';
-with 'Fenchurch::Syncotron::Role::Application';
-with 'Fenchurch::Syncotron::Role::QueuePair';
+with 'Fenchurch::Core::Role::DB', 'Fenchurch::Core::Role::NodeName',
+ 'Fenchurch::Syncotron::Role::Application',
+ 'Fenchurch::Syncotron::Role::QueuePair';
 
 has table => (
   is       => 'ro',
@@ -24,6 +25,12 @@ has state => (
   isa     => duck_type( ['state'] ),
   lazy    => 1,
   builder => '_b_state',
+);
+
+has versions => (
+  is       => 'ro',
+  isa      => duck_type( ['load', 'save'] ),
+  required => 1
 );
 
 =head1 NAME
@@ -64,6 +71,18 @@ sub _b_state {
   return $self->_load_state // Fenchurch::Syncotron::State->new;
 }
 
+sub _build_app {
+  my ( $self, $de ) = @_;
+
+  my $state = $self->state;
+
+  $de->on(
+    'put.info' => sub {
+      $state->state('enumerate');
+    }
+  );
+}
+
 sub _receive {
   my $self = shift;
   my $de   = $self->_despatcher;
@@ -73,12 +92,20 @@ sub _receive {
 }
 
 sub _transmit {
-  my $self = shift;
-  my $st   = $self->state;
-  my $mq   = $self->mq_out;
+  my $self  = shift;
+  my $st    = $self->state;
+  my $state = $st->state;
+  my $mq    = $self->mq_out;
 
-  if ( $st->state eq 'init' ) {
-    $mq->send( { type => 'info' } );
+  if ( $state eq 'init' ) {
+    $mq->send( { type => 'get.info' } );
+  }
+  elsif ( $state eq 'enumerate' ) {
+    $mq->send(
+      { type  => 'get.leaves',
+        start => $st->progress
+      }
+    );
   }
   else {
     die "Unhandled state ", $st->state;

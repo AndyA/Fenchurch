@@ -2,10 +2,11 @@ package Fenchurch::Syncotron::MessageQueue;
 
 our $VERSION = "0.01";
 
+use v5.10;
+
 use Moose;
 
-with 'Fenchurch::Core::Role::DB';
-with 'Fenchurch::Core::Role::JSON';
+with 'Fenchurch::Core::Role::DB', 'Fenchurch::Core::Role::JSON';
 
 has ['role', 'from', 'to'] => (
   is       => 'ro',
@@ -34,11 +35,17 @@ Send messages.
 sub send {
   my ( $self, @msgs ) = @_;
 
+  return $self unless @msgs;
+
   my $table = $self->db->quote_name( $self->table );
   my $role  = $self->role;
   my $from  = $self->from;
   my $to    = $self->to;
   my $json  = $self->_json;
+
+  for my $msg (@msgs) {
+    printf "%-8s %-8s %-8s: %s\n", $role, $from, $to, $json->encode($msg);
+  }
 
   $self->dbh->do(
     $self->db->quote_sql(

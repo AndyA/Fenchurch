@@ -13,10 +13,8 @@ use Fenchurch::Event::Emitter;
 use Storable qw( freeze );
 use UUID::Tiny ':std';
 
-with 'Fenchurch::Core::Role::DB';
-with 'Fenchurch::Adhocument::Role::Schema';
-with 'Fenchurch::Core::Role::JSON';
-with 'Fenchurch::Core::Role::NodeName';
+with 'Fenchurch::Core::Role::DB', 'Fenchurch::Adhocument::Role::Schema',
+ 'Fenchurch::Core::Role::JSON', 'Fenchurch::Core::Role::NodeName';
 
 has version_table => ( is => 'ro', isa => 'Str', required => 1 );
 
@@ -425,6 +423,24 @@ sub apply {
   }
 
   return $index;
+}
+
+=head2 C<serial>
+
+Get the current serial number
+
+=cut
+
+sub serial {
+  my $self = shift;
+
+  my $table = $self->db->quote_name( $self->version_table );
+
+  my ($serial)
+   = $self->dbh->selectrow_array(
+    $self->db->quote_sql("SELECT MAX({serial}) FROM $table") );
+
+  return $serial;
 }
 
 =head2 C<leaves>

@@ -13,10 +13,10 @@ Fenchurch::Adhocument - Document semantics mini-ORM
 
 =cut
 
-with 'Fenchurch::Core::Role::DB';
-with 'Fenchurch::Core::Role::JSON';
-with 'Fenchurch::Adhocument::Role::Schema';
-with 'Fenchurch::Event::Role::Emitter';
+with 'Fenchurch::Core::Role::DB',
+ 'Fenchurch::Core::Role::JSON',
+ 'Fenchurch::Adhocument::Role::Schema',
+ 'Fenchurch::Event::Role::Emitter';
 
 has numify => (
   is       => 'ro',

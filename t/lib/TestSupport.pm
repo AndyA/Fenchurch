@@ -66,8 +66,10 @@ sub test_data {
 }
 
 sub empty(@) {
-  my $dbh = database;
-  $dbh->do("TRUNCATE `$_`") for @_;
+  for my $conn ( 'local', 'remote' ) {
+    my $dbh = database($conn);
+    $dbh->do("TRUNCATE `$_`") for @_;
+  }
 }
 
 sub randint($) { int( rand() * $_[0] ) }
