@@ -275,11 +275,13 @@ DROP TABLE IF EXISTS `test_queue`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `test_queue` (
   `id` int(12) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique ID',
+  `role` varchar(200) NOT NULL COMMENT 'Queue role',
   `from` varchar(200) NOT NULL COMMENT 'Sending node name',
   `to` varchar(200) NOT NULL COMMENT 'Receiving node name',
   `when` datetime NOT NULL COMMENT 'Message timestamp',
   `message` text NOT NULL COMMENT 'Serialised message',
   PRIMARY KEY (`id`),
+  KEY `role` (`role`),
   KEY `from` (`from`),
   KEY `to` (`to`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
