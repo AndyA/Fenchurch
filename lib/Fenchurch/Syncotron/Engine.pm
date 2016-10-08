@@ -219,7 +219,7 @@ sub _flush_pending {
     );
 
     if ( defined $ch->{new_data} ) { $ve->save( @args, $ch->{new_data} ) }
-    else                           { $ve->delete( @args, $ch->{parent} ) }
+    else                           { $ve->delete( @args, $ch->{object} ) }
   }
 
   $pe->delete( version => @ready );
