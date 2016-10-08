@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.27-MariaDB, for debian-linux-gnu (x86_64)
 --
--- Host: localhost    Database: test_adhocument
+-- Host: localhost    Database: test_adhocument_local
 -- ------------------------------------------------------
 -- Server version	10.0.27-MariaDB-0ubuntu0.16.04.1
 
@@ -204,6 +204,46 @@ LOCK TABLES `test_item` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `test_pending`
+--
+
+DROP TABLE IF EXISTS `test_pending`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `test_pending` (
+  `uuid` varchar(36) NOT NULL,
+  `parent` varchar(36) DEFAULT NULL,
+  `serial` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `node` varchar(200) NOT NULL,
+  `object` varchar(36) NOT NULL,
+  `when` datetime NOT NULL,
+  `sequence` int(10) unsigned NOT NULL,
+  `rand` double NOT NULL,
+  `kind` varchar(40) NOT NULL,
+  `schema` text NOT NULL,
+  `old_data` text,
+  `new_data` text,
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `test_pending_serial` (`serial`),
+  KEY `test_pending_parent` (`parent`),
+  KEY `test_pending_object` (`object`),
+  KEY `test_pending_sequence` (`sequence`),
+  KEY `test_pending_rand` (`rand`),
+  KEY `test_pending_when` (`when`),
+  KEY `test_pending_kind` (`kind`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `test_pending`
+--
+
+LOCK TABLES `test_pending` WRITE;
+/*!40000 ALTER TABLE `test_pending` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_pending` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `test_programmes_v2`
 --
 
@@ -342,7 +382,7 @@ CREATE TABLE `test_state` (
   `remote_node` varchar(200) NOT NULL COMMENT 'Remote node name',
   `updated` datetime NOT NULL,
   `state` text NOT NULL COMMENT 'Serialised sync state',
-  PRIMARY KEY (`local_node`, `remote_node`)
+  PRIMARY KEY (`local_node`,`remote_node`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -503,4 +543,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-10-07 13:37:37
+-- Dump completed on 2016-10-08 12:57:49
