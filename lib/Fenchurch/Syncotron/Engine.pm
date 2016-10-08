@@ -2,7 +2,7 @@ package Fenchurch::Syncotron::Engine;
 
 use v5.10;
 
-our $VERSION = "0.01";
+our $VERSION = "1.00";
 
 use Moose;
 use Moose::Util::TypeConstraints;

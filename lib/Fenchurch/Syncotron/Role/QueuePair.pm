@@ -1,6 +1,6 @@
 package Fenchurch::Syncotron::Role::QueuePair;
 
-our $VERSION = "0.01";
+our $VERSION = "1.00";
 
 use Moose::Role;
 use Moose::Util::TypeConstraints;

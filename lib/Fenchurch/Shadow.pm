@@ -1,6 +1,6 @@
 package Fenchurch::Shadow;
 
-our $VERSION = "0.01";
+our $VERSION = "1.00";
 
 use Moose;
 
