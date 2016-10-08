@@ -15,7 +15,22 @@ use Fenchurch::Core::DB;
 preflight;
 
 {
-  my $db = Fenchurch::Core::DB->new( dbh => database );
+  my $db = Fenchurch::Core::DB->new(
+    dbh    => database,
+    tables => { tbl1 => 'table_one', tbl2 => 'table_two' }
+  );
+
+  is $db->table("foo"),   "foo",       "literal table name OK";
+  is $db->table(":tbl1"), "table_one", "alias table name OK";
+
+  is $db->quote_name( ":tbl2", "bar" ), "`table_two`.`bar`",
+   "quote_name resolves aliases";
+
+  is $db->quote_sql(
+    "SELECT {:tbl1.foo}, {:tbl2.bar} FROM {:tbl1}, {:tbl2}"),
+   "SELECT `table_one`.`foo`, `table_two`.`bar` FROM `table_one`, `table_two`",
+   "quote_sql resolves aliases";
+
   my $meta_want = {
     columns => {
       _modified => {

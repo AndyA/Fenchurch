@@ -24,6 +24,15 @@ has dbh => (
 
 has in_transaction => ( is => 'rw', isa => 'Bool', default => 0 );
 
+# The table name map: maps our internal table names to the
+# actual db tables.
+
+has tables => (
+  is      => 'ro',
+  isa     => 'HashRef[Str]',
+  default => sub { {} },
+);
+
 has _meta_cache => (
   is       => 'ro',
   isa      => 'HashRef',
@@ -58,15 +67,24 @@ sub transaction {
   };
 }
 
+sub table {
+  my ( $self, $alias ) = @_;
+  return $alias unless $alias =~ /^:(.+)/;
+  my $table = $self->tables->{$1};
+  confess "No table for alias $1"
+   unless defined $table;
+  return $table;
+}
+
 sub quote_name {
   my ( $self, @name ) = @_;
-  return join ".", map "`$_`", @name;
+  return join ".", map { "`$_`" } map { $self->table($_) } @name;
 }
 
 sub quote_sql {
   my $self = shift;
   ( my $sql = join " ", @_ )
-   =~ s/\{(\w+(?:\.\w+)*)\}/$self->quote_name(split qr{[.]}, $1)/eg;
+   =~ s/\{(:?\w+(?:\.:?\w+)*)\}/$self->quote_name(split qr{[.]}, $1)/eg;
   return $sql;
 }
 
