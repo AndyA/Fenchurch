@@ -100,8 +100,8 @@ preflight;
   check_data( $vl, $vr, @items );
 
   # Lots of edits
-  for ( 1 .. 4 ) {
-    push @items, make_test_data(3);
+  for ( 1 .. 10 ) {
+    push @items, make_test_data(5);
     $vl->save( item => @items );
 
     my @rot = splice @items, 0, 2;
@@ -145,7 +145,7 @@ sub sync_complete {
   my %seen = ();
 
   while () {
-    my @want = $er->want( 0, 1_000_000 );
+    my @want = $er->want( 0, 4 );
     last unless @want;
     my @dup = grep { $seen{$_}++ } @want;
     eq_or_diff [@dup], [], "$name: no duplicates";
