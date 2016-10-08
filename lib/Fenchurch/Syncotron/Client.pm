@@ -20,12 +20,6 @@ has remote_node_name => (
   required => 1
 );
 
-has table => (
-  is       => 'ro',
-  isa      => 'Str',
-  required => 1
-);
-
 has state => (
   is      => 'ro',
   isa     => duck_type( ['state'] ),
@@ -48,11 +42,9 @@ Fenchurch::Syncotron::Client - The Syncotron Client
 sub _load_state {
   my $self = shift;
 
-  my $table = $self->db->quote_name( $self->table );
-
   my ($state) = $self->dbh->selectrow_array(
     $self->db->quote_sql(
-      "SELECT {state} FROM $table",
+      "SELECT {state} FROM {:state}",
       " WHERE {local_node} = ? AND {remote_node} = ?"
     ),
     {},
@@ -67,10 +59,9 @@ sub _load_state {
 sub save_state {
   my $self = shift;
 
-  my $table = $self->db->quote_name( $self->table );
   $self->dbh->do(
     $self->db->quote_sql(
-      "REPLACE INTO $table",
+      "REPLACE INTO {:state}",
       "   ({local_node}, {remote_node}, {updated}, {state})",
       " VALUES (?, ?, NOW(), ?)"
     ),

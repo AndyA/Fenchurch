@@ -16,8 +16,6 @@ use UUID::Tiny ':std';
 with 'Fenchurch::Core::Role::DB', 'Fenchurch::Adhocument::Role::Schema',
  'Fenchurch::Core::Role::JSON', 'Fenchurch::Core::Role::NodeName';
 
-has version_table => ( is => 'ro', isa => 'Str', required => 1 );
-
 has disable_checks => ( is => 'ro', isa => 'Bool', default => 0 );
 
 has numify => (
@@ -69,7 +67,7 @@ sub _version_schema {
   my ( $self, %extra ) = @_;
   return {
     version => {
-      table  => $self->version_table,
+      table  => $self->db->table(":versions"),
       pkey   => 'uuid',
       order  => '+sequence',
       append => 1,                                    # Disable deletions
@@ -115,11 +113,9 @@ sub _ver_sequence {
 
   return {} unless @ids;
 
-  my $table = $self->db->quote_name( $self->version_table );
-
   my $sql = $self->db->quote_sql(
     "SELECT {object}, MAX({sequence}) AS {sequence}",
-    "FROM $table",
+    "FROM {:versions}",
     "WHERE {object} IN (",
     join( ", ", map "?", @ids ),
     ")",
@@ -132,13 +128,13 @@ sub _ver_sequence {
 }
 
 sub _last_leaf {
-  my $self  = shift;
-  my $table = $self->db->quote_name( $self->version_table );
+  my $self = shift;
 
   my ($leaf) = $self->dbh->selectrow_array(
     $self->db->quote_sql(
       "SELECT {uuid}",
-      "FROM $table", "ORDER BY {serial} DESC",
+      "FROM {:versions}",
+      "ORDER BY {serial} DESC",
       "LIMIT 1"
     )
   );
@@ -351,11 +347,10 @@ sub _find_edits {
 
   return [] unless @ids;
 
-  my $table = $self->db->quote_name( $self->version_table );
   return @{
     $self->dbh->selectcol_arrayref(
       $self->db->quote_sql(
-        "SELECT {uuid} FROM $table",
+        "SELECT {uuid} FROM {:versions}",
         "WHERE {uuid} IN (",
         join( ", ", ("?") x @ids ),
         ")"
@@ -376,7 +371,6 @@ sub _versions_for_schema {
   return Fenchurch::Adhocument::Versions->new(
     schema            => $scm,
     db                => $self->db,
-    version_table     => $self->version_table,
     disable_checks    => $self->disable_checks,
     conflict_resolver => $self->conflict_resolver
   );
@@ -434,11 +428,9 @@ Get the current serial number
 sub serial {
   my $self = shift;
 
-  my $table = $self->db->quote_name( $self->version_table );
-
   my ($serial)
    = $self->dbh->selectrow_array(
-    $self->db->quote_sql("SELECT MAX({serial}) FROM $table") );
+    $self->db->quote_sql("SELECT MAX({serial}) FROM {:versions}") );
 
   return $serial;
 }
@@ -452,14 +444,12 @@ Return a page of the leaf nodes of the version tree.
 sub leaves {
   my ( $self, $start, $size ) = @_;
 
-  my $table = $self->db->quote_name( $self->version_table );
-
   return @{
     $self->dbh->selectcol_arrayref(
       $self->db->quote_sql(
         "SELECT {tc1.uuid}",
-        "FROM $table AS {tc1}",
-        "LEFT JOIN $table AS {tc2} ON {tc2.parent} = {tc1.uuid}",
+        "FROM {:versions} AS {tc1}",
+        "LEFT JOIN {:versions} AS {tc2} ON {tc2.parent} = {tc1.uuid}",
         "WHERE {tc2.parent} IS NULL",
         "ORDER BY {tc1.serial} ASC",
         "LIMIT ?, ?"
@@ -478,12 +468,11 @@ Return a random sample of nodes.
 sub sample {
   my ( $self, $start, $size ) = @_;
 
-  my $table = $self->db->quote_name( $self->version_table );
   return @{
     $self->dbh->selectcol_arrayref(
       $self->db->quote_sql(
         "SELECT {tc1.uuid}",
-        "FROM $table AS {tc1}, $table AS {tc2}",
+        "FROM {:versions} AS {tc1}, {:versions} AS {tc2}",
         "WHERE {tc2.parent} = {tc1.uuid}",
         "ORDER BY {tc1.rand} ASC",
         "LIMIT ?, ?"
@@ -527,10 +516,9 @@ stash may be replayed using C<apply>.
 sub since {
   my ( $self, $index, $limit ) = @_;
 
-  my $table = $self->db->quote_name( $self->version_table );
-  my $rc    = $self->dbh->selectall_arrayref(
+  my $rc = $self->dbh->selectall_arrayref(
     $self->db->quote_sql(
-      "SELECT * FROM $table",
+      "SELECT * FROM {:versions}",
       ( defined $index
         ? ("WHERE {serial} > ?")
         : ()

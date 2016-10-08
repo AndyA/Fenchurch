@@ -39,7 +39,10 @@ preflight;
   my @edits;
 
   {
-    my $db = Fenchurch::Core::DB->new( dbh => database );
+    my $db = Fenchurch::Core::DB->new(
+      dbh    => database,
+      tables => { versions => 'test_versions' }
+    );
 
     my $scm = Fenchurch::Adhocument::Schema->new(
       schema => $schema,
@@ -47,9 +50,8 @@ preflight;
     );
 
     my $ad = Fenchurch::Adhocument::Versions->new(
-      schema        => $scm,
-      db            => $db,
-      version_table => 'test_versions'
+      schema => $scm,
+      db     => $db,
     );
 
     # Capture some edits to a document
@@ -95,7 +97,10 @@ preflight;
   }
 
   {
-    my $db = Fenchurch::Core::DB->new( dbh => database );
+    my $db = Fenchurch::Core::DB->new(
+      dbh    => database,
+      tables => { versions => 'test_versions' }
+    );
 
     my $scm = Fenchurch::Adhocument::Schema->new(
       schema => $schema,
@@ -103,10 +108,9 @@ preflight;
     );
 
     my $ad = Fenchurch::Adhocument::Versions->new(
-      schema        => $scm,
-      db            => $db,
-      version_table => 'test_versions',
-      node_name     => 'test node'
+      schema    => $scm,
+      db        => $db,
+      node_name => 'test node'
     );
 
     # Replay edits and check consistency

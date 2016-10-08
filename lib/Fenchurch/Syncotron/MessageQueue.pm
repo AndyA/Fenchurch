@@ -14,12 +14,6 @@ has ['role', 'from', 'to'] => (
   required => 1
 );
 
-has table => (
-  is       => 'ro',
-  isa      => 'Str',
-  required => 1
-);
-
 =head1 NAME
 
 Fenchurch::Syncotron::MessageQueue - A persistent message queue
@@ -37,19 +31,19 @@ sub send {
 
   return $self unless @msgs;
 
-  my $table = $self->db->quote_name( $self->table );
-  my $role  = $self->role;
-  my $from  = $self->from;
-  my $to    = $self->to;
-  my $json  = $self->_json;
+  my $role = $self->role;
+  my $from = $self->from;
+  my $to   = $self->to;
+  my $json = $self->_json;
 
+  # DEBUG
   for my $msg (@msgs) {
     printf "%-8s %-8s %-8s: %s\n", $role, $from, $to, $json->encode($msg);
   }
 
   $self->dbh->do(
     $self->db->quote_sql(
-      "INSERT INTO $table ({role}, {from}, {to}, {when}, {message}) VALUES ",
+      "INSERT INTO {:queue} ({role}, {from}, {to}, {when}, {message}) VALUES ",
       join( ", ", map "(?, ?, ?, NOW(), ?)", @msgs )
     ),
     {},
@@ -68,11 +62,9 @@ Find out how many messages are available on the queue.
 sub available {
   my $self = shift;
 
-  my $table = $self->db->quote_name( $self->table );
-
   my ($avail) = $self->dbh->selectrow_array(
     $self->db->quote_sql(
-      "SELECT COUNT(*) FROM $table",
+      "SELECT COUNT(*) FROM {:queue}",
       " WHERE {role} = ? AND {from} = ? AND {to} = ?"
     ),
     {},
@@ -87,11 +79,9 @@ sub available {
 sub _peek {
   my ( $self, $count ) = @_;
 
-  my $table = $self->db->quote_name( $self->table );
-
   return $self->dbh->selectall_arrayref(
     $self->db->quote_sql(
-      "SELECT {id}, {message} FROM $table",
+      "SELECT {id}, {message} FROM {:queue}",
       " WHERE {role} = ? AND {from} = ? AND {to} = ?",
       " ORDER BY {id} ASC",
       ( defined $count ? (" LIMIT ?") : () )
@@ -136,12 +126,10 @@ sub take {
   my @rc = $self->_unpack($msg);
   my @id = map { $_->{id} } @$msg;
 
-  my $table = $self->db->quote_name( $self->table );
-
   if (@id) {
     $self->dbh->do(
       $self->db->quote_sql(
-        "DELETE FROM $table WHERE {id} IN (",
+        "DELETE FROM {:queue} WHERE {id} IN (",
         join( ", ", map "?", @id ),
         ")"
       ),

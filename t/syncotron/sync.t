@@ -34,8 +34,18 @@ empty @tables;
 
 my $programmes = test_data("stash.json");
 
-my $db_local  = Fenchurch::Core::DB->new( dbh => database("local") );
-my $db_remote = Fenchurch::Core::DB->new( dbh => database("remote") );
+my %common = (
+  tables => {
+    queue    => 'test_queue',
+    versions => 'test_versions',
+    state    => 'test_state',
+  }
+);
+
+my $db_local
+ = Fenchurch::Core::DB->new( dbh => database("local"), %common );
+my $db_remote
+ = Fenchurch::Core::DB->new( dbh => database("remote"), %common );
 
 my $client = make_client($db_local);
 my $server = make_server($db_remote);
@@ -77,9 +87,8 @@ sub iterate {
 sub make_versions {
   my $db  = shift;
   my $adv = Fenchurch::Adhocument::Versions->new(
-    schema        => schema(),
-    db            => $db,
-    version_table => 'test_versions'
+    schema => schema(),
+    db     => $db,
   );
 }
 

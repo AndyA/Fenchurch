@@ -17,7 +17,10 @@ preflight;
 
 empty 'test_queue';
 
-my $db = Fenchurch::Core::DB->new( dbh => database );
+my $db = Fenchurch::Core::DB->new(
+  dbh    => database,
+  tables => { queue => 'test_queue' }
+);
 
 for my $vary ( 'role', 'from', 'to' ) {
   test_queue( $db, $vary );
@@ -145,11 +148,7 @@ sub make_mq_pair {
 sub make_mq {
   my ( $db, %args ) = @_;
 
-  return Fenchurch::Syncotron::MessageQueue->new(
-    %args,
-    db    => $db,
-    table => 'test_queue'
-  );
+  return Fenchurch::Syncotron::MessageQueue->new( %args, db => $db );
 }
 
 # vim:ts=2:sw=2:et:ft=perl

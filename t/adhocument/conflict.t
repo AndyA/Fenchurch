@@ -267,7 +267,10 @@ sub make_adhocument {
 sub make_versions {
   my ( $dbh, $schema ) = @_;
 
-  my $db = Fenchurch::Core::DB->new( dbh => $dbh );
+  my $db = Fenchurch::Core::DB->new(
+    dbh    => $dbh,
+    tables => { versions => 'test_versions' }
+  );
 
   my $scm = Fenchurch::Adhocument::Schema->new(
     schema => $schema,
@@ -275,9 +278,11 @@ sub make_versions {
   );
 
   my $conflicts = Fenchurch::Adhocument::Versions->new(
-    schema        => $scm,
-    db            => $db,
-    version_table => 'test_conflicts'
+    schema => $scm,
+    db     => Fenchurch::Core::DB->new(
+      dbh    => $dbh,
+      tables => { versions => 'test_conflicts' }
+    )
   );
 
   my $resolver
@@ -286,7 +291,6 @@ sub make_versions {
   my $ver = Fenchurch::Adhocument::Versions->new(
     schema            => $scm,
     db                => $db,
-    version_table     => 'test_versions',
     conflict_resolver => $resolver
   );
 

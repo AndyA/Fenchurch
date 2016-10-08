@@ -45,16 +45,18 @@ sub test_versions($$$$$$) {
 
   empty 'test_versions', map { $_->{table} } values %$schema;
 
-  my $db = Fenchurch::Core::DB->new( dbh => database );
+  my $db = Fenchurch::Core::DB->new(
+    dbh    => database,
+    tables => { versions => 'test_versions' }
+  );
   my $scm = Fenchurch::Adhocument::Schema->new(
     schema => $schema,
     db     => $db
   );
 
   my $ad = Fenchurch::Adhocument::Versions->new(
-    schema        => $scm,
-    db            => $db,
-    version_table => 'test_versions'
+    schema => $scm,
+    db     => $db,
   );
 
   my @ids = map { make_uuid() } 1 .. $ndocs;
