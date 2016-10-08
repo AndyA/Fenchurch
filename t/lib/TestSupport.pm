@@ -16,7 +16,7 @@ require Exporter;
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
  database object_hash pickone preflight randint test_data
- test_data_file empty make_uuid
+ test_data_file empty make_uuid valid_uuid
 );
 
 =head1 NAME
@@ -83,6 +83,17 @@ sub object_hash {
   local $Storable::canonical = 1;
   my $rep = freeze [$obj];
   return sha1_hex($rep);
+}
+
+sub valid_uuid {
+  for my $uuid (@_) {
+    return unless $uuid =~ /^ ([0-9a-f]{8}) -?
+                              ([0-9a-f]{4}) -?
+                              ([0-9a-f]{4}) -?
+                              ([0-9a-f]{4}) -?
+                              ([0-9a-f]{12}) $/xi;
+  }
+  return 1;
 }
 
 sub format_uuid {
