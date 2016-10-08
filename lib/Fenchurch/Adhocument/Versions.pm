@@ -174,7 +174,10 @@ sub _save_versions {
 }
 
 sub _edit_factory {
-  my ( $self, $count, @parents ) = @_;
+  my ( $self, $options, $count ) = @_;
+
+  my @parents = @{ $options->{parents} || [] };
+  my @uuids   = @{ $options->{uuid}    || [] };
 
   if ( @parents < $count ) {
     my $leaf = $self->_last_leaf;
@@ -185,7 +188,7 @@ sub _edit_factory {
 
   return [
     map {
-      { uuid   => $self->_make_uuid,
+      { uuid => shift(@uuids) // $self->_make_uuid,
         parent => shift(@parents),
         node   => $node
       }
@@ -257,11 +260,9 @@ sub _save_or_delete {
   my $options = ref $_[0] ? shift : {};
   my ( $kind, @things ) = @_;
 
-  my @parents = @{ $options->{parents} || [] };
-
   $self->transaction(
     sub {
-      my $edits = $self->_edit_factory( scalar(@things), @parents );
+      my $edits = $self->_edit_factory( $options, scalar(@things) );
       if ($save) { $self->_save( $options, $edits, $kind, @things ) }
       else       { $self->_delete( $options, $edits, $kind, @things ) }
     }
