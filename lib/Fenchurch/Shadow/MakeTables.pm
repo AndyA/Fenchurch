@@ -10,14 +10,14 @@ Fenchurch::Shadow::MakeTables - make shadow_ tables
 
 =cut
 
-with 'Fenchurch::Core::Role::DB';
-
 has prefix => (
   is       => 'ro',
   isa      => 'Str',
   required => 1,
   default  => 'shadow'
 );
+
+with 'Fenchurch::Core::Role::DB';
 
 sub control_tables {
   my $self = shift;

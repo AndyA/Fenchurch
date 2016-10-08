@@ -6,8 +6,6 @@ use Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::Storage;
 
-with Storage( format => 'JSON' );
-
 =head1 NAME
 
 Fenchurch::Syncotron::State - Sync state
@@ -25,6 +23,8 @@ has ['progress', 'serial'] => (
   isa     => 'Int',
   default => 0
 );
+
+with Storage( format => 'JSON' );
 
 after state => sub {
   my $self = shift;

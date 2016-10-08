@@ -8,23 +8,13 @@ use Moose;
 use Moose::Util::TypeConstraints;
 
 use Fenchurch::Syncotron::Despatcher;
-use Fenchurch::Syncotron::State;
 
-with 'Fenchurch::Core::Role::DB', 'Fenchurch::Core::Role::NodeName',
- 'Fenchurch::Syncotron::Role::Application',
- 'Fenchurch::Syncotron::Role::QueuePair';
+sub node_name;
 
 has remote_node_name => (
   is       => 'ro',
   isa      => 'Str',
   required => 1
-);
-
-has state => (
-  is      => 'ro',
-  isa     => duck_type( ['state'] ),
-  lazy    => 1,
-  builder => '_b_state',
 );
 
 has versions => (
@@ -33,48 +23,17 @@ has versions => (
   required => 1
 );
 
+with 'Fenchurch::Core::Role::DB',
+ 'Fenchurch::Core::Role::NodeName',
+ 'Fenchurch::Syncotron::Role::Application',
+ 'Fenchurch::Syncotron::Role::QueuePair',
+ 'Fenchurch::Syncotron::Role::Stateful';
+
 =head1 NAME
 
 Fenchurch::Syncotron::Client - The Syncotron Client
 
 =cut
-
-sub _load_state {
-  my $self = shift;
-
-  my ($state) = $self->dbh->selectrow_array(
-    $self->db->quote_sql(
-      "SELECT {state} FROM {:state}",
-      " WHERE {local_node} = ? AND {remote_node} = ?"
-    ),
-    {},
-    $self->node_name,
-    $self->remote_node_name
-  );
-
-  return unless $state;
-  return Fenchurch::Syncotron::State->thaw($state);
-}
-
-sub save_state {
-  my $self = shift;
-
-  $self->dbh->do(
-    $self->db->quote_sql(
-      "REPLACE INTO {:state}",
-      "   ({local_node}, {remote_node}, {updated}, {state})",
-      " VALUES (?, ?, NOW(), ?)"
-    ),
-    {},
-    $self->node_name,
-    $self->state->freeze
-  );
-}
-
-sub _b_state {
-  my $self = shift;
-  return $self->_load_state // Fenchurch::Syncotron::State->new;
-}
 
 sub _build_app {
   my ( $self, $de ) = @_;

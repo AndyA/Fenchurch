@@ -7,14 +7,19 @@ use v5.10;
 use Moose;
 use Moose::Util::TypeConstraints;
 
-with 'Fenchurch::Core::Role::DB', 'Fenchurch::Core::Role::NodeName',
- 'Fenchurch::Syncotron::Role::Application',
- 'Fenchurch::Syncotron::Role::QueuePair';
+use Fenchurch::Syncotron::Engine;
 
 has versions => (
   is       => 'ro',
   isa      => duck_type( ['load', 'save'] ),
   required => 1
+);
+
+has engine => (
+  is      => 'ro',
+  isa     => duck_type( ['leaves', 'since', 'serial', 'sample'] ),
+  lazy    => 1,
+  builder => '_b_engine',
 );
 
 has page_size => (
@@ -24,11 +29,21 @@ has page_size => (
   default  => 10_000
 );
 
+with 'Fenchurch::Core::Role::DB',
+ 'Fenchurch::Core::Role::NodeName',
+ 'Fenchurch::Syncotron::Role::Application',
+ 'Fenchurch::Syncotron::Role::QueuePair';
+
 =head1 NAME
 
 Fenchurch::Syncotron::Server - The Syncotron Server
 
 =cut
+
+sub _b_engine {
+  my $self = shift;
+  return Fenchurch::Syncotron::Engine->new( versions => $self->versions );
+}
 
 sub _put_leaves {
   my ( $self, $start ) = @_;

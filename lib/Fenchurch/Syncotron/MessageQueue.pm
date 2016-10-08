@@ -6,13 +6,13 @@ use v5.10;
 
 use Moose;
 
-with 'Fenchurch::Core::Role::DB', 'Fenchurch::Core::Role::JSON';
-
 has ['role', 'from', 'to'] => (
   is       => 'ro',
   isa      => 'Str',
   required => 1
 );
+
+with 'Fenchurch::Core::Role::DB', 'Fenchurch::Core::Role::JSON';
 
 =head1 NAME
 

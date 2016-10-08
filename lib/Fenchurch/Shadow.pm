@@ -10,8 +10,6 @@ Fenchurch::Shadow - Work with shadow_* tables
 
 =cut
 
-with 'Fenchurch::Core::Role::DB';
-
 has prefix => (
   is       => 'ro',
   isa      => 'Str',
@@ -24,6 +22,8 @@ has _table_meta => (
   lazy    => 1,
   builder => '_b_table_meta'
 );
+
+with 'Fenchurch::Core::Role::DB';
 
 sub _b_table_meta {
   my $self   = shift;

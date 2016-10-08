@@ -13,9 +13,6 @@ use Fenchurch::Event::Emitter;
 use Storable qw( freeze );
 use UUID::Tiny ':std';
 
-with 'Fenchurch::Core::Role::DB', 'Fenchurch::Adhocument::Role::Schema',
- 'Fenchurch::Core::Role::JSON', 'Fenchurch::Core::Role::NodeName';
-
 has disable_checks => ( is => 'ro', isa => 'Bool', default => 0 );
 
 has numify => (
@@ -47,6 +44,9 @@ has _version_engine => (
   lazy    => 1,
   builder => '_b_version_engine'
 );
+
+with 'Fenchurch::Core::Role::DB', 'Fenchurch::Adhocument::Role::Schema',
+ 'Fenchurch::Core::Role::JSON', 'Fenchurch::Core::Role::NodeName';
 
 =head1 NAME
 
@@ -533,6 +533,12 @@ sub since {
 
   return $self->_expand_versions($rc);
 }
+
+=head2 C<recent>
+
+Return the UUIDs of versions subsequent to a specific serial number
+
+=cut
 
 1;
 

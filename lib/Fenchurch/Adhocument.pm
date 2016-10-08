@@ -13,17 +13,17 @@ Fenchurch::Adhocument - Document semantics mini-ORM
 
 =cut
 
-with 'Fenchurch::Core::Role::DB',
- 'Fenchurch::Core::Role::JSON',
- 'Fenchurch::Adhocument::Role::Schema',
- 'Fenchurch::Event::Role::Emitter';
-
 has numify => (
   is       => 'ro',
   isa      => 'Bool',
   required => 1,
   default  => 0
 );
+
+with 'Fenchurch::Core::Role::DB',
+ 'Fenchurch::Core::Role::JSON',
+ 'Fenchurch::Adhocument::Role::Schema',
+ 'Fenchurch::Event::Role::Emitter';
 
 sub _exists {
   my ( $self, $spec, @ids ) = @_;
