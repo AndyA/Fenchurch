@@ -13,8 +13,6 @@ use Fenchurch::Event::Emitter;
 use Storable qw( freeze );
 use UUID::Tiny ':std';
 
-has disable_checks => ( is => 'ro', isa => 'Bool', default => 0 );
-
 has numify => (
   is       => 'ro',
   isa      => 'Bool',
