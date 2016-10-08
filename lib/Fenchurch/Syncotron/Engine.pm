@@ -171,8 +171,10 @@ sub want {
   return @{
     $self->dbh->selectcol_arrayref(
       $self->db->quote_sql(
-        "SELECT DISTINCT {parent} FROM {:pending}",
-        " ORDER BY {serial} ASC",
+        "SELECT DISTINCT {p1.parent} FROM {:pending} AS {p1}",
+        "  LEFT JOIN {:pending} AS {p2} ON {p1.parent} = {p2.uuid}",
+        " WHERE {p2.uuid} IS NULL",
+        " ORDER BY {p1.serial} ASC",
         " LIMIT ?, ?"
       ),
       {},

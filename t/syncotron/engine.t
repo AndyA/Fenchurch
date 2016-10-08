@@ -93,14 +93,25 @@ preflight;
   sync_complete( $vl, $el, $vr, $er );
   check_data( $vl, $vr, @items );
 
+  $items[0]{name} .= " (awooga!)";
+  $vl->save( item => @items );
+
+  sync_complete( $vl, $el, $vr, $er );
+  check_data( $vl, $vr, @items );
+
   # Lots of edits
   for ( 1 .. 4 ) {
     push @items, make_test_data(3);
     $vl->save( item => @items );
-    {
-      my @del = splice @items, 1, 2;
-      $vl->delete( item => map { $_->{_uuid} } @del );
-    }
+
+    my @rot = splice @items, 0, 2;
+    push @items, reverse @rot;
+
+    $items[0]{name} .= " (awooga!)";
+    $vl->save( item => @items );
+
+    my @del = splice @items, 1, 2;
+    $vl->delete( item => map { $_->{_uuid} } @del );
   }
 
   sync_complete( $vl, $el, $vr, $er );
@@ -125,13 +136,22 @@ sub check_data {
 sub sync_complete {
   my ( $vl, $el, $vr, $er ) = @_;
 
+  my $name = another("Sync");
+
   my @leaves = $er->dont_have( $el->leaves( 0, 1_000_000 ) );
   my $leaves = $vl->load_versions(@leaves);
   $er->add_versions(@$leaves);
 
-  my @want = $er->want( 0, 1_000_000 );
-  my $want = $vl->load_versions(@want);
-  $er->add_versions(@$want);
+  my %seen = ();
+
+  while () {
+    my @want = $er->want( 0, 1_000_000 );
+    last unless @want;
+    my @dup = grep { $seen{$_}++ } @want;
+    eq_or_diff [@dup], [], "$name: no duplicates";
+    my $want = $vl->load_versions(@want);
+    $er->add_versions(@$want);
+  }
 }
 
 sub another {
