@@ -196,11 +196,22 @@ sub _edit_factory {
 sub _old_docs {
   my ( $self, $options, $kind, @ids ) = @_;
   my $pkey = $self->pkey_for($kind);
-  my $old_docs = $self->db->stash_by( $self->load( $kind, @ids ), $pkey );
+
+  my $old_docs = $self->load( $kind, @ids );
 
   if ( $options->{expect} ) {
-    for my $doc ( @{ $options->{expect} } ) {
-      my $old = $old_docs->{ $doc->{$pkey} }[0];
+    my $expect = $options->{expect};
+
+    my $doc_count    = scalar @$old_docs;
+    my $expect_count = scalar @$expect;
+
+    die "Document / expectation count mismatch ",
+     "($doc_count versus $expect_count)"
+     unless $doc_count == $expect_count;
+
+    for my $idx ( 0 .. $doc_count - 1 ) {
+      my $doc = $expect->[$idx];
+      my $old = $old_docs->[$idx];
       unless ( $self->_eq( $doc, $old ) ) {
         $self->emit( 'conflict', $kind, $old, $doc );
         if ( $self->do_default ) {
@@ -211,7 +222,7 @@ sub _old_docs {
     }
   }
 
-  return $old_docs;
+  return $self->db->stash_by( $old_docs, $pkey );
 }
 
 sub _save {
