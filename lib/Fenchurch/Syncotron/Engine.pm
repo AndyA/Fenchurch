@@ -258,6 +258,7 @@ sub add_versions {
   # Mark them all pending
   $pe->save( version => @new );
 
+  # Flush any pending versions that are now complete.
   $self->db->transaction( sub { 1 while ( $self->_flush_pending ) } );
 }
 
