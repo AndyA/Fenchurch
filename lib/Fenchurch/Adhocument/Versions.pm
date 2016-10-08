@@ -22,14 +22,6 @@ has numify => (
   default  => 0
 );
 
-has conflict_resolver => (
-  is       => 'ro',
-  isa      => duck_type( ['resolve'] ),
-  required => 1,
-  lazy     => 1,
-  default  => sub { shift }
-);
-
 has _engine => (
   is      => 'ro',
   isa     => 'Fenchurch::Adhocument',
@@ -314,6 +306,28 @@ sub versions {
   ];
 }
 
+=head2 C<load_versions>
+
+Load versions by UUID.
+
+=cut
+
+sub load_versions {
+  my ( $self, @ids ) = @_;
+  return $self->_version_engine->load( version => @ids );
+}
+
+##################################################################################
+######  ###################################################  #################  ##
+######  ###################################################  #################  ##
+###     ###    ###     ###  #  ####    ####    ####    ###     ####    ####     ##
+##  ##  ##  ##  ##  ##  ##   #  ##  ##  ##  ##  ######  ###  #####  ##  ##  ##  ##
+##  ##  ##      ##  ##  ##  ######      ##  #######     ###  #####      ##  ##  ##
+##  ##  ##  ######     ###  ######  ######  ##  ##  ##  ###  #####  ######  ##  ##
+###     ###    ###  ######  #######    ####    ####     ####   ####    ####     ##
+##################  ##############################################################
+##################################################################################
+
 # Stub implentation of conflict resolver
 
 sub resolve { die "Current data doesn't match edit's expectations" }
@@ -418,127 +432,6 @@ sub apply {
 
   return $index;
 }
-
-=head2 C<serial>
-
-Get the current serial number
-
-=cut
-
-sub serial {
-  my $self = shift;
-
-  my ($serial)
-   = $self->dbh->selectrow_array(
-    $self->db->quote_sql("SELECT MAX({serial}) FROM {:versions}") );
-
-  return $serial;
-}
-
-=head2 C<leaves>
-
-Return a page of the leaf nodes of the version tree.
-
-=cut
-
-sub leaves {
-  my ( $self, $start, $size ) = @_;
-
-  return @{
-    $self->dbh->selectcol_arrayref(
-      $self->db->quote_sql(
-        "SELECT {tc1.uuid}",
-        "FROM {:versions} AS {tc1}",
-        "LEFT JOIN {:versions} AS {tc2} ON {tc2.parent} = {tc1.uuid}",
-        "WHERE {tc2.parent} IS NULL",
-        "ORDER BY {tc1.serial} ASC",
-        "LIMIT ?, ?"
-      ),
-      {},
-      $start, $size
-    ) };
-}
-
-=head2 C<sample>
-
-Return a random sample of nodes.
-
-=cut
-
-sub sample {
-  my ( $self, $start, $size ) = @_;
-
-  return @{
-    $self->dbh->selectcol_arrayref(
-      $self->db->quote_sql(
-        "SELECT {tc1.uuid}",
-        "FROM {:versions} AS {tc1}, {:versions} AS {tc2}",
-        "WHERE {tc2.parent} = {tc1.uuid}",
-        "ORDER BY {tc1.rand} ASC",
-        "LIMIT ?, ?"
-      ),
-      {},
-      $start, $size
-    ) };
-}
-
-sub _expand_versions {
-  my ( $self, $vers ) = @_;
-
-  for my $row (@$vers) {
-    $row->{$_} = $self->_json->decode( $row->{$_} )
-     for qw( schema old_data new_data );
-  }
-
-  return $vers;
-}
-
-=head2 C<load_versions>
-
-Load versions by UUID.
-
-=cut
-
-sub load_versions {
-  my ( $self, @ids ) = @_;
-  return $self->_version_engine->load( version => @ids );
-}
-
-=head2 C<since>
-
-Return a stash of changes subsequent to the specified change. The resulting
-stash may be replayed using C<apply>.
-
-  my $stash = $ver->since(0, 10);
-
-=cut
-
-sub since {
-  my ( $self, $index, $limit ) = @_;
-
-  my $rc = $self->dbh->selectall_arrayref(
-    $self->db->quote_sql(
-      "SELECT * FROM {:versions}",
-      ( defined $index
-        ? ("WHERE {serial} > ?")
-        : ()
-      ),
-      "ORDER BY {serial} ASC",
-      ( defined $limit ? ("LIMIT ?") : () )
-    ),
-    { Slice => {} },
-    grep defined,
-    $index, $limit
-  );
-
-  return $self->_expand_versions($rc);
-}
-
-=head2 C<recent>
-
-Return the UUIDs of versions subsequent to a specific serial number
-
-=cut
 
 1;
 

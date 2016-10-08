@@ -49,7 +49,7 @@ sub _put_leaves {
   my ( $self, $start ) = @_;
 
   my $mq = $self->mq_out;
-  my $ve = $self->versions;
+  my $ve = $self->engine;
 
   my $chunk  = $self->page_size;
   my $serial = $ve->serial;
