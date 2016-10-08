@@ -55,15 +55,14 @@ sub _b_engine {
   );
 }
 
-sub _version_schema {
-  my ( $self, %extra ) = @_;
+sub version_schema {
+  my ( $self, $table, %extra ) = @_;
   return {
     version => {
-      table  => $self->db->table(":versions"),
-      pkey   => 'uuid',
-      order  => '+sequence',
-      append => 1,                                    # Disable deletions
-      json   => ['old_data', 'new_data', 'schema'],
+      table => $self->db->table($table),
+      pkey  => 'uuid',
+      order => '+sequence',
+      json  => ['old_data', 'new_data', 'schema'],
       %extra
     } };
 }
@@ -71,9 +70,10 @@ sub _version_schema {
 sub _b_version_engine {
   my $self = shift;
   return Fenchurch::Adhocument->new(
-    db => $self->db,
-    schema =>
-     Fenchurch::Adhocument::Schema->new( schema => $self->_version_schema ),
+    db     => $self->db,
+    schema => Fenchurch::Adhocument::Schema->new(
+      schema => $self->version_schema( ":versions", append => 1 )
+    ),
     numify => 1
   );
 }
