@@ -36,10 +36,10 @@ sub send {
   my $to   = $self->to;
   my $json = $self->_json;
 
-  # DEBUG
-  for my $msg (@msgs) {
-    printf "%-8s %-8s %-8s: %s\n", $role, $from, $to, $json->encode($msg);
-  }
+# DEBUG
+#  for my $msg (@msgs) {
+#    printf "%-8s %-8s %-8s: %s\n", $role, $from, $to, $json->encode($msg);
+#  }
 
   $self->dbh->do(
     $self->db->quote_sql(

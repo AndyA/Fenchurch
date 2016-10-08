@@ -15,13 +15,6 @@ has versions => (
   required => 1
 );
 
-has engine => (
-  is      => 'ro',
-  isa     => duck_type( ['leaves', 'since', 'serial', 'sample'] ),
-  lazy    => 1,
-  builder => '_b_engine',
-);
-
 has page_size => (
   is       => 'ro',
   isa      => 'Int',
@@ -32,6 +25,7 @@ has page_size => (
 with 'Fenchurch::Core::Role::DB',
  'Fenchurch::Core::Role::NodeName',
  'Fenchurch::Syncotron::Role::Application',
+ 'Fenchurch::Syncotron::Role::Engine',
  'Fenchurch::Syncotron::Role::QueuePair';
 
 =head1 NAME
@@ -40,25 +34,20 @@ Fenchurch::Syncotron::Server - The Syncotron Server
 
 =cut
 
-sub _b_engine {
-  my $self = shift;
-  return Fenchurch::Syncotron::Engine->new( versions => $self->versions );
-}
-
 sub _put_leaves {
   my ( $self, $start ) = @_;
 
-  my $mq = $self->mq_out;
-  my $ve = $self->engine;
+  my $mq  = $self->mq_out;
+  my $eng = $self->engine;
 
   my $chunk  = $self->page_size;
-  my $serial = $ve->serial;
-  my @leaves = $ve->leaves( $start, $chunk );
+  my $serial = $eng->serial;
+  my @leaves = $eng->leaves( $start, $chunk );
   my $last   = @leaves < $chunk ? 1 : 0;
 
   # Stuff the last page of results with a random sample
   # if it's not full
-  push @leaves, $ve->sample( 0, $chunk - @leaves )
+  push @leaves, $eng->sample( 0, $chunk - @leaves )
    if $last && $start == 0;
 
   $mq->send(
@@ -71,11 +60,22 @@ sub _put_leaves {
   );
 }
 
+sub _put_versions {
+  my ( $self, @uuid ) = @_;
+  my $ver = $self->versions->load_versions(@uuid);
+  $self->mq_out->send( { type => 'put.versions', versions => $ver } );
+}
+
+sub _put_recent {
+  my ( $self, $serial ) = @_;
+  my $recent = $self->engine->recent( $serial, $self->page_size );
+  $self->mq_out->send( { type => 'put.recent', %$recent } );
+}
+
 sub _build_app {
   my ( $self, $de ) = @_;
 
   my $mq = $self->mq_out;
-  my $ve = $self->versions;
 
   $de->on(
     'get.info' => sub {
@@ -91,6 +91,20 @@ sub _build_app {
     'get.leaves' => sub {
       my $msg = shift;
       $self->_put_leaves( $msg->{start} );
+    }
+  );
+
+  $de->on(
+    'get.recent' => sub {
+      my $msg = shift;
+      $self->_put_recent( $msg->{serial} );
+    }
+  );
+
+  $de->on(
+    'get.versions' => sub {
+      my $msg = shift;
+      $self->_put_versions( @{ $msg->{uuid} } );
     }
   );
 }

@@ -39,6 +39,7 @@ my %common = (
     queue    => 'test_queue',
     versions => 'test_versions',
     state    => 'test_state',
+    pending  => 'test_pending',
   }
 );
 
@@ -52,13 +53,46 @@ my $server = make_server($db_remote);
 
 $server->versions->save( programme => @$programmes );
 
-iterate( $client, $server, 5 );
+for ( 1 .. 10 ) {
+  iterate( $client, $server, 1 );
 
-debug_versions( $db_remote->dbh );
+  my $rot = shift @$programmes;
+  $server->versions->delete( programme => $rot->{_uuid} );
+  $rot->{_uuid} = make_uuid();
+  push @$programmes, $rot;
+  $server->versions->save( programme => $rot );
 
-ok 1, "Boo!";
+  $programmes->[0]{title} .= " (Awooga!)";
+  $server->versions->save( programme => $programmes->[0] );
+}
+
+iterate( $client, $server, 10 );
+
+check_data( $client->versions, $server->versions, @$programmes );
+
+#debug_versions( $db_remote->dbh );
 
 done_testing;
+
+sub check_data {
+  my ( $vl, $vr, @items ) = @_;
+
+  my $name = another("Sync check");
+
+  my @ids = map { $_->{_uuid} } @items;
+  my $local  = $vl->load( programme => @ids );
+  my $remote = $vr->load( programme => @ids );
+
+  eq_or_diff $local,  [@items], "$name: Local data matches";
+  eq_or_diff $remote, [@items], "$name: Remote data matches";
+}
+
+sub another {
+  my $name = shift;
+  state %seq;
+  my $idx = ++$seq{$name};
+  return join " ", $name, $idx;
+}
 
 sub pump_queue {
   my ( $mq_in, $mq_out ) = @_;
@@ -114,6 +148,7 @@ sub make_client {
     mq_in            => make_mq( $db, 'client', 'other_node', 'test_node' ),
     mq_out           => make_mq( $db, 'client', 'test_node', 'other_node' ),
     versions         => make_versions($db),
+    page_size        => 5,
   );
 }
 

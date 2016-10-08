@@ -23,9 +23,17 @@ has versions => (
   required => 1
 );
 
+has page_size => (
+  is       => 'ro',
+  isa      => 'Int',
+  required => 1,
+  default  => 10_000
+);
+
 with 'Fenchurch::Core::Role::DB',
  'Fenchurch::Core::Role::NodeName',
  'Fenchurch::Syncotron::Role::Application',
+ 'Fenchurch::Syncotron::Role::Engine',
  'Fenchurch::Syncotron::Role::QueuePair',
  'Fenchurch::Syncotron::Role::Stateful';
 
@@ -35,10 +43,24 @@ Fenchurch::Syncotron::Client - The Syncotron Client
 
 =cut
 
+sub _get_versions {
+  my ( $self, @uuid ) = @_;
+
+  return unless @uuid;
+
+  $self->mq_out->send(
+    { type => 'get.versions',
+      uuid => \@uuid
+    }
+  );
+}
+
 sub _build_app {
   my ( $self, $de ) = @_;
 
   my $state = $self->state;
+  my $mq    = $self->mq_out;
+  my $eng   = $self->engine;
 
   $de->on(
     'put.info' => sub {
@@ -48,9 +70,28 @@ sub _build_app {
 
   $de->on(
     'put.leaves' => sub {
+      my $msg    = shift;
+      my @leaves = @{ $msg->{leaves} };
+      $self->_get_versions( $eng->dont_have(@leaves) );
+      $state->serial( $msg->{serial} );
+      $state->advance( scalar @leaves );
+      $state->state('recent') if $msg->{last};
+    }
+  );
+
+  $de->on(
+    'put.recent' => sub {
+      my $msg    = shift;
+      my @recent = @{ $msg->{recent} };
+      $self->_get_versions( $eng->dont_have(@recent) );
+      $state->serial( $msg->{serial} );
+    }
+  );
+
+  $de->on(
+    'put.versions' => sub {
       my $msg = shift;
-      $state->advance( scalar @{ $msg->{leaves} } );
-      #      $state->state('blah') if $msg->{last};
+      $self->engine->add_versions( @{ $msg->{versions} } );
     }
   );
 }
@@ -79,9 +120,18 @@ sub _transmit {
       }
     );
   }
+  elsif ( $state eq 'recent' ) {
+    $mq->send(
+      { type   => 'get.recent',
+        serial => $st->serial
+      }
+    );
+  }
   else {
     die "Unhandled state ", $st->state;
   }
+
+  $self->_get_versions( $self->engine->want( 0, $self->page_size ) );
 }
 
 sub next {

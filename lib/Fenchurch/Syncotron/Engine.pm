@@ -101,6 +101,43 @@ sub sample {
     ) };
 }
 
+=head2 C<recent>
+
+Return a structure describing changes since the specified serial
+number.
+
+=cut
+
+sub _recent {
+  my ( $self, $serial, $limit ) = @_;
+
+  return $self->dbh->selectall_arrayref(
+    $self->db->quote_sql(
+      "SELECT {uuid}, {serial} FROM {:versions}",
+      ( defined $serial
+        ? ("WHERE {serial} > ?")
+        : ()
+      ),
+      "ORDER BY {serial} ASC",
+      ( defined $limit ? ("LIMIT ?") : () )
+    ),
+    { Slice => {} },
+    grep defined,
+    $serial, $limit
+  );
+}
+
+sub recent {
+  my ( $self, $serial, $limit ) = @_;
+
+  my $recent = $self->_recent( $serial, $limit );
+  my $next = @$recent ? $recent->[-1]{serial} : $serial;
+  return {
+    recent => [map { $_->{uuid} } @$recent],
+    serial => $next
+  };
+}
+
 =head2 C<since>
 
 Return the IDs of changes subsequent to a specific serial.
@@ -108,23 +145,10 @@ Return the IDs of changes subsequent to a specific serial.
 =cut
 
 sub since {
-  my ( $self, $index, $limit ) = @_;
+  my ( $self, $serial, $limit ) = @_;
 
-  return @{
-    $self->dbh->selectcol_arrayref(
-      $self->db->quote_sql(
-        "SELECT {uuid} FROM {:versions}",
-        ( defined $index
-          ? ("WHERE {serial} > ?")
-          : ()
-        ),
-        "ORDER BY {serial} ASC",
-        ( defined $limit ? ("LIMIT ?") : () )
-      ),
-      {},
-      grep defined,
-      $index, $limit
-    ) };
+  my $recent = $self->_recent( $serial, $limit );
+  return map { $_->{uuid} } @$recent;
 }
 
 sub _have {
