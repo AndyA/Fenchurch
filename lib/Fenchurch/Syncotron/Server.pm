@@ -22,11 +22,14 @@ has page_size => (
   default  => 10_000
 );
 
+sub mq_out;
+sub emit;
 with 'Fenchurch::Core::Role::DB',
  'Fenchurch::Core::Role::NodeName',
- 'Fenchurch::Syncotron::Role::Application',
+ 'Fenchurch::Event::Role::Emitter',
  'Fenchurch::Syncotron::Role::Engine',
- 'Fenchurch::Syncotron::Role::QueuePair';
+ 'Fenchurch::Syncotron::Role::QueuePair',
+ 'Fenchurch::Syncotron::Role::Application';
 
 =head1 NAME
 
@@ -37,7 +40,6 @@ Fenchurch::Syncotron::Server - The Syncotron Server
 sub _put_leaves {
   my ( $self, $start ) = @_;
 
-  my $mq  = $self->mq_out;
   my $eng = $self->engine;
 
   my $chunk  = $self->page_size;
@@ -50,7 +52,7 @@ sub _put_leaves {
   push @leaves, $eng->sample( 0, $chunk - @leaves )
    if $last && $start == 0;
 
-  $mq->send(
+  $self->_send(
     { type   => 'put.leaves',
       start  => $start,
       last   => $last,
@@ -63,23 +65,21 @@ sub _put_leaves {
 sub _put_versions {
   my ( $self, @uuid ) = @_;
   my $ver = $self->versions->load_versions(@uuid);
-  $self->mq_out->send( { type => 'put.versions', versions => $ver } );
+  $self->_send( { type => 'put.versions', versions => $ver } );
 }
 
 sub _put_recent {
   my ( $self, $serial ) = @_;
   my $recent = $self->engine->recent( $serial, $self->page_size );
-  $self->mq_out->send( { type => 'put.recent', %$recent } );
+  $self->_send( { type => 'put.recent', %$recent } );
 }
 
 sub _build_app {
   my ( $self, $de ) = @_;
 
-  my $mq = $self->mq_out;
-
   $de->on(
     'get.info' => sub {
-      $mq->send(
+      $self->_send(
         { type => 'put.info',
           info => { node => $self->node_name },
         }
@@ -111,9 +111,8 @@ sub _build_app {
 
 sub next {
   my $self = shift;
-  my $de   = $self->_despatcher;
   for my $ev ( $self->mq_in->take ) {
-    $de->despatch($ev);
+    $self->_despatch($ev);
   }
 }
 

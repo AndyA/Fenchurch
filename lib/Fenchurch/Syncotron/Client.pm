@@ -30,11 +30,14 @@ has page_size => (
   default  => 10_000
 );
 
+sub mq_out;
+sub emit;
 with 'Fenchurch::Core::Role::DB',
  'Fenchurch::Core::Role::NodeName',
- 'Fenchurch::Syncotron::Role::Application',
+ 'Fenchurch::Event::Role::Emitter',
  'Fenchurch::Syncotron::Role::Engine',
  'Fenchurch::Syncotron::Role::QueuePair',
+ 'Fenchurch::Syncotron::Role::Application',
  'Fenchurch::Syncotron::Role::Stateful';
 
 =head1 NAME
@@ -48,7 +51,7 @@ sub _get_versions {
 
   return unless @uuid;
 
-  $self->mq_out->send(
+  $self->_send(
     { type => 'get.versions',
       uuid => \@uuid
     }
@@ -59,7 +62,6 @@ sub _build_app {
   my ( $self, $de ) = @_;
 
   my $state = $self->state;
-  my $mq    = $self->mq_out;
   my $eng   = $self->engine;
 
   $de->on(
@@ -98,9 +100,8 @@ sub _build_app {
 
 sub _receive {
   my $self = shift;
-  my $de   = $self->_despatcher;
   for my $ev ( $self->mq_in->take ) {
-    $de->despatch($ev);
+    $self->_despatch($ev);
   }
 }
 
@@ -108,20 +109,19 @@ sub _transmit {
   my $self  = shift;
   my $st    = $self->state;
   my $state = $st->state;
-  my $mq    = $self->mq_out;
 
   if ( $state eq 'init' ) {
-    $mq->send( { type => 'get.info' } );
+    $self->_send( { type => 'get.info' } );
   }
   elsif ( $state eq 'enumerate' ) {
-    $mq->send(
+    $self->_send(
       { type  => 'get.leaves',
         start => $st->progress
       }
     );
   }
   elsif ( $state eq 'recent' ) {
-    $mq->send(
+    $self->_send(
       { type   => 'get.recent',
         serial => $st->serial
       }

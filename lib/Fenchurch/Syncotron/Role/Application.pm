@@ -12,7 +12,7 @@ has _despatcher => (
   builder => '_b_despatcher'
 );
 
-requires '_build_app';
+requires '_build_app', 'mq_out', 'emit';
 
 =head1 NAME
 
@@ -28,6 +28,18 @@ sub _b_despatcher {
   $self->_build_app($de);
 
   return $de;
+}
+
+sub _despatch {
+  my ( $self, $msg ) = @_;
+  $self->emit( send => $msg );
+  $self->_despatcher->despatch($msg);
+}
+
+sub _send {
+  my ( $self, $msg ) = @_;
+  $self->emit( receive => $msg );
+  $self->mq_out->send($msg);
 }
 
 1;
