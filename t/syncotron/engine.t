@@ -22,7 +22,7 @@ preflight;
   my ( $vl, $el ) = make_test_db( database("local") );
   my ( $vr, $er ) = make_test_db( database("remote") );
 
-  my @items = make_test_data();
+  my @items = make_test_data(2);
 
   is $el->serial, 0, "Serial initially zero";
   eq_or_diff [$el->leaves( 0, 100 )], [], "No leaves yet";
@@ -31,12 +31,11 @@ preflight;
 
   $vl->save( item => @items );
 
-  is $el->serial, 2, "Serial counts two changes";
+  my $sno = $el->serial;
+  is $sno, 2, "Serial counts two changes";
 
   $items[0]{name} = "Item 1 (edited)";
   push @{ $items[0]{tags} }, { index => "2", name => "New Tag 1" };
-  push @{ $items[0]{nodes} },
-   { _uuid => make_uuid(), name => "New Node 1" };
 
   $vl->save( item => @items );
 
@@ -71,58 +70,99 @@ preflight;
   eq_or_diff [@want], [@sample], "Remote wants non-leaf nodes";
 
   my $wanted = $vl->load_versions(@want);
-  #  use JSON ();
-  #  diag +JSON->new->pretty->canonical->encode($wanted);
   $er->add_versions(@$wanted);
 
   eq_or_diff [$er->dont_have(@since)], [], "Remote has all versions";
   eq_or_diff [$er->want( 0, 100 )], [], "Remote wants no versions";
 
-  my @ids = map { $_->{_uuid} } @items;
-  is scalar(@ids), 2, "Got three document IDs";
+  check_data( $vl, $vr, @items );
 
-  my $local  = $vl->load( item => @ids );
-  my $remote = $vr->load( item => @ids );
-  eq_or_diff $local, $remote, "Remote data matches local";
+  # More data, edits
+  push @items, make_test_data(2);
+  $items[1]{name} = "Bonky Pies";
+  $vl->save( item => @items );
+
+  sync_complete( $vl, $el, $vr, $er );
+  check_data( $vl, $vr, @items );
+
+  {
+    my @del = splice @items, 1, 2;
+    $vl->delete( item => map { $_->{_uuid} } @del );
+  }
+
+  sync_complete( $vl, $el, $vr, $er );
+  check_data( $vl, $vr, @items );
+
+  # Lots of edits
+  for ( 1 .. 4 ) {
+    push @items, make_test_data(3);
+    $vl->save( item => @items );
+    {
+      my @del = splice @items, 1, 2;
+      $vl->delete( item => map { $_->{_uuid} } @del );
+    }
+  }
+
+  sync_complete( $vl, $el, $vr, $er );
+  check_data( $vl, $vr, @items );
 }
 
 done_testing;
 
+sub check_data {
+  my ( $vl, $vr, @items ) = @_;
+
+  my $name = another("Sync check");
+
+  my @ids = map { $_->{_uuid} } @items;
+  my $local  = $vl->load( item => @ids );
+  my $remote = $vr->load( item => @ids );
+
+  eq_or_diff $local,  [@items], "$name: Local data matches";
+  eq_or_diff $remote, [@items], "$name: Remote data matches";
+}
+
+sub sync_complete {
+  my ( $vl, $el, $vr, $er ) = @_;
+
+  my @leaves = $er->dont_have( $el->leaves( 0, 1_000_000 ) );
+  my $leaves = $vl->load_versions(@leaves);
+  $er->add_versions(@$leaves);
+
+  my @want = $er->want( 0, 1_000_000 );
+  my $want = $vl->load_versions(@want);
+  $er->add_versions(@$want);
+}
+
+sub another {
+  my $name = shift;
+  state %seq;
+  my $idx = ++$seq{$name};
+  return join " ", $name, $idx;
+}
+
 sub make_test_data {
-  return (
-    { _uuid => make_uuid(),
-      name  => "Item 1",
+  my $count = shift // 1;
+
+  my @data = ();
+  for ( 1 .. $count ) {
+    push @data,
+     {_uuid => make_uuid(),
+      name  => another("Item"),
       tags  => [
         { index => "0",
-          name  => "Tag 1"
+          name  => another("Tag")
         },
         { index => "1",
-          name  => "Tag 2"
-        }
+          name  => another("Tag") }
       ],
       nodes => [
         { _uuid => make_uuid(),
-          name  => "Node 1"
-        }
+          name  => another("Node") }
       ],
-    },
-    { _uuid => make_uuid(),
-      name  => "Item 2",
-      tags  => [
-        { index => "0",
-          name  => "Tag 3"
-        },
-        { index => "1",
-          name  => "Tag 4"
-        }
-      ],
-      nodes => [
-        { _uuid => make_uuid(),
-          name  => "Node 2"
-        }
-      ],
-    }
-  );
+     };
+  }
+  return @data;
 }
 
 sub make_test_db {
