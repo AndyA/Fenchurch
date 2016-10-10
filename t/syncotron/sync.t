@@ -156,11 +156,9 @@ sub make_mq {
   my ( $db, $role, $from, $to ) = @_;
 
   return Fenchurch::Syncotron::MessageQueue->new(
-    role  => $role,
-    from  => $from,
-    to    => $to,
-    db    => $db,
-    table => 'test_queue'
+    role => $role,
+    from => $from,
+    to   => $to,
   );
 }
 

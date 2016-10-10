@@ -6,13 +6,27 @@ use v5.10;
 
 use Moose;
 
+use Carp qw( confess );
+use Try::Tiny;
+
 has ['role', 'from', 'to'] => (
   is       => 'ro',
   isa      => 'Str',
   required => 1
 );
 
-with 'Fenchurch::Core::Role::DB', 'Fenchurch::Core::Role::JSON';
+has _queue => (
+  is      => 'ro',
+  isa     => 'ArrayRef',
+  default => sub { [] },
+  traits  => ['Array'],
+  handles => {
+    _put      => 'push',
+    available => 'count',
+  }
+);
+
+with 'Fenchurch::Core::Role::JSON';
 
 =head1 NAME
 
@@ -31,24 +45,10 @@ sub send {
 
   return $self unless @msgs;
 
-  my $role = $self->role;
-  my $from = $self->from;
-  my $to   = $self->to;
+  my $q    = $self->_queue;
   my $json = $self->_json;
 
-# DEBUG
-#  for my $msg (@msgs) {
-#    printf "%-8s %-8s %-8s: %s\n", $role, $from, $to, $json->encode($msg);
-#  }
-
-  $self->dbh->do(
-    $self->db->quote_sql(
-      "INSERT INTO {:queue} ({role}, {from}, {to}, {when}, {message}) VALUES ",
-      join( ", ", map "(?, ?, ?, NOW(), ?)", @msgs )
-    ),
-    {},
-    map { ( $role, $from, $to, $json->encode($_) ) } @msgs
-  );
+  $self->_put( map { $json->encode($_) } @msgs );
 
   return $self;
 }
@@ -59,57 +59,25 @@ Find out how many messages are available on the queue.
 
 =cut
 
-sub available {
-  my $self = shift;
-
-  my ($avail) = $self->dbh->selectrow_array(
-    $self->db->quote_sql(
-      "SELECT COUNT(*) FROM {:queue}",
-      " WHERE {role} = ? AND {from} = ? AND {to} = ?"
-    ),
-    {},
-    $self->role,
-    $self->from,
-    $self->to
-  );
-
-  return $avail;
-}
-
-sub _peek {
-  my ( $self, $count ) = @_;
-
-  return $self->dbh->selectall_arrayref(
-    $self->db->quote_sql(
-      "SELECT {id}, {message} FROM {:queue}",
-      " WHERE {role} = ? AND {from} = ? AND {to} = ?",
-      " ORDER BY {id} ASC",
-      ( defined $count ? (" LIMIT ?") : () )
-    ),
-    { Slice => {} },
-    $self->role,
-    $self->from,
-    $self->to,
-    grep { defined } $count
-  );
-}
-
-sub _unpack {
-  my ( $self, $msg ) = @_;
-  return unless $msg;
-  my $json = $self->_json;
-  return map { $json->decode( $_->{message} ) } @$msg;
-}
-
 =head2 C<< peek >>
 
 Get a copy of messages from the queue without removing them.
 
 =cut
 
+sub _decode {
+  my ( $self, @msg ) = @_;
+  my $json = $self->_json;
+  return map { $json->decode($_) } @msg;
+}
+
 sub peek {
   my $self = shift;
-  return $self->_unpack( $self->_peek(@_) );
+
+  my $q = $self->_queue;
+  my $count = shift // scalar @$q;
+
+  return $self->_decode( @{$q}[0 .. $count - 1] );
 }
 
 =head2 C<< take >>
@@ -120,25 +88,11 @@ Remove messages from the queue.
 
 sub take {
   my $self = shift;
-  my $msg  = $self->_peek(@_);
-  return unless $msg;
 
-  my @rc = $self->_unpack($msg);
-  my @id = map { $_->{id} } @$msg;
+  my $q = $self->_queue;
+  my $count = shift // scalar @$q;
 
-  if (@id) {
-    $self->dbh->do(
-      $self->db->quote_sql(
-        "DELETE FROM {:queue} WHERE {id} IN (",
-        join( ", ", map "?", @id ),
-        ")"
-      ),
-      {},
-      @id
-    );
-  }
-
-  return @rc;
+  return $self->_decode( splice @$q, 0, $count );
 }
 
 =head2 C<< with >>
@@ -152,7 +106,11 @@ sub with_messages {
   my $self = shift;
   my $cb   = pop;
 
-  $self->db->transaction( sub { $cb->( $self->take(@_) ) } );
+  my $q   = $self->_queue;
+  my @msg = $self->peek(@_);
+
+  try { $cb->(@msg); splice @$q, 0, scalar @msg }
+  catch { confess $_ };
 
   return $self;
 }
