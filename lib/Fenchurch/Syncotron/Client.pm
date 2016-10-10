@@ -9,17 +9,9 @@ use Moose::Util::TypeConstraints;
 
 use Fenchurch::Syncotron::Despatcher;
 
-sub node_name;
-
 has remote_node_name => (
   is       => 'ro',
   isa      => 'Str',
-  required => 1
-);
-
-has versions => (
-  is       => 'ro',
-  isa      => duck_type( ['load', 'save'] ),
   required => 1
 );
 
@@ -30,11 +22,10 @@ has page_size => (
   default  => 10_000
 );
 
-sub mq_out;
-sub emit;
-with 'Fenchurch::Core::Role::DB',
+with
  'Fenchurch::Core::Role::NodeName',
  'Fenchurch::Event::Role::Emitter',
+ 'Fenchurch::Syncotron::Role::Versions',
  'Fenchurch::Syncotron::Role::Engine',
  'Fenchurch::Syncotron::Role::QueuePair',
  'Fenchurch::Syncotron::Role::Application',

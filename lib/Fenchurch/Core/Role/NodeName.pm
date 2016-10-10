@@ -12,6 +12,7 @@ Fenchurch::Core::Role::NodeName - The name of this node
 
 =cut
 
+sub node_name;
 has node_name => (
   is       => 'ro',
   isa      => 'Str',

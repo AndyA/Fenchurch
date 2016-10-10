@@ -7,19 +7,14 @@ our $VERSION = "1.00";
 use Moose;
 use Moose::Util::TypeConstraints;
 
-has versions => (
-  is       => 'ro',
-  isa      => duck_type( ['load', 'save'] ),
-  required => 1,
-  handles => ['db', 'dbh'],
-);
-
 has _pending_engine => (
   is      => 'ro',
   isa     => 'Fenchurch::Adhocument',
   lazy    => 1,
   builder => '_b_pending_engine'
 );
+
+with 'Fenchurch::Syncotron::Role::Versions';
 
 =head1 NAME
 

@@ -9,12 +9,6 @@ use Moose::Util::TypeConstraints;
 
 use Fenchurch::Syncotron::Engine;
 
-has versions => (
-  is       => 'ro',
-  isa      => duck_type( ['load', 'save'] ),
-  required => 1
-);
-
 has page_size => (
   is       => 'ro',
   isa      => 'Int',
@@ -22,9 +16,10 @@ has page_size => (
   default  => 10_000
 );
 
-with 'Fenchurch::Core::Role::DB',
+with #'Fenchurch::Core::Role::DB',
  'Fenchurch::Core::Role::NodeName',
  'Fenchurch::Event::Role::Emitter',
+ 'Fenchurch::Syncotron::Role::Versions',
  'Fenchurch::Syncotron::Role::Engine',
  'Fenchurch::Syncotron::Role::QueuePair',
  'Fenchurch::Syncotron::Role::Application';
