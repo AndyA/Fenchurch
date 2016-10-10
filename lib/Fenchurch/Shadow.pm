@@ -108,4 +108,5 @@ sub _reverse_changes {
   return \@reverse;
 }
 
-1;
+no Moose;
+__PACKAGE__->meta->make_immutable;

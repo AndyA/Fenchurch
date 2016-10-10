@@ -64,4 +64,5 @@ sub shadow_table {
   my ( $self, $table ) = @_;
 }
 
-1;
+no Moose;
+__PACKAGE__->meta->make_immutable;

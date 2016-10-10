@@ -35,6 +35,7 @@ sub take {
   return $self->_splice( 0, shift // $self->count );
 }
 
-1;
+no Moose;
+__PACKAGE__->meta->make_immutable;
 
 # vim:ts=2:sw=2:sts=2:et:ft=perl
