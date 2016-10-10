@@ -25,7 +25,8 @@ has _engine => (
   isa     => 'Fenchurch::Adhocument',
   lazy    => 1,
   builder => '_b_engine',
-  handles => ['load', 'exists', Fenchurch::Event::Emitter->interface]
+  handles =>
+   ['load', 'load_by_key', 'exists', Fenchurch::Event::Emitter->interface]
 );
 
 has _version_engine => (
