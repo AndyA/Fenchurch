@@ -22,8 +22,6 @@ has page_size => (
   default  => 10_000
 );
 
-sub mq_out;
-sub emit;
 with 'Fenchurch::Core::Role::DB',
  'Fenchurch::Core::Role::NodeName',
  'Fenchurch::Event::Role::Emitter',

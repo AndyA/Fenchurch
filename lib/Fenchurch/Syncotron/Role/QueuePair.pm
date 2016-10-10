@@ -11,6 +11,9 @@ Fenchurch::Syncotron::Role::QueuePair - A send / receive message queue pair
 
 =cut
 
+sub mq_in;
+sub mq_out;
+
 has ['mq_in', 'mq_out'] => (
   is       => 'ro',
   isa      => duck_type( ['send', 'peek', 'take', 'with_messages'] ),

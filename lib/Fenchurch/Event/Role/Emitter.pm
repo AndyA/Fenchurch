@@ -13,6 +13,8 @@ Fenchurch::Event::Role::Emitter - Be an event emitter
 
 =cut
 
+sub emit;
+
 has emitter => (
   is       => 'ro',
   required => 1,
