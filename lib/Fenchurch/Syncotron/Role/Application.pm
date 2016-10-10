@@ -32,13 +32,13 @@ sub _b_despatcher {
 
 sub _despatch {
   my ( $self, $msg ) = @_;
-  $self->emit( send => $msg );
+  $self->emit( receive => $msg );
   $self->_despatcher->despatch($msg);
 }
 
 sub _send {
   my ( $self, $msg ) = @_;
-  $self->emit( receive => $msg );
+  $self->emit( send => $msg );
   $self->mq_out->send($msg);
 }
 
