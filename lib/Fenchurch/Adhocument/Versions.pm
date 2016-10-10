@@ -11,7 +11,6 @@ use Fenchurch::Adhocument::Schema;
 use Fenchurch::Adhocument;
 use Fenchurch::Event::Emitter;
 use Storable qw( freeze );
-use UUID::Tiny ':std';
 
 has numify => (
   is       => 'ro',
@@ -37,7 +36,8 @@ has _version_engine => (
 );
 
 with 'Fenchurch::Core::Role::DB', 'Fenchurch::Adhocument::Role::Schema',
- 'Fenchurch::Core::Role::JSON', 'Fenchurch::Core::Role::NodeName';
+ 'Fenchurch::Core::Role::JSON', 'Fenchurch::Core::Role::NodeName',
+ 'Fenchurch::Core::Role::UUIDFactory';
 
 =head1 NAME
 
@@ -132,8 +132,6 @@ sub _last_leaf {
 
   return $leaf;
 }
-
-sub _make_uuid { create_uuid_as_string(UUID_V4) }
 
 sub _build_versions {
   my ( $self, $options, $edits, $kind, $old_docs, @docs ) = @_;
