@@ -52,11 +52,62 @@ my $client = Fenchurch::Syncotron::HTTP::Client->new(
   node_name => "local",
 );
 
-$client->next for 1 .. 4;
+my @local_data  = make_test_data(3);
+my @remote_data = make_test_data(4);
 
-ok 1, "OK!";
+$local_versions->save( item => @local_data );
+$remote_versions->save( item => @remote_data );
+
+$client->next for 1 .. 7;
+
+check_data( $local_versions, $remote_versions, @local_data,
+  @remote_data );
 
 done_testing;
+
+sub check_data {
+  my ( $vl, $vr, @items ) = @_;
+
+  my $name = another("Sync check");
+
+  my @ids = map { $_->{_uuid} } @items;
+  my $local  = $vl->load( item => @ids );
+  my $remote = $vr->load( item => @ids );
+
+  eq_or_diff $local,  [@items], "$name: Local data matches";
+  eq_or_diff $remote, [@items], "$name: Remote data matches";
+}
+
+sub another {
+  my $name = shift;
+  state %seq;
+  my $idx = ++$seq{$name};
+  return join " ", $name, $idx;
+}
+
+sub make_test_data {
+  my $count = shift // 1;
+
+  my @data = ();
+  for ( 1 .. $count ) {
+    push @data,
+     {_uuid => make_uuid(),
+      name  => another("Item"),
+      tags  => [
+        { index => "0",
+          name  => another("Tag")
+        },
+        { index => "1",
+          name  => another("Tag") }
+      ],
+      nodes => [
+        { _uuid => make_uuid(),
+          name  => another("Node") }
+      ],
+     };
+  }
+  return @data;
+}
 
 sub make_versions {
   my ( $dbh, $node ) = @_;

@@ -24,9 +24,9 @@ TestUA - A test UserAgent
 sub request {
   my ( $self, $req ) = @_;
   my $body = $self->handler->( $req->content );
-  say "# req:  ", $req->content;
-  say "# resp: $body";
-  say "#";
+  #  say "# req:  ", $req->content;
+  #  say "# resp: $body";
+  #  say "#";
   return HTTP::Response->new( 200, "OK",
     ['Content-Type' => 'application/json'], $body );
 }
