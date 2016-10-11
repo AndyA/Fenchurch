@@ -16,13 +16,12 @@ has page_size => (
   default  => 10_000
 );
 
-with #'Fenchurch::Core::Role::DB',
- 'Fenchurch::Core::Role::NodeName',
- 'Fenchurch::Event::Role::Emitter',
- 'Fenchurch::Syncotron::Role::Versions',
- 'Fenchurch::Syncotron::Role::Engine',
- 'Fenchurch::Syncotron::Role::QueuePair',
- 'Fenchurch::Syncotron::Role::Application';
+with qw(
+ Fenchurch::Core::Role::NodeName
+ Fenchurch::Syncotron::Role::Versions
+ Fenchurch::Syncotron::Role::Engine
+ Fenchurch::Syncotron::Role::Application
+);
 
 =head1 NAME
 

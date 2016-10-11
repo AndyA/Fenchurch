@@ -13,11 +13,7 @@ use TestSupport;
 
 use Fenchurch::Syncotron::MessageQueue;
 
-my $mq = Fenchurch::Syncotron::MessageQueue->new(
-  role => 'testing',
-  from => 'hither',
-  to   => 'yon'
-);
+my $mq = Fenchurch::Syncotron::MessageQueue->new;
 
 is $mq->available, 0, "Queue initially empty";
 

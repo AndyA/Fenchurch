@@ -15,7 +15,6 @@ use Fenchurch::Adhocument::Schema;
 use Fenchurch::Adhocument::Versions;
 use Fenchurch::Core::DB;
 use Fenchurch::Syncotron::Client;
-use Fenchurch::Syncotron::MessageQueue;
 use Fenchurch::Syncotron::Server;
 
 preflight;
@@ -131,8 +130,6 @@ sub make_server {
   return Fenchurch::Syncotron::Server->new(
     db        => $db,
     node_name => 'other_node',
-    mq_in     => make_mq( $db, 'server', 'test_node', 'other_node' ),
-    mq_out    => make_mq( $db, 'server', 'other_node', 'test_node' ),
     versions  => make_versions($db),
     page_size => 5,
   );
@@ -144,21 +141,8 @@ sub make_client {
     db               => $db,
     node_name        => 'test_node',
     remote_node_name => 'other_node',
-    table            => 'test_state',
-    mq_in            => make_mq( $db, 'client', 'other_node', 'test_node' ),
-    mq_out           => make_mq( $db, 'client', 'test_node', 'other_node' ),
     versions         => make_versions($db),
     page_size        => 5,
-  );
-}
-
-sub make_mq {
-  my ( $db, $role, $from, $to ) = @_;
-
-  return Fenchurch::Syncotron::MessageQueue->new(
-    role => $role,
-    from => $from,
-    to   => $to,
   );
 }
 

@@ -12,7 +12,12 @@ has _despatcher => (
   builder => '_b_despatcher'
 );
 
-requires '_build_app', 'mq_out', 'emit';
+requires '_build_app', 'mq_out';
+
+with qw(
+ Fenchurch::Syncotron::Role::QueuePair
+ Fenchurch::Event::Role::Emitter
+);
 
 =head1 NAME
 

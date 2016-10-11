@@ -5,6 +5,8 @@ our $VERSION = "1.00";
 use Moose::Role;
 use Moose::Util::TypeConstraints;
 
+use Fenchurch::Syncotron::MessageQueue;
+
 =head1 NAME
 
 Fenchurch::Syncotron::Role::QueuePair - A send / receive message queue pair
@@ -15,10 +17,13 @@ sub mq_in;
 sub mq_out;
 
 has ['mq_in', 'mq_out'] => (
-  is       => 'ro',
-  isa      => duck_type( ['send', 'peek', 'take', 'with_messages'] ),
-  required => 1
+  is      => 'ro',
+  isa     => duck_type( ['send', 'peek', 'take', 'with_messages'] ),
+  lazy    => 1,
+  builder => '_b_mq'
 );
+
+sub _b_mq { Fenchurch::Syncotron::MessageQueue->new }
 
 1;
 

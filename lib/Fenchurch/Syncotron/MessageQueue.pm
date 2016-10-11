@@ -9,12 +9,6 @@ use Moose;
 use Carp qw( confess );
 use Try::Tiny;
 
-has ['role', 'from', 'to'] => (
-  is       => 'ro',
-  isa      => 'Str',
-  required => 1
-);
-
 has _queue => (
   is      => 'ro',
   isa     => 'ArrayRef',

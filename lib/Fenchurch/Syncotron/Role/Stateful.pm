@@ -50,6 +50,7 @@ sub save_state {
     ),
     {},
     $self->node_name,
+    $self->remote_node_name,
     $self->state->freeze
   );
 }
