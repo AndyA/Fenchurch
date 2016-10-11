@@ -6,6 +6,8 @@ use v5.10;
 
 use Moose;
 
+use Encode qw( decode encode );
+
 with qw(
  Fenchurch::Core::Role::JSON
  Fenchurch::Syncotron::HTTP::Role::Endpoint
@@ -21,7 +23,7 @@ sub handle {
   my ( $self, $body ) = @_;
 
   my $json = $self->_json;
-  my $msg  = $json->decode($body);
+  my $msg = $json->decode( decode( "UTF-8", $body ) );
 
   $self->_handle_remote_node_name($msg);
 
@@ -41,7 +43,7 @@ sub handle {
     server => [$server->mq_out->take]
   );
 
-  return $json->encode($reply);
+  return encode( "UTF-8", $json->encode($reply) );
 }
 
 no Moose;

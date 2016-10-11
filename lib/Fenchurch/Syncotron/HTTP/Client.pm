@@ -6,6 +6,8 @@ use v5.10;
 
 use Moose;
 
+use Encode qw( decode encode );
+
 has uri => (
   is       => 'ro',
   isa      => 'Str',
@@ -29,12 +31,12 @@ sub _post {
 
   my $json = $self->_json;
   my $req = HTTP::Request->new( 'POST', $self->uri );
-  $req->header( 'Content-Type' => 'application/json' );
-  $req->content( $json->encode($msg) );
+  $req->header( 'Content-Type' => 'application/json;charset=utf-8' );
+  $req->content( encode( "UTF-8", $json->encode($msg) ) );
 
   my $resp = $self->_ua->request($req);
 
-  return $json->decode( $resp->content )
+  return $json->decode( decode( "UTF-8", $resp->content ) )
    if $resp->is_success;
 
   die $resp->status_line;
