@@ -79,9 +79,9 @@ sub _b_version_engine {
 
 sub _eq {
   my ( $self, $a, $b ) = @_;
-  my $json = $self->_json;
   return 1 unless defined $a || defined $b;
   return 0 unless defined $a && defined $b;
+  my $json = $self->_json;
   return $json->encode($a) eq $json->encode($b);
 }
 

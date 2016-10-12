@@ -19,7 +19,30 @@ has _json => (
   builder => '_b_json'
 );
 
-sub _b_json { JSON::XS->new->utf8->allow_nonref->canonical }
+has _json_raw => (
+  is      => 'ro',
+  isa     => 'JSON::XS',
+  lazy    => 1,
+  builder => '_b_json_raw'
+);
+
+sub _b_json     { JSON::XS->new->utf8->allow_nonref->canonical }
+sub _b_json_raw { JSON::XS->new->allow_nonref->canonical }
+
+sub _json_encode {
+  my ( $self, $data ) = @_;
+  return $self->_json->encode($data);
+}
+
+sub _json_decode {
+  my ( $self, $json ) = @_;
+  return undef unless defined $json;
+  # If the string comes from the database it will already have been
+  # decoded and its utf8 flag will be set.
+  return $self->_json_raw->decode($json) if utf8::is_utf8($json);
+  # Otherwise we have a utf-8 byte string
+  return $self->_json->decode($json);
+}
 
 1;
 

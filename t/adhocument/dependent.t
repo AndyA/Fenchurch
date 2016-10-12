@@ -101,11 +101,11 @@ my $programmes = test_data("stash.json");
     group      => "crew",
     index      => "2",
     kind       => "member",
-    last_name  => "Simmönds.",
+    last_name  => "Simm\x{c3}nds.",
     type       => "Unknown"
    };
 
-  $prog[0]{title} = "The Föundatiöns öf Music";
+  $prog[0]{title} = "The F\x{c3}undati\x{c3}ns \x{c3}f Music";
 
   push @{ $prog[2]{contributors} },
    {code       => undef,
@@ -113,7 +113,7 @@ my $programmes = test_data("stash.json");
     group      => "crew",
     index      => "15",
     kind       => "member",
-    last_name  => "Simmöns.",
+    last_name  => "Simm\x{c3}ns.",
     type       => "Unknown"
    };
 

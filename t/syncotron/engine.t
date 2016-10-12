@@ -35,7 +35,7 @@ preflight;
   is $sno, 2, "Serial counts two changes";
 
   $items[0]{name} = "Item 1 (edited)";
-  push @{ $items[0]{tags} }, { index => "2", name => "New Tag 1" };
+  push @{ $items[0]{tags} }, { index => "2", name => "New T\x{1f601}g 1" };
 
   $vl->save( item => @items );
 
@@ -171,10 +171,10 @@ sub make_test_data {
       name  => another("Item"),
       tags  => [
         { index => "0",
-          name  => another("Tag")
+          name  => another("T\x{1f601}g")
         },
         { index => "1",
-          name  => another("Tag") }
+          name  => another("T\x{1f601}g") }
       ],
       nodes => [
         { _uuid => make_uuid(),

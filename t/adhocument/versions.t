@@ -142,7 +142,7 @@ sub mod_add_tags {
   $item->{tags} //= [];
   for ( 0 .. $ntags ) {
     my $idx = @{ $item->{tags} } ? $item->{tags}[-1]{index} + 1 : 0;
-    push @{ $item->{tags} }, { index => $idx, name => "Tag $idx" };
+    push @{ $item->{tags} }, { index => $idx, name => "T\x{1f601}g $idx" };
   }
   return $item;
 }

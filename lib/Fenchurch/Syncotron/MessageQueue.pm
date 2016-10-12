@@ -39,10 +39,9 @@ sub send {
 
   return $self unless @msgs;
 
-  my $q    = $self->_queue;
-  my $json = $self->_json;
+  my $q = $self->_queue;
 
-  $self->_put( map { $json->encode($_) } @msgs );
+  $self->_put( map { $self->_json_encode($_) } @msgs );
 
   return $self;
 }
@@ -61,8 +60,7 @@ Get a copy of messages from the queue without removing them.
 
 sub _decode {
   my ( $self, @msg ) = @_;
-  my $json = $self->_json;
-  return map { $json->decode($_) } @msg;
+  return map { $self->_json_decode($_) } @msg;
 }
 
 sub peek {

@@ -6,8 +6,6 @@ use v5.10;
 
 use Moose;
 
-use Encode qw( decode encode );
-
 has uri => (
   is       => 'ro',
   isa      => 'Str',
@@ -29,14 +27,13 @@ Fenchurch::Syncotron::HTTP::Client - Client to sync over http
 sub _post {
   my ( $self, $msg ) = @_;
 
-  my $json = $self->_json;
   my $req = HTTP::Request->new( 'POST', $self->uri );
   $req->header( 'Content-Type' => 'application/json;charset=utf-8' );
-  $req->content( encode( "UTF-8", $json->encode($msg) ) );
+  $req->content( $self->_json_encode($msg) );
 
   my $resp = $self->_ua->request($req);
 
-  return $json->decode( decode( "UTF-8", $resp->content ) )
+  return $self->_json_decode( $resp->content )
    if $resp->is_success;
 
   die $resp->status_line;

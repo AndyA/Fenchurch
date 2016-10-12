@@ -34,12 +34,6 @@ sub send {
   my $role = $self->role;
   my $from = $self->from;
   my $to   = $self->to;
-  my $json = $self->_json;
-
-# DEBUG
-#  for my $msg (@msgs) {
-#    printf "%-8s %-8s %-8s: %s\n", $role, $from, $to, $json->encode($msg);
-#  }
 
   $self->dbh->do(
     $self->db->quote_sql(
@@ -47,7 +41,7 @@ sub send {
       join( ", ", map "(?, ?, ?, NOW(), ?)", @msgs )
     ),
     {},
-    map { ( $role, $from, $to, $json->encode($_) ) } @msgs
+    map { ( $role, $from, $to, $self->_json_encode($_) ) } @msgs
   );
 
   return $self;
@@ -97,8 +91,7 @@ sub _peek {
 sub _unpack {
   my ( $self, $msg ) = @_;
   return unless $msg;
-  my $json = $self->_json;
-  return map { $json->decode( $_->{message} ) } @$msg;
+  return map { $self->_json_decode( $_->{message} ) } @$msg;
 }
 
 =head2 C<< peek >>

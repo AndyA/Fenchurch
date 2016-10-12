@@ -89,11 +89,9 @@ sub _load {
 
   my $json = $spec->{json} // [];
   if (@$json) {
-    my $js = $self->_json;
     for my $row (@$rc) {
       for my $nf (@$json) {
-        $row->{$nf} = $js->decode( $row->{$nf} )
-         if defined $row->{$nf};
+        $row->{$nf} = $self->_json_decode( $row->{$nf} );
       }
     }
   }
@@ -215,12 +213,11 @@ sub _insert {
    ') VALUES', join( ', ', ($vals) x @docs );
 
   my %is_json = map { $_ => 1 } @{ $spec->{json} // [] };
-  my $js      = $self->_json;
-  my @bind    = ();
+  my @bind = ();
   for my $doc (@docs) {
     for my $col (@cols) {
       my $val = $doc->{$col};
-      push @bind, $is_json{$col} ? $js->encode($val) : $val;
+      push @bind, $is_json{$col} ? $self->_json_encode($val) : $val;
     }
   }
 

@@ -92,13 +92,14 @@ sub make_test_data {
   for ( 1 .. $count ) {
     push @data,
      {_uuid => make_uuid(),
+
       name  => another("Item"),
       tags  => [
         { index => "0",
-          name  => another("Tag")
+          name  => another("T\x{1f601}g")
         },
         { index => "1",
-          name  => another("Tag") }
+          name  => another("T\x{1f601}g") }
       ],
       nodes => [
         { _uuid => make_uuid(),

@@ -42,7 +42,6 @@ sub preflight() {
 sub set_all {
   my ( $dbh, $val, @var ) = @_;
   for my $var ( sort @var ) {
-    say "SET $var = $val;";
     $dbh->do("SET $var = $val");
   }
 }
