@@ -18,6 +18,11 @@ Fenchurch::Syncotron::HTTP::Server - Handle HTTP sync requests
 =cut
 
 sub handle {
+  my $self = shift;
+  return $self->_json_encode( $self->handle_raw(@_) );
+}
+
+sub handle_raw {
   my ( $self, $body ) = @_;
 
   my $msg = $self->_json_decode($body);
@@ -40,7 +45,7 @@ sub handle {
     server => [$server->mq_out->take]
   );
 
-  return $self->_json_encode($reply);
+  return $reply;
 }
 
 no Moose;
