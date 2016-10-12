@@ -32,13 +32,12 @@ show_str($js);
   );
 
   my @vars = (
-    "character_set_client",   "character_set_connection",
-    "character_set_database", "character_set_results",
+    "character_set_client",  "character_set_connection",
+    "character_set_results", "character_set_database",
     "character_set_server"
   );
 
-  #  $dbh->do("SET NAMES utf8");
-  #  set_all( $dbh, "utf8mb4", @vars );
+  set_all( $dbh, "latin1", @vars );
 
   if (1) {
 
@@ -82,7 +81,8 @@ show_str($js);
 
 sub set_all {
   my ( $dbh, $val, @var ) = @_;
-  for my $var (@var) {
+  for my $var ( sort @var ) {
+    say "SET $var = $val;";
     $dbh->do("SET $var = $val");
   }
 }
