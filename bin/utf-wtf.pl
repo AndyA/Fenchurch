@@ -38,7 +38,7 @@ show_str($js);
   );
 
   #  $dbh->do("SET NAMES utf8");
-  set_all( $dbh, "utf8mb4", @vars );
+  #  set_all( $dbh, "utf8mb4", @vars );
 
   if (1) {
 
@@ -60,7 +60,7 @@ show_str($js);
         say "\n$kind $fld:";
         show_str( $row->{$fld} );
         if ( $kind eq 'JSON' ) {
-          my $dec = eval { $json->decode( $row->{$fld} ) };
+          my $dec = eval { $json->decode( encode( "UTF-8", $row->{$fld} ) ) };
           show_str($dec) unless $@;
         }
       }
@@ -88,6 +88,7 @@ sub set_all {
 }
 
 sub json { JSON::XS->new->utf8->allow_nonref->canonical }
+#sub json { JSON::XS->new->allow_nonref->canonical }
 
 sub show_str { say dump_str(@_) }
 
