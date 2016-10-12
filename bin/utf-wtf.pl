@@ -31,7 +31,14 @@ show_str($js);
     pass => ''
   );
 
+  my @vars = (
+    "character_set_client",   "character_set_connection",
+    "character_set_database", "character_set_results",
+    "character_set_server"
+  );
+
   #  $dbh->do("SET NAMES utf8");
+  set_all( $dbh, "utf8mb4", @vars );
 
   if (1) {
 
@@ -71,6 +78,13 @@ show_str($js);
   }
 
   $dbh->disconnect;
+}
+
+sub set_all {
+  my ( $dbh, $val, @var ) = @_;
+  for my $var (@var) {
+    $dbh->do("SET $var = $val");
+  }
 }
 
 sub json { JSON::XS->new->utf8->allow_nonref->canonical }
