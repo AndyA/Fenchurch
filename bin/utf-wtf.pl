@@ -59,7 +59,7 @@ show_str($js);
         say "\n$kind $fld:";
         show_str( $row->{$fld} );
         if ( $kind eq 'JSON' ) {
-          my $dec = eval { $json->decode( encode( "UTF-8", $row->{$fld} ) ) };
+          my $dec = eval { json_x()->decode( $row->{$fld} ) };
           show_str($dec) unless $@;
         }
       }
@@ -87,8 +87,8 @@ sub set_all {
   }
 }
 
-sub json { JSON::XS->new->utf8->allow_nonref->canonical }
-#sub json { JSON::XS->new->allow_nonref->canonical }
+sub json   { JSON::XS->new->utf8->allow_nonref->canonical }
+sub json_x { JSON::XS->new->allow_nonref->canonical }
 
 sub show_str { say dump_str(@_) }
 
