@@ -10,6 +10,7 @@ use warnings;
 
 use Encode qw( encode decode );
 use JSON::XS ();
+use DBI;
 
 STDOUT->binmode("UTF-8");
 
@@ -21,6 +22,56 @@ my $json = json();
 my $js   = $json->encode($str);
 
 show_str($js);
+
+{
+  my $dbh = dbh(
+    host => 'localhost',
+    db   => 'utf_wtf',
+    user => 'root',
+    pass => ''
+  );
+
+  #  $dbh->do("SET NAMES utf8");
+
+  if (1) {
+
+    $dbh->do("TRUNCATE `utf_wtf`");
+
+    for my $data ( ["String", $str], ["JSON", $js] ) {
+      my ( $kind, $dat ) = @$data;
+      $dbh->do(
+        "INSERT INTO `utf_wtf` (`latin`, `utf`, `kind`) VALUES (?, ?, ?)",
+        {}, $dat, $dat, $kind );
+    }
+
+    my $got = $dbh->selectall_arrayref( "SELECT * FROM `utf_wtf`",
+      { Slice => {} } );
+
+    for my $row (@$got) {
+      my $kind = delete $row->{kind};
+      for my $fld ( sort keys %$row ) {
+        say "\n$kind $fld:";
+        show_str( $row->{$fld} );
+        if ( $kind eq 'JSON' ) {
+          my $dec = eval { $json->decode( $row->{$fld} ) };
+          show_str($dec) unless $@;
+        }
+      }
+    }
+  }
+
+  if (0) {
+
+    my ($syn)
+     = $dbh->selectrow_array(
+      "SELECT `synopsis` FROM genome3.genome_programmes_v2 WHERE _uuid = ?",
+      {}, "1ebcecad-fba9-4976-97e3-1337dd879e4a" );
+
+    show_str($syn);
+  }
+
+  $dbh->disconnect;
+}
 
 sub json { JSON::XS->new->utf8->allow_nonref->canonical }
 
@@ -49,6 +100,18 @@ sub dump_str {
     push @out, join "", @row;
   }
   return join "\n", @out;
+}
+
+sub dbh {
+  my %db = @_;
+  return DBI->connect(
+    sprintf( 'DBI:mysql:database=%s;host=%s', $db{db}, $db{host} ),
+    $db{user},
+    $db{pass},
+    { mysql_enable_utf8 => 1,
+      RaiseError        => 1
+    }
+  );
 }
 
 # vim:ts=2:sw=2:sts=2:et:ft=perl
