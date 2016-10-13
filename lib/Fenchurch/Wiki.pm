@@ -39,6 +39,16 @@ post '/save' => sub {
   return get_engine()->save( {params} );
 };
 
+post '/delete' => sub {
+  return get_engine()->delete( param('uuid') );
+};
+
+get '/random' => sub {
+  my $pages = get_engine()->page_list;
+  my $pick  = rand( scalar @$pages );
+  redirect '/' . $pages->[$pick]{slug};
+};
+
 get '/:slug' => sub {
   my $eng = get_engine();
   template 'index',

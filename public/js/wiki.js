@@ -28,4 +28,14 @@ $(function() {
 
     });
 
+  $(".btn.delete")
+    .click(function(ev) {
+      var $art = $("article");
+      $.post("/delete", {
+          uuid: $art.attr("data-uuid"),
+        })
+        .done(function(ev) {
+          window.location.href = "/random";
+        });
+    });
 });

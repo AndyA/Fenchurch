@@ -55,10 +55,13 @@ sub _make_page {
 
 sub save {
   my ( $self, $page ) = @_;
-  use Dancer ':syntax';
-  debug $page;
   my $orig = $self->versions->load( page => $page->{uuid} );
   $self->versions->save( page => { %{ $orig->[0] }, %$page } );
+}
+
+sub delete {
+  my ( $self, $uuid ) = @_;
+  $self->versions->delete( page => $uuid );
 }
 
 sub page {
