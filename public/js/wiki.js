@@ -1,7 +1,7 @@
 $(function() {
 
   tinymce.init({
-    selector: 'article',
+    selector: '.editable',
     inline: true,
     setup: function(ed) {
       ed.on('change', function() {

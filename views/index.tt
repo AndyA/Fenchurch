@@ -1,5 +1,5 @@
-<h1>[% stash.title | html %]</h1>
-<article data-uuid="[% stash.uuid %]">
+<h1 class="editable">[% stash.title | html %]</h1>
+<article class="editable" data-uuid="[% stash.uuid %]">
   [% stash.text %]
 </article>
 <button class="btn save">Save</button>

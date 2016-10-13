@@ -39,8 +39,12 @@ post '/save' => sub {
   return get_engine()->save( {params} );
 };
 
+get '/:slug' => sub {
+  template 'index', { stash => get_engine()->page( param('slug') ) };
+};
+
 get '/' => sub {
-  template 'index', { stash => get_engine()->home };
+  template 'index', { stash => get_engine()->page('home') };
 };
 
 true;

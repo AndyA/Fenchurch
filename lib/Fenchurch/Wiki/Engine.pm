@@ -21,14 +21,23 @@ Fenchurch::Wiki::Engine - The Wiki engine
 
 =cut
 
-sub _make_home {
+sub _make_page {
+  my ( $self, $slug ) = @_;
   my $self = shift;
 
   return {
     uuid  => $self->_make_uuid,
     title => "Fenchurch Wiki Home",
     text  => "This is the home page.",
-    slug  => "home"
+    slug  => $slug
+   }
+   if $slug eq 'home';
+
+  return {
+    uuid  => $self->_make_uuid,
+    title => ucfirst $slug,
+    text  => "This is a page about " . ucfirst($slug) . ".",
+    slug  => $slug
   };
 }
 
@@ -40,20 +49,19 @@ sub save {
   $self->versions->save( page => { %{ $orig->[0] }, %$page } );
 }
 
-sub home {
-  my $self = shift;
+sub page {
+  my ( $self, $slug ) = @_;
 
   {
-    my $home = $self->versions->load_by_key( 'page', slug => 'home' );
-    return $home->[0] if @$home;
+    my $page = $self->versions->load_by_key( 'page', slug => $slug );
+    return $page->[0] if @$page;
   }
 
   {
-    my $home = $self->_make_home;
-    $self->versions->save( page => $home );
-    return $home;
+    my $page = $self->_make_page($slug);
+    $self->versions->save( page => $page );
+    return $page;
   }
-
 }
 
 no Moose;
