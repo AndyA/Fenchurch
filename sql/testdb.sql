@@ -528,7 +528,6 @@ CREATE TABLE `utf8_test` (
 
 LOCK TABLES `utf8_test` WRITE;
 /*!40000 ALTER TABLE `utf8_test` DISABLE KEYS */;
-INSERT INTO `utf8_test` VALUES (1,'The Föundatiöns öf Music (non utf8, text field)','{\"text\":\"The FÃ¶undatiÃ¶ns Ã¶f Music (non utf8, text field)\"}'),(2,'The Föundatiöns öf Music (utf8, text field)','{\"text\":\"The FÃ¶undatiÃ¶ns Ã¶f Music (utf8, text field)\"}');
 /*!40000 ALTER TABLE `utf8_test` ENABLE KEYS */;
 UNLOCK TABLES;
 
