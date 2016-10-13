@@ -8,6 +8,7 @@ find "$in" -not -name '.*' -type f | while read src; do
   if [ "$src" -nt "$dst" ]; then
     echo "$src -> $dst"
     perl bin/fix-shebang.pl "$src" "$dst"
+    chmod +x "$dst"
   fi
 done
 
