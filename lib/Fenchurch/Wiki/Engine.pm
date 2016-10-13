@@ -23,7 +23,6 @@ Fenchurch::Wiki::Engine - The Wiki engine
 
 sub _make_page {
   my ( $self, $slug ) = @_;
-  my $self = shift;
 
   return {
     uuid  => $self->_make_uuid,
