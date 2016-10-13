@@ -202,7 +202,7 @@ sub _old_docs {
     my $doc_count    = scalar @$old_docs;
     my $expect_count = scalar @$expect;
 
-    die "Document / expectation count mismatch ",
+    confess "Document / expectation count mismatch ",
      "($doc_count versus $expect_count)"
      unless $doc_count == $expect_count;
 
@@ -213,7 +213,7 @@ sub _old_docs {
         $self->emit( 'conflict', $kind, $old, $doc, $options->{context} );
         if ( $self->do_default ) {
           my $id = ( $doc && $doc->{$pkey} ) // ( $old && $old->{$pkey} );
-          die "Document [$id] doesn't match expectation";
+          confess "Document [$id] doesn't match expectation";
         }
       }
     }
