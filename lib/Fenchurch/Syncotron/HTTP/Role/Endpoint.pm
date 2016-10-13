@@ -40,6 +40,7 @@ has 'server' => (
 
 with qw(
  Fenchurch::Core::Role::NodeName
+ Fenchurch::Event::Role::Emitter
  Fenchurch::Syncotron::Role::Versions
 );
 
@@ -49,22 +50,30 @@ sub _b_client {
   confess "remote_node_name not set"
    unless $self->has_remote_node_name;
 
-  return Fenchurch::Syncotron::Client->new(
+  my $client = Fenchurch::Syncotron::Client->new(
     db               => $self->db,
     node_name        => $self->node_name,
     remote_node_name => $self->remote_node_name,
     versions         => $self->versions
   );
+
+  $self->emit( made_client => $client );
+
+  return $client;
 }
 
 sub _b_server {
   my $self = shift;
 
-  return Fenchurch::Syncotron::Server->new(
+  my $server = Fenchurch::Syncotron::Server->new(
     db        => $self->db,
     node_name => $self->node_name,
     versions  => $self->versions
   );
+
+  $self->emit( made_server => $server );
+
+  return $server;
 }
 
 sub _handle_remote_node_name {
