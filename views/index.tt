@@ -3,3 +3,9 @@
   [% stash.text %]
 </article>
 <button class="btn save">Save</button>
+<h2>All Pages</h2>
+<ul>
+[% FOREACH page IN pages %]
+  <li><a href="/[% page.slug %]">[% page.title | html %]</a></li> 
+[% END %]
+</ul>

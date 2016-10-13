@@ -40,11 +40,15 @@ post '/save' => sub {
 };
 
 get '/:slug' => sub {
-  template 'index', { stash => get_engine()->page( param('slug') ) };
+  my $eng = get_engine();
+  template 'index',
+   {stash => $eng->page( param('slug') ),
+    pages => $eng->page_list
+   };
 };
 
 get '/' => sub {
-  template 'index', { stash => get_engine()->page('home') };
+  redirect "/home";
 };
 
 true;
