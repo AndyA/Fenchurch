@@ -10,7 +10,6 @@ use lib qw( ../Fenchurch/lib lib );
 
 use Dancer qw( :script );
 use Dancer::Plugin::Database;
-
 use Fenchurch::Adhocument::Versions;
 use Fenchurch::Core::DB;
 use Fenchurch::Syncotron::HTTP::Client;
