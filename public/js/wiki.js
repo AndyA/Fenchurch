@@ -2,6 +2,7 @@ $(function() {
 
   tinymce.init({
     selector: '.editable',
+    plugins: 'advlist autolink link image lists charmap print preview',
     inline: true,
     setup: function(ed) {
       ed.on('change', function() {
