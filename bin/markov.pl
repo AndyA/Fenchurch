@@ -20,6 +20,8 @@ use List::Util qw( shuffle );
 use Text::HTMLCleaner;
 use UUID::Tiny ':std';
 
+use constant MAX_PAGE => 200;
+
 STDOUT->binmode("UTF-8");
 
 my $dbh = database;
@@ -62,6 +64,16 @@ my $page = {
 say JSON->new->pretty->canonical->encode($page);
 
 $versions->save( page => $page );
+
+# Prune
+my @uuid
+ = shuffle @{ $dbh->selectcol_arrayref("SELECT `uuid` FROM `wiki_page`")
+ };
+
+if ( @uuid > MAX_PAGE ) {
+  splice @uuid, 0, MAX_PAGE;
+  $versions->delete( page => @uuid );
+}
 
 sub _make_uuid { create_uuid_as_string(UUID_V4) }
 
