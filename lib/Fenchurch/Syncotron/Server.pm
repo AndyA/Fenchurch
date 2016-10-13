@@ -8,6 +8,7 @@ use Moose;
 use Moose::Util::TypeConstraints;
 
 use Fenchurch::Syncotron::Engine;
+use Try::Tiny;
 
 has page_size => (
   is       => 'ro',
@@ -66,6 +67,11 @@ sub _put_recent {
   $self->_send( { type => 'put.recent', %$recent } );
 }
 
+sub _put_error {
+  my ( $self, $error ) = @_;
+  $self->_send( { type => 'put.error', error => $error } );
+}
+
 sub _build_app {
   my ( $self, $de ) = @_;
 
@@ -103,9 +109,15 @@ sub _build_app {
 
 sub next {
   my $self = shift;
-  for my $ev ( $self->mq_in->take ) {
-    $self->_despatch($ev);
+  try {
+    for my $ev ( $self->mq_in->take ) {
+      $self->_despatch($ev);
+    }
   }
+  catch {
+    my $error = $_;
+    $self->_put_error($error);
+  };
 }
 
 no Moose;

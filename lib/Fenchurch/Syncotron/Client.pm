@@ -8,6 +8,8 @@ use Moose;
 use Moose::Util::TypeConstraints;
 
 use Fenchurch::Syncotron::Despatcher;
+use Fenchurch::Syncotron::Fault;
+use Try::Tiny;
 
 has remote_node_name => (
   is       => 'ro',
@@ -86,6 +88,18 @@ sub _build_app {
       $self->engine->add_versions( @{ $msg->{versions} } );
     }
   );
+
+  $de->on(
+    'put.error' => sub {
+      my $msg = shift;
+      $state->fault(
+        Fenchurch::Syncotron::Fault->new(
+          error    => $msg->{error},
+          location => 'remote'
+        )
+      );
+    }
+  );
 }
 
 sub _receive {
@@ -126,8 +140,23 @@ sub _transmit {
 
 sub next {
   my $self = shift;
-  $self->_receive;
-  $self->_transmit;
+
+  my $st = $self->state;
+  die "Can't continue in faulted state"
+   if $st->state eq 'fault';
+
+  try {
+    $self->_receive;
+    $self->_transmit;
+  }
+  catch {
+    $st->fault(
+      Fenchurch::Syncotron::Fault->new(
+        error    => $_,
+        location => 'local'
+      )
+     )
+  };
 }
 
 no Moose;

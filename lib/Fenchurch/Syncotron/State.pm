@@ -14,7 +14,7 @@ Fenchurch::Syncotron::State - Sync state
 
 has state => (
   is      => 'rw',
-  isa     => enum( ['init', 'enumerate', 'recent'] ),
+  isa     => enum( ['init', 'enumerate', 'recent', 'fault'] ),
   default => 'init'
 );
 
@@ -24,12 +24,21 @@ has ['progress', 'serial'] => (
   default => 0
 );
 
+has fault => (
+  is  => 'rw',
+  isa => duck_type( ['location', 'error'] )
+);
+
 with Storage( format => 'JSON' );
 
 after state => sub {
   my $self = shift;
   $self->progress(0) if @_;
+};
 
+after fault => sub {
+  my $self = shift;
+  $self->state('fault') if @_;
 };
 
 sub advance {
