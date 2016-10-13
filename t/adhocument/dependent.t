@@ -276,6 +276,33 @@ my $programmes = test_data("stash.json");
      [2, 2, 2],
      "expected number of edit versions";
   }
+
+  # Create a new programme via an edit
+  {
+    my $new_prog = dclone $prog[0];
+
+    $new_prog->{_uuid} = make_uuid();
+    $new_prog->{title} = "New programme";
+    $new_prog->{_key}  = 'new@prog';
+
+    $_->{_uuid} = make_uuid() for @{ $new_prog->{related} };
+
+    my $edit = {
+      uuid     => make_uuid(),
+      kind     => 'programme',
+      object   => $new_prog->{_uuid},
+      state    => 'pending',
+      old_data => undef,
+      new_data => $new_prog
+    };
+
+    $adv->save( edit => $edit );
+    $edit->{state} = "accepted";
+    $adv->save( edit => $edit );
+
+    my $saved_prog = $adv->load( programme => $new_prog->{_uuid} );
+    eq_or_diff $saved_prog->[0], $new_prog, "New programme created via edit";
+  }
 }
 
 #debug_versions();
