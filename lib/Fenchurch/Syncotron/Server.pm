@@ -57,8 +57,8 @@ sub _put_leaves {
 
 sub _put_versions {
   my ( $self, @uuid ) = @_;
-  my $ver = $self->versions->load_versions(@uuid);
-  $self->_send( { type => 'put.versions', versions => $ver } );
+  my @ver = grep { defined } @{ $self->versions->load_versions(@uuid) };
+  $self->_send( { type => 'put.versions', versions => \@ver } );
 }
 
 sub _put_recent {
