@@ -99,7 +99,6 @@ sub make_test_data {
   for ( 1 .. $count ) {
     push @data,
      {_uuid => make_uuid(),
-
       name  => another("Item"),
       tags  => [
         { index => "0",
