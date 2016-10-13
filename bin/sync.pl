@@ -18,7 +18,9 @@ use Fenchurch::Syncotron::HTTP::Server;
 use Fenchurch::Wiki::Engine;
 use Fenchurch::Wiki::Schema;
 use Getopt::Long;
+use JSON();
 use LWP::UserAgent;
+use POSIX qw( strftime );
 use URI;
 
 use constant USAGE => <<EOT;
@@ -42,6 +44,26 @@ my $client = Fenchurch::Syncotron::HTTP::Client->new(
   uri      => "$ep",
   versions => $versions
 );
+
+sub ts { strftime '%Y/%m/%d %H:%M:%S', localtime }
+
+sub trace {
+  my ( $kind, $s_or_r, $msg ) = @_;
+  my $ts   = ts();
+  my $pad  = ' ' x length $ts;
+  my @dump = split /\n/, JSON->new->pretty->canonical->encode($msg);
+  say "$ts : [$kind $s_or_r]";
+  say "$pad   $_" for @dump;
+}
+
+sub wire_app {
+  my ( $kind, $app ) = @_;
+  $app->on( send    => sub { trace( $kind, send    => @_ ) } );
+  $app->on( receive => sub { trace( $kind, receive => @_ ) } );
+}
+
+$client->on( made_client => sub { wire_app( client => shift ) } );
+$client->on( made_server => sub { wire_app( server => shift ) } );
 
 while () {
   $client->next;
