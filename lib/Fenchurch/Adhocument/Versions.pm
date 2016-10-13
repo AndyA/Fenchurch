@@ -19,6 +19,13 @@ has numify => (
   default  => 0
 );
 
+has table => (
+  is       => 'ro',
+  isa      => 'Str',
+  required => 1,
+  default  => ':versions'
+);
+
 has _engine => (
   is      => 'ro',
   isa     => 'Fenchurch::Adhocument',
@@ -71,7 +78,7 @@ sub _b_version_engine {
   return Fenchurch::Adhocument->new(
     db     => $self->db,
     schema => Fenchurch::Adhocument::Schema->new(
-      schema => $self->version_schema( ":versions", append => 1 )
+      schema => $self->version_schema( $self->table, append => 1 )
     ),
     numify => 1
   );
@@ -104,9 +111,11 @@ sub _ver_sequence {
 
   return {} unless @ids;
 
+  my $table = $self->table;
+
   my $sql = $self->db->quote_sql(
     "SELECT {object}, MAX({sequence}) AS {sequence}",
-    "FROM {:versions}",
+    "FROM {$table}",
     "WHERE {object} IN (",
     join( ", ", map "?", @ids ),
     ")",
@@ -121,10 +130,12 @@ sub _ver_sequence {
 sub _last_leaf {
   my $self = shift;
 
+  my $table = $self->table;
+
   my ($leaf) = $self->dbh->selectrow_array(
     $self->db->quote_sql(
       "SELECT {uuid}",
-      "FROM {:versions}",
+      "FROM {$table}",
       "ORDER BY {serial} DESC",
       "LIMIT 1"
     )
