@@ -1,4 +1,4 @@
 .*.sw?
-/.build/
+.DS_Store
+/.build
 /Session.vim
-/tmp/

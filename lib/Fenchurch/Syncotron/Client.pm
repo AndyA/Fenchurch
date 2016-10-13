@@ -143,6 +143,7 @@ sub next {
   my $self = shift;
 
   my $st = $self->state;
+
   die "Can't continue in faulted state"
    if $st->state eq 'fault';
 

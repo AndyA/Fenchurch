@@ -1,27 +1,24 @@
 # This is the main configuration file of your Dancer app
-# env-related settings should go to environments/$env.yml.
-# All the settings in this file will be loaded at Dancer's startup.
+# env-related settings should go to environments/$env.yml
+# all the settings in this file will be loaded at Dancer's startup.
 
 # Your application's name
-appname: "Fenchurch::Syncotron::Site"
+appname: "Fenchurch::Wiki"
 
 # The default layout to use for your application (located in
 # views/layouts/main.tt)
 layout: "main"
 
-# When the charset is set to UTF-8 Dancer will handle for you
+# when the charset is set to UTF-8 Dancer will handle for you
 # all the magic of encoding and decoding. You should not care
 # about unicode within your app when this setting is set (recommended).
 charset: "UTF-8"
 
-# template: "template_toolkit"
-# engines:
-#   template_toolkit:
-#     start_tag: '[%'
-#     end_tag:   '%]'
+# template engine
+# simple: default and very basic template engine
+# template_toolkit: TT
 
-# For session support enable the following line and see Dancer::Session
-# session: "YAML"
+# template: "simple"
 
 template: "template_toolkit"
 engines:
@@ -37,7 +34,7 @@ plugins:
     driver: 'mysql'
     host: 'localhost'
     port: 3306
-    database: 'test_adhocument'
+    database: 'fenchurch_wiki'
     username: 'root'
     password: ''
     connection_check_threshold: 10
@@ -46,12 +43,12 @@ plugins:
       AutoCommit: 1
     on_connect_do:
       - "SET SQL_MODE='TRADITIONAL'"
+      - "SET character_set_client = latin1"
+      - "SET character_set_connection = latin1"
+      - "SET character_set_database = latin1"
+      - "SET character_set_results = latin1"
+      - "SET character_set_server = latin1"
     log_queries: 1
-    connections:
-      sphinx:
-        driver: 'mysql'
-        host: '127.0.0.1'
-        port: 9306
 
 engines:
   JSON:

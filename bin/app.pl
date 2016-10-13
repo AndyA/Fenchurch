@@ -1,9 +1,10 @@
 #!/usr/bin/env perl
+
+use FindBin '$RealBin';
+
+use lib "$FindBin::Bin/../../Fenchurch/lib";
+
 use Dancer;
+use Fenchurch::Wiki;
 
-use FindBin;
-
-use lib glob "$FindBin::Bin/../../*/lib";
-
-use Fenchurch::Syncotron::Site;
 dance;
