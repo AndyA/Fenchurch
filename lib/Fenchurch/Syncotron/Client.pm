@@ -64,9 +64,10 @@ sub _build_app {
 
   $de->on(
     'put.leaves' => sub {
-      my $msg    = shift;
+      my $msg = shift;
+
       my @leaves = @{ $msg->{leaves} };
-      $self->_get_versions( $eng->dont_have(@leaves) );
+      $eng->known(@leaves);
       $state->serial( $msg->{serial} );
       $state->advance( scalar @leaves );
       $state->state('recent') if $msg->{last};
@@ -75,9 +76,9 @@ sub _build_app {
 
   $de->on(
     'put.recent' => sub {
-      my $msg    = shift;
-      my @recent = @{ $msg->{recent} };
-      $self->_get_versions( $eng->dont_have(@recent) );
+      my $msg = shift;
+
+      $eng->known( @{ $msg->{recent} } );
       $state->serial( $msg->{serial} );
     }
   );

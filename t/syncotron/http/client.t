@@ -23,6 +23,7 @@ preflight;
 my @tables = qw(
  test_state
  test_pending
+ test_known
  test_versions
  test_item
  test_tag
@@ -124,6 +125,7 @@ sub make_versions {
     tables => {
       versions => 'test_versions',
       pending  => 'test_pending',
+      known    => 'test_known',
       state    => 'test_state',
     }
   );

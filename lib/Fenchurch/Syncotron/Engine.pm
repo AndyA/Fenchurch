@@ -179,6 +179,44 @@ sub dont_have {
   return grep { $need{$_} } @uuid;
 }
 
+=head2 C<known>
+
+Add UUIDs of known versions
+
+=cut
+
+sub known {
+  my ( $self, @uuid ) = @_;
+
+  my @known = $self->dont_have(@uuid);
+  return unless @known;
+
+  $self->dbh->do(
+    $self->db->quote_sql(
+      "REPLACE INTO {:known} ({uuid}) VALUES ",
+      join ", ", map "(?)", @known
+    ),
+    {},
+    @known
+  );
+}
+
+sub _unknown {
+  my ( $self, @uuid ) = @_;
+
+  return unless @uuid;
+
+  $self->dbh->do(
+    $self->db->quote_sql(
+      "DELETE FROM {:known} WHERE {uuid} IN (",
+      join( ", ", map "?", @uuid ),
+      ")"
+    ),
+    {},
+    @uuid
+  );
+}
+
 =head2 C<want>
 
 Return a list of versions that we need.
@@ -190,12 +228,14 @@ sub want {
   return @{
     $self->dbh->selectcol_arrayref(
       $self->db->quote_sql(
-        "SELECT DISTINCT {p1.parent}",
-        "  FROM {:pending} AS {p1}",
-        "  LEFT JOIN {:pending} AS {p2}",
-        "    ON {p1.parent} = {p2.uuid}",
-        " WHERE {p2.uuid} IS NULL",
-        " ORDER BY {p1.serial} ASC",
+        "SELECT DISTINCT {uuid} FROM (",
+        "  SELECT {uuid} FROM {:known}",
+        "  UNION SELECT {p1.parent} AS {uuid}",
+        "    FROM {:pending} AS {p1}",
+        "    LEFT JOIN {:pending} AS {p2}",
+        "      ON {p1.parent} = {p2.uuid}",
+        "   WHERE {p2.uuid} IS NULL",
+        ") AS {q}",
         " LIMIT ?, ?"
       ),
       {},
@@ -262,23 +302,29 @@ have been satisfied.
 sub add_versions {
   my ( $self, @vers ) = @_;
 
-  my %need = map { $_ => 1 } $self->dont_have( map { $_->{uuid} } @vers );
+  $self->db->transaction(
+    sub {
+      my @uuid = map { $_->{uuid} } @vers;
+      $self->_unknown(@uuid);
+      my %need = map { $_ => 1 } $self->dont_have(@uuid);
 
-  my @new = ();
-  for my $ver (@vers) {
-    next unless $need{ $ver->{uuid} };
-    my $nv = {%$ver};    # Shallow
-    delete $nv->{serial};
-    push @new, $nv;
-  }
+      my @new = ();
+      for my $ver (@vers) {
+        next unless $need{ $ver->{uuid} };
+        my $nv = {%$ver};    # Shallow
+        delete $nv->{serial};
+        push @new, $nv;
+      }
 
-  my $pe = $self->_pending_engine;
+      my $pe = $self->_pending_engine;
 
-  # Mark them all pending
-  $pe->save( version => @new );
+      # Mark them all pending
+      $pe->save( version => @new );
 
-  # Flush any pending versions that are now complete.
-  $self->db->transaction( sub { 1 while ( $self->_flush_pending ) } );
+      # Flush any pending versions that are now complete.
+      1 while $self->_flush_pending;
+    }
+  );
 }
 
 no Moose;

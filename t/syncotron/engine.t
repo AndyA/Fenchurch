@@ -60,6 +60,11 @@ preflight;
   eq_or_diff [$el->dont_have(@since)], [], "Local has all versions";
   eq_or_diff [$er->dont_have(@since)], [@since], "Remote has no versions";
 
+  eq_or_diff [$er->want( 0, 100 )], [], "Remote wants nothing";
+  $er->known(@leaves);
+  eq_or_diff [sort $er->want( 0, 100 )], [sort @leaves],
+   "Remote wants leaves";
+
   my $leaves = $vl->load_versions(@leaves);
   $er->add_versions(@$leaves);
 
@@ -188,14 +193,16 @@ sub make_test_data {
 sub make_test_db {
   my $dbh = shift;
 
-  $dbh->do("TRUNCATE `$_`")
-   for qw( test_versions test_pending test_item test_tag test_tree );
+  $dbh->do("TRUNCATE `$_`") for qw(
+   test_versions test_pending test_known test_item test_tag test_tree
+  );
 
   my $db = Fenchurch::Core::DB->new(
     dbh    => $dbh,
     tables => {
       versions => 'test_versions',
       pending  => 'test_pending',
+      known    => 'test_known',
     }
   );
 

@@ -39,6 +39,7 @@ my %common = (
     versions => 'test_versions',
     state    => 'test_state',
     pending  => 'test_pending',
+    known    => 'test_known',
   }
 );
 

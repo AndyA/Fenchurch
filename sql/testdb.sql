@@ -204,6 +204,28 @@ LOCK TABLES `test_item` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `test_known`
+--
+
+DROP TABLE IF EXISTS `test_known`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `test_known` (
+  `uuid` varchar(36) NOT NULL,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `test_known`
+--
+
+LOCK TABLES `test_known` WRITE;
+/*!40000 ALTER TABLE `test_known` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_known` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `test_pending`
 --
 
@@ -543,4 +565,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-10-08 12:57:49
+-- Dump completed on 2016-10-13 13:39:18
