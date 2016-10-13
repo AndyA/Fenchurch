@@ -7,6 +7,8 @@ use v5.10;
 use Moose::Role;
 use Moose::Util::TypeConstraints;
 
+use Fenchurch::Syncotron::Stats;
+
 use LWP::UserAgent;
 
 has _ua => (
@@ -16,13 +18,37 @@ has _ua => (
   builder => '_b_ua'
 );
 
+has stats => (
+  is      => 'ro',
+  lazy    => 1,
+  builder => '_b_stats'
+);
+
 =head1 NAME
 
 Fenchurch::Syncotron::HTTP::Role::UserAgent - Add an LWP::UserAgent
 
 =cut
 
-sub _b_ua { LWP::UserAgent->new }
+sub _b_ua    { LWP::UserAgent->new }
+sub _b_stats { Fenchurch::Syncotron::Stats->new }
+
+sub _post {
+  my ( $self, $msg ) = @_;
+
+  my $stats = $self->stats;
+
+  my $req = HTTP::Request->new( 'POST', $self->uri );
+  $req->header( 'Content-Type' => 'application/json;charset=utf-8' );
+  $req->content( $stats->_count( send => $self->_json_encode($msg) ) );
+
+  my $resp = $self->_ua->request($req);
+
+  return $self->_json_decode( $stats->_count( receive => $resp->content ) )
+   if $resp->is_success;
+
+  die $resp->status_line;
+}
 
 1;
 

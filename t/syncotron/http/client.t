@@ -63,6 +63,13 @@ $client->next for 1 .. 7;
 check_data( $local_versions, $remote_versions, @local_data,
   @remote_data );
 
+my $report = $client->stats->report;
+while ( my ( $kind, $stats ) = each %$report ) {
+  is $stats->{count}, 8, "$kind: 8 http requests seen";
+  ok $stats->{average} >= $stats->{min}
+   && $stats->{average} <= $stats->{max}, "$kind: average looks sane";
+}
+
 done_testing;
 
 sub check_data {

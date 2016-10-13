@@ -24,21 +24,6 @@ Fenchurch::Syncotron::HTTP::Client - Client to sync over http
 
 =cut
 
-sub _post {
-  my ( $self, $msg ) = @_;
-
-  my $req = HTTP::Request->new( 'POST', $self->uri );
-  $req->header( 'Content-Type' => 'application/json;charset=utf-8' );
-  $req->content( $self->_json_encode($msg) );
-
-  my $resp = $self->_ua->request($req);
-
-  return $self->_json_decode( $resp->content )
-   if $resp->is_success;
-
-  die $resp->status_line;
-}
-
 sub _find_remote_node_name {
   my $self = shift;
   return if $self->has_remote_node_name;
