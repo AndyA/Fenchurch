@@ -21,7 +21,7 @@ has page_size => (
   is       => 'ro',
   isa      => 'Int',
   required => 1,
-  default  => 10_000
+  default  => 1000
 );
 
 with qw(
