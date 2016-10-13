@@ -63,14 +63,18 @@ my $programmes = test_data("stash.json");
           my $old_state = $ver->{old_data}{state} // "missing";
           my $new_state = $edit->{state} // "deleted";
 
+          my %common = ( context => { edit => $edit } );
+
           if ( $old_state ne "accepted" && $new_state eq "accepted" ) {
             # Accepting
-            $adv->save( { parents => [$ver->{uuid}], expect => [$edit->{old_data}] },
+            $adv->save(
+              { %common, parents => [$ver->{uuid}], expect => [$edit->{old_data}] },
               $edit->{kind}, $edit->{new_data} );
           }
           elsif ( $old_state eq "accepted" && $new_state ne "accepted" ) {
             # Rejecting
-            $adv->save( { parents => [$ver->{uuid}], expect => [$edit->{new_data}] },
+            $adv->save(
+              { %common, parents => [$ver->{uuid}], expect => [$edit->{new_data}] },
               $edit->{kind}, $edit->{old_data} );
           }
           elsif ( $old_state eq "accepted" && $new_state eq "accepted" ) {
@@ -246,7 +250,13 @@ my $programmes = test_data("stash.json");
     # expectation
     $_->{state} = 'accepted' for @edit;
     my $events = 0;
-    $adv->on( conflict => sub { $events++ } );
+    $adv->on(
+      conflict => sub {
+        my ( $kind, $got, $wanted, $context ) = @_;
+        ok $context->{edit}, "Context passed to conflict handler";
+        $events++;
+      }
+    );
     eval { $adv->save( edit => @edit ) };
     like $@, qr{Document\s+\[}, "error thrown";
     $adv->off('conflict');
