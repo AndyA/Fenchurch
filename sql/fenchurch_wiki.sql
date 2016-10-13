@@ -54,9 +54,9 @@ CREATE TABLE `fenchurch_pending` (
   `sequence` int(10) unsigned NOT NULL,
   `rand` double NOT NULL,
   `kind` varchar(40) NOT NULL,
-  `schema` text NOT NULL,
-  `old_data` text,
-  `new_data` text,
+  `schema` longtext NOT NULL,
+  `old_data` longtext,
+  `new_data` longtext,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `fenchurch_versions_serial` (`serial`),
   KEY `fenchurch_versions_parent` (`parent`),
@@ -90,7 +90,7 @@ CREATE TABLE `fenchurch_queue` (
   `from` varchar(200) NOT NULL COMMENT 'Sending node name',
   `to` varchar(200) NOT NULL COMMENT 'Receiving node name',
   `when` datetime NOT NULL COMMENT 'Message timestamp',
-  `message` text NOT NULL COMMENT 'Serialised message',
+  `message` longtext NOT NULL COMMENT 'Serialised message',
   PRIMARY KEY (`id`),
   KEY `role` (`role`),
   KEY `from` (`from`),
@@ -118,7 +118,7 @@ CREATE TABLE `fenchurch_state` (
   `local_node` varchar(200) NOT NULL COMMENT 'Local node name',
   `remote_node` varchar(200) NOT NULL COMMENT 'Remote node name',
   `updated` datetime NOT NULL,
-  `state` text NOT NULL COMMENT 'Serialised sync state',
+  `state` longtext NOT NULL COMMENT 'Serialised sync state',
   PRIMARY KEY (`local_node`,`remote_node`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -149,9 +149,9 @@ CREATE TABLE `fenchurch_versions` (
   `sequence` int(10) unsigned NOT NULL,
   `rand` double NOT NULL,
   `kind` varchar(40) NOT NULL,
-  `schema` text NOT NULL,
-  `old_data` text,
-  `new_data` text,
+  `schema` longtext NOT NULL,
+  `old_data` longtext,
+  `new_data` longtext,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `fenchurch_versions_serial` (`serial`),
   KEY `fenchurch_versions_parent` (`parent`),
@@ -183,7 +183,7 @@ CREATE TABLE `wiki_page` (
   `uuid` varchar(36) NOT NULL,
   `slug` varchar(80) DEFAULT NULL,
   `title` varchar(255) NOT NULL,
-  `text` text,
+  `text` longtext,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `slug` (`slug`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
