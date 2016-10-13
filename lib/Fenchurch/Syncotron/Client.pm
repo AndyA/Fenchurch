@@ -144,8 +144,11 @@ sub next {
 
   my $st = $self->state;
 
-  die "Can't continue in faulted state"
-   if $st->state eq 'fault';
+  if ( $st->state eq 'fault' ) {
+    my $fault = $st->fault;
+    die "Can't continue in faulted state (location: ", $fault->location,
+     ", error: ", $fault->error, ")";
+  }
 
   try {
     $self->_receive;
