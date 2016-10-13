@@ -305,50 +305,11 @@ my $programmes = test_data("stash.json");
   }
 }
 
-#debug_versions();
-
 done_testing;
 
 sub count_versions {
   my ( $ad, $kind, @ids ) = @_;
   return map { scalar @$_ } @{ $ad->versions( $kind, @ids ) };
-}
-
-# Some debug
-sub debug_versions {
-  my $vers = database->selectall_arrayref(
-    join( " ",
-      "SELECT `uuid`, `parent`, `kind`, `object`, `serial`, `sequence`, `when`",
-      "  FROM `test_versions`",
-      " ORDER BY `serial`" ),
-    { Slice => {} }
-  );
-  my %by_uuid = ();
-  for my $ver (@$vers) {
-    $by_uuid{ $ver->{uuid} } = $ver;
-  }
-  my @root = ();
-  for my $ver (@$vers) {
-    if ( defined $ver->{parent} ) {
-      my $parent = $by_uuid{ $ver->{parent} };
-      push @{ $parent->{children} }, $ver;
-    }
-    else {
-      push @root, $ver;
-    }
-  }
-  diag "Version tree:";
-  show_versions( 0, @root );
-}
-
-sub show_versions {
-  my $indent = shift // 0;
-  my $pad = "  " x $indent;
-  for my $ver (@_) {
-    diag $pad, join " ",
-     @{$ver}{ 'kind', 'uuid', 'object', 'serial', 'sequence', 'when' };
-    show_versions( $indent + 1, @{ $ver->{children} // [] } );
-  }
 }
 
 sub schema {
