@@ -40,6 +40,9 @@ find sub {
   my $name = $_;
   my $txt = do { local $/; open my $fh, '<', $name; <$fh> };
   ( my $slug = $File::Find::name ) =~ s/\W+/-/g;
+  $slug =~ s/^-+//g;
+  $slug =~ s/-+$//g;
+  say $slug;
 
   my $page = {
     uuid  => _make_uuid(),
