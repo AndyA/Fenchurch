@@ -151,24 +151,18 @@ sub _build_versions {
   my $schema = $self->schema_for($kind);
   my $when   = DateTime::Format::MySQL->format_datetime( $options->{when}
      // DateTime->now );
-  my @ver = ();
 
   my @parents = @{ $options->{parents} || [] };
   my @uuids   = @{ $options->{uuid}    || [] };
+  my $node    = $self->node_name;
 
-  if ( @parents < @docs ) {
-    my $leaf = $self->_last_leaf;
-    push @parents, ($leaf) x ( @docs - @parents );
-  }
-
-  my $node = $self->node_name;
-
+  my @ver = ();
   for my $doc (@docs) {
     my ( $oid, $new_data ) = @$doc;
     my $sn = ( $seq->{$oid}[0]{sequence} // 0 ) + 1;
     push @ver,
      {uuid => shift(@uuids) // $self->_make_uuid,
-      parent   => shift(@parents),
+      parent => shift(@parents) // ( my $leaf = $self->_last_leaf ),
       node     => $node,
       rand     => rand(),
       object   => $oid,
