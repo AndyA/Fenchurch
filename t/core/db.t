@@ -77,7 +77,7 @@ preflight;
       },
       synopsis => {
         auto     => 0,
-        type     => "text",
+        type     => "longtext",
         primary  => 0,
         default  => undef,
         nullable => 1
@@ -106,7 +106,7 @@ preflight;
       text => {
         auto     => 0,
         nullable => 1,
-        type     => "text",
+        type     => "longtext",
         primary  => 0,
         default  => undef
       },
@@ -120,7 +120,7 @@ preflight;
       footnote => {
         auto     => 0,
         nullable => 1,
-        type     => "text",
+        type     => "longtext",
         default  => undef,
         primary  => 0
       },
