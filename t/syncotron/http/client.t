@@ -61,6 +61,9 @@ $remote_versions->save( item => @remote_data );
 
 $client->next for 1 .. 7;
 
+eq_or_diff [walk_versions( $remote_versions->dbh )],
+ [walk_versions( $local_versions->dbh )], "Version tree matches";
+
 check_data( $local_versions, $remote_versions, @local_data,
   @remote_data );
 
@@ -72,6 +75,32 @@ while ( my ( $kind, $stats ) = each %$report ) {
 }
 
 done_testing;
+
+sub walk_versions {
+  my $db   = shift;
+  my $vers = $db->selectall_arrayref(
+    join( " ",
+      "SELECT `uuid`, `parent`, `kind`, `object`",
+      "  FROM `test_versions`",
+      " ORDER BY `uuid`" ),
+    { Slice => {} }
+  );
+  my %by_uuid = ();
+  for my $ver (@$vers) {
+    $by_uuid{ $ver->{uuid} } = $ver;
+  }
+  my @root = ();
+  for my $ver (@$vers) {
+    if ( defined $ver->{parent} ) {
+      my $parent = $by_uuid{ $ver->{parent} };
+      push @{ $parent->{children} }, $ver;
+    }
+    else {
+      push @root, $ver;
+    }
+  }
+  return @root;
+}
 
 sub check_data {
   my ( $vl, $vr, @items ) = @_;

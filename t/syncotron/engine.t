@@ -121,9 +121,39 @@ preflight;
 
   sync_complete( $vl, $el, $vr, $er );
   check_data( $vl, $vr, @items );
+
+  eq_or_diff [walk_versions( $vr->dbh )],
+   [walk_versions( $vl->dbh )], "Version tree matches";
+
 }
 
 done_testing;
+
+sub walk_versions {
+  my $db   = shift;
+  my $vers = $db->selectall_arrayref(
+    join( " ",
+      "SELECT `uuid`, `parent`, `kind`, `object`",
+      "  FROM `test_versions`",
+      " ORDER BY `uuid`" ),
+    { Slice => {} }
+  );
+  my %by_uuid = ();
+  for my $ver (@$vers) {
+    $by_uuid{ $ver->{uuid} } = $ver;
+  }
+  my @root = ();
+  for my $ver (@$vers) {
+    if ( defined $ver->{parent} ) {
+      my $parent = $by_uuid{ $ver->{parent} };
+      push @{ $parent->{children} }, $ver;
+    }
+    else {
+      push @root, $ver;
+    }
+  }
+  return @root;
+}
 
 sub check_data {
   my ( $vl, $vr, @items ) = @_;

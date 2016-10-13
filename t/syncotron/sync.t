@@ -70,7 +70,8 @@ iterate( $client, $server, 10 );
 
 check_data( $client->versions, $server->versions, @$programmes );
 
-#debug_versions( $db_remote->dbh );
+eq_or_diff [walk_versions( $db_remote->dbh )],
+ [walk_versions( $db_local->dbh )], "Version tree matches";
 
 done_testing;
 
@@ -152,14 +153,13 @@ sub schema {
     schema => test_data("schema.json") );
 }
 
-# Some debug
-sub debug_versions {
+sub walk_versions {
   my $db   = shift;
   my $vers = $db->selectall_arrayref(
     join( " ",
-      "SELECT `uuid`, `parent`, `kind`, `object`, `serial`, `sequence`, `when`",
+      "SELECT `uuid`, `parent`, `kind`, `object`",
       "  FROM `test_versions`",
-      " ORDER BY `serial`" ),
+      " ORDER BY `uuid`" ),
     { Slice => {} }
   );
   my %by_uuid = ();
@@ -176,16 +176,14 @@ sub debug_versions {
       push @root, $ver;
     }
   }
-  diag "Version tree:";
-  show_versions( 0, @root );
+  return @root;
 }
 
 sub show_versions {
   my $indent = shift // 0;
   my $pad = "  " x $indent;
   for my $ver (@_) {
-    diag $pad, join " ",
-     @{$ver}{ 'kind', 'uuid', 'object', 'serial', 'sequence', 'when' };
+    diag $pad, join " ", @{$ver}{ 'kind', 'uuid', 'object', 'serial' };
     show_versions( $indent + 1, @{ $ver->{children} // [] } );
   }
 }
