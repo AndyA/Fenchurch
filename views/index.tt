@@ -1,5 +1,8 @@
-<button class="btn save">Save</button>
+<form class="inline" action="/random">
+  <button class="btn random" type="submit">Random</button>
+</form>
 <button class="btn delete">Delete</button>
+<button class="btn save">Save</button>
 <h1 class="editable">[% stash.title | html %]</h1>
 <article class="editable" data-uuid="[% stash.uuid %]">
   [% stash.text %]

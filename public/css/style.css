@@ -1,3 +1,7 @@
 .btn.save {
   display: none;
 }
+
+.inline {
+  display: inline-block;
+}
