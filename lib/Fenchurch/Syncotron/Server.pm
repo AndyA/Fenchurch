@@ -14,7 +14,23 @@ has page_size => (
   is       => 'ro',
   isa      => 'Int',
   required => 1,
-  default  => 100
+  default  => 10_000
+);
+
+# Tuning: approx size of an edit
+has edit_size => (
+  is       => 'ro',
+  isa      => 'Int',
+  required => 1,
+  default  => 10_000
+);
+
+# Maximum size of a put.versions message.
+has max_size => (
+  is       => 'ro',
+  isa      => 'Int',
+  required => 1,
+  default  => 1000_000
 );
 
 with qw(
@@ -57,8 +73,18 @@ sub _put_leaves {
 
 sub _put_versions {
   my ( $self, @uuid ) = @_;
-  my @ver = grep { defined } @{ $self->versions->load_versions(@uuid) };
-  $self->_send( { type => 'put.versions', versions => \@ver } );
+
+  while (@uuid) {
+    my @chunk = splice @uuid, 0, 25;
+    my @ver = grep { defined } @{ $self->versions->load_versions(@chunk) };
+    while (@ver) {
+      $self->_send( { type => 'put.versions', versions => [shift @ver] } );
+      if ( $self->mq_out->size > $self->max_size ) {
+        $self->mq_out->unsend(1);
+        return;
+      }
+    }
+  }
 }
 
 sub _put_recent {
