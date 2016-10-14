@@ -2,6 +2,7 @@ package Fenchurch::Wiki;
 
 use Dancer ':syntax';
 use Dancer::Plugin::Database;
+use Try::Tiny;
 
 # ABSTRACT: A Wiki to test Fenchurch versioning, sync.
 
@@ -31,8 +32,15 @@ sub get_engine {
 }
 
 post '/sync' => sub {
-  return Fenchurch::Syncotron::HTTP::Server->new(
-    versions => get_versions )->handle_raw( request->body );
+  try {
+    return Fenchurch::Syncotron::HTTP::Server->new(
+      versions => get_versions )->handle_raw( request->body );
+  }
+  catch {
+    my $error = $_;
+    status 500;
+    return { error => $error };
+  };
 };
 
 post '/save' => sub {
