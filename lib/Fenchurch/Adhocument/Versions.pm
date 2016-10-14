@@ -145,25 +145,22 @@ sub _last_leaf {
 }
 
 sub _build_versions {
-  my ( $self, $options, $kind, $old_docs, @docs ) = @_;
+  my ( $self, $options, $edits, $kind, $old_docs, @docs ) = @_;
 
   my $seq    = $self->_ver_sequence( map { $_->[0] } @docs );
   my $schema = $self->schema_for($kind);
   my $when   = DateTime::Format::MySQL->format_datetime( $options->{when}
      // DateTime->now );
-
-  my @parents = @{ $options->{parents} || [] };
-  my @uuids   = @{ $options->{uuid}    || [] };
-  my $node    = $self->node_name;
-
+  my @el  = @$edits;
   my @ver = ();
+
   for my $doc (@docs) {
     my ( $oid, $new_data ) = @$doc;
     my $sn = ( $seq->{$oid}[0]{sequence} // 0 ) + 1;
+    my %edit = %{ shift @el };
+    delete $edit{serial};
     push @ver,
-     {uuid => shift(@uuids) // $self->_make_uuid,
-      parent => shift(@parents) // ( my $leaf = $self->_last_leaf ),
-      node     => $node,
+     {%edit,
       rand     => rand(),
       object   => $oid,
       when     => $when,
@@ -182,6 +179,29 @@ sub _save_versions {
   my @ver  = $self->_build_versions(@_);
   $self->_version_engine->save( version => @ver );
   $self->emit( 'version', \@ver );
+}
+
+sub _edit_factory {
+  my ( $self, $options, $count ) = @_;
+
+  my @parents = @{ $options->{parents} || [] };
+  my @uuids   = @{ $options->{uuid}    || [] };
+
+  if ( @parents < $count ) {
+    my $leaf = $self->_last_leaf;
+    push @parents, ($leaf) x ( $count - @parents );
+  }
+
+  my $node = $self->node_name;
+
+  return [
+    map {
+      { uuid => shift(@uuids) // $self->_make_uuid,
+        parent => shift(@parents),
+        node   => $node
+      }
+    } 1 .. $count
+  ];
 }
 
 sub _old_docs {
@@ -217,7 +237,7 @@ sub _old_docs {
 }
 
 sub _save {
-  my ( $self, $options, $kind, @docs ) = @_;
+  my ( $self, $options, $edits, $kind, @docs ) = @_;
 
   my $pkey     = $self->pkey_for($kind);
   my @ids      = map { $_->{$pkey} } @docs;
@@ -225,19 +245,19 @@ sub _save {
   my @dirty    = $self->_only_changed( $pkey, $old_docs, @docs );
 
   $self->_engine->save( $kind, @dirty );
-  $self->_save_versions( $options, $kind, $old_docs,
+  $self->_save_versions( $options, $edits, $kind, $old_docs,
     map { [$_->{$pkey}, $_] } @dirty );
 }
 
 sub _delete {
-  my ( $self, $options, $kind, @ids ) = @_;
+  my ( $self, $options, $edits, $kind, @ids ) = @_;
 
   my $pkey     = $self->pkey_for($kind);
   my @eids     = @{ $self->exists( $kind => @ids ) };
   my $old_docs = $self->_old_docs( $options, $kind, @eids );
 
   $self->_engine->delete( $kind, @eids );
-  $self->_save_versions( $options, $kind, $old_docs,
+  $self->_save_versions( $options, $edits, $kind, $old_docs,
     map { [$_, undef] } @eids );
 }
 
@@ -250,8 +270,9 @@ sub _save_or_delete {
 
   $self->transaction(
     sub {
-      if ($save) { $self->_save( $options, $kind, @things ) }
-      else       { $self->_delete( $options, $kind, @things ) }
+      my $edits = $self->_edit_factory( $options, scalar(@things) );
+      if ($save) { $self->_save( $options, $edits, $kind, @things ) }
+      else       { $self->_delete( $options, $edits, $kind, @things ) }
     }
   );
 }
