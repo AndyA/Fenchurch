@@ -47,7 +47,7 @@ sub _post {
   return $self->_json_decode( $stats->_count( receive => $resp->content ) )
    if $resp->is_success;
 
-  die $resp->status_line;
+  die join "\n", $resp->status_line, $resp->decoded_content;
 }
 
 1;
