@@ -50,36 +50,45 @@ sub _get_versions {
   );
 }
 
+sub _update_serial {
+  my ( $self, $msg ) = @_;
+
+  # If the serial number goes backwards that implies
+  # that the node has been reset.
+  if ( $msg->{serial} < $self->state->serial ) {
+    $self->clear_state;
+    return 0;
+  }
+
+  $self->state->serial( $msg->{serial} );
+  return 1;
+}
+
 sub _build_app {
   my ( $self, $de ) = @_;
 
-  my $state = $self->state;
-  my $eng   = $self->engine;
-
   $de->on(
     'put.info' => sub {
-      $state->state('enumerate');
+      $self->state->state('enumerate');
     }
   );
 
   $de->on(
     'put.leaves' => sub {
-      my $msg = shift;
-
+      my $msg    = shift;
       my @leaves = @{ $msg->{leaves} };
-      $eng->known(@leaves);
-      $state->serial( $msg->{serial} );
-      $state->advance( scalar @leaves );
-      $state->state('recent') if $msg->{last};
+      $self->engine->known(@leaves);
+      return unless $self->_update_serial($msg);
+      $self->state->advance( scalar @leaves );
+      $self->state->state('recent') if $msg->{last};
     }
   );
 
   $de->on(
     'put.recent' => sub {
       my $msg = shift;
-
-      $eng->known( @{ $msg->{recent} } );
-      $state->serial( $msg->{serial} );
+      $self->engine->known( @{ $msg->{recent} } );
+      $self->_update_serial($msg);
     }
   );
 
@@ -93,7 +102,7 @@ sub _build_app {
   $de->on(
     'put.error' => sub {
       my $msg = shift;
-      $state->fault(
+      $self->state->fault(
         Fenchurch::Syncotron::Fault->new(
           error    => $msg->{error},
           location => 'remote'
@@ -112,8 +121,7 @@ sub _receive {
 
 sub _transmit {
   my $self  = shift;
-  my $st    = $self->state;
-  my $state = $st->state;
+  my $state = $self->state->state;
 
   if ( $state eq 'init' ) {
     $self->_send( { type => 'get.info' } );
@@ -121,19 +129,19 @@ sub _transmit {
   elsif ( $state eq 'enumerate' ) {
     $self->_send(
       { type  => 'get.leaves',
-        start => $st->progress
+        start => $self->state->progress
       }
     );
   }
   elsif ( $state eq 'recent' ) {
     $self->_send(
       { type   => 'get.recent',
-        serial => $st->serial
+        serial => $self->state->serial
       }
     );
   }
   else {
-    die "Unhandled state ", $st->state;
+    die "Unhandled state ", $state;
   }
 
   $self->_get_versions( $self->engine->want( 0, $self->page_size ) );
@@ -142,10 +150,8 @@ sub _transmit {
 sub next {
   my $self = shift;
 
-  my $st = $self->state;
-
-  if ( $st->state eq 'fault' ) {
-    my $fault = $st->fault;
+  if ( $self->state->state eq 'fault' ) {
+    my $fault = $self->state->fault;
     die "Can't continue in faulted state (location: ", $fault->location,
      ", error: ", $fault->error, ")";
   }
@@ -155,7 +161,7 @@ sub next {
     $self->_transmit;
   }
   catch {
-    $st->fault(
+    $self->state->fault(
       Fenchurch::Syncotron::Fault->new(
         error    => $_,
         location => 'local'

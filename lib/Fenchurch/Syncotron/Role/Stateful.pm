@@ -7,12 +7,13 @@ use Moose::Util::TypeConstraints;
 
 use Fenchurch::Syncotron::State;
 
-requires 'node_name', 'remote_node_name';
+requires 'node_name', 'remote_node_name', 'db', 'dbh';
 
 has state => (
-  is      => 'ro',
+  is      => 'rw',
   isa     => duck_type( ['state'] ),
   lazy    => 1,
+  clearer => 'clear_state',
   builder => '_b_state',
 );
 
@@ -38,6 +39,19 @@ sub _load_state {
   return unless $state;
   return Fenchurch::Syncotron::State->thaw($state);
 }
+
+after clear_state => sub {
+  my $self = shift;
+  $self->dbh->do(
+    $self->db->quote_sql(
+      "DELETE FROM {:state}",
+      " WHERE {local_node} = ? AND {remote_node} = ?"
+    ),
+    {},
+    $self->node_name,
+    $self->remote_node_name
+  );
+};
 
 sub save_state {
   my $self = shift;
