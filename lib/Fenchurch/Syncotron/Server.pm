@@ -9,6 +9,7 @@ use Moose::Util::TypeConstraints;
 
 use Fenchurch::Syncotron::Engine;
 use Try::Tiny;
+use List::Util qw( shuffle );
 
 has page_size => (
   is       => 'ro',
@@ -73,6 +74,8 @@ sub _put_leaves {
 
 sub _put_versions {
   my ( $self, @uuid ) = @_;
+
+  @uuid = shuffle @uuid;
 
   while (@uuid) {
     my @chunk = splice @uuid, 0, 25;
