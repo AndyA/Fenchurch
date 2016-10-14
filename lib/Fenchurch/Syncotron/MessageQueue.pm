@@ -15,9 +15,16 @@ has _queue => (
   default => sub { [] },
   traits  => ['Array'],
   handles => {
-    _put      => 'push',
+    _push     => 'push',
+    _splice   => 'splice',
     available => 'count',
   }
+);
+
+has size => (
+  is      => 'rw',
+  isa     => 'Int',
+  default => 0
 );
 
 with 'Fenchurch::Core::Role::JSON';
@@ -34,15 +41,46 @@ Send messages.
 
 =cut
 
+sub _size {
+  my ( $self, @msgs ) = @_;
+  my $size = 0;
+  $size += length $_ for @msgs;
+  return $size;
+}
+
+sub _bump_size {
+  my ( $self, $delta ) = @_;
+  $self->size( $self->size + $delta );
+}
+
+sub _put {
+  my ( $self, @msgs ) = @_;
+  $self->_bump_size( $self->_size(@msgs) );
+  $self->_push(@msgs);
+}
+
+sub _decode {
+  my ( $self, @msg ) = @_;
+  return map { $self->_json_decode($_) } @msg;
+}
+
+sub _take {
+  my ( $self, $offset, $length ) = @_;
+  my @msgs = $self->_splice( $offset, $length );
+  $self->_bump_size( -$self->_size(@msgs) );
+  return @msgs;
+}
+
 sub send {
   my ( $self, @msgs ) = @_;
-
-  return $self unless @msgs;
-
-  my $q = $self->_queue;
-
   $self->_put( map { $self->_json_encode($_) } @msgs );
+  return $self;
+}
 
+sub unsend {
+  my $self = shift;
+  my $count = shift // $self->available;
+  $self->_take( -$count );
   return $self;
 }
 
@@ -58,18 +96,10 @@ Get a copy of messages from the queue without removing them.
 
 =cut
 
-sub _decode {
-  my ( $self, @msg ) = @_;
-  return map { $self->_json_decode($_) } @msg;
-}
-
 sub peek {
   my $self = shift;
-
-  my $q = $self->_queue;
-  my $count = shift // scalar @$q;
-
-  return $self->_decode( @{$q}[0 .. $count - 1] );
+  my $count = shift // $self->available;
+  return $self->_decode( @{ $self->_queue }[0 .. $count - 1] );
 }
 
 =head2 C<< take >>
@@ -80,11 +110,8 @@ Remove messages from the queue.
 
 sub take {
   my $self = shift;
-
-  my $q = $self->_queue;
-  my $count = shift // scalar @$q;
-
-  return $self->_decode( splice @$q, 0, $count );
+  my $count = shift // $self->available;
+  return $self->_decode( $self->_take( 0, $count ) );
 }
 
 =head2 C<< with >>
@@ -98,10 +125,9 @@ sub with_messages {
   my $self = shift;
   my $cb   = pop;
 
-  my $q   = $self->_queue;
   my @msg = $self->peek(@_);
 
-  try { $cb->(@msg); splice @$q, 0, scalar @msg }
+  try { $cb->(@msg); $self->_take( 0, scalar @msg ) }
   catch { confess $_ };
 
   return $self;
