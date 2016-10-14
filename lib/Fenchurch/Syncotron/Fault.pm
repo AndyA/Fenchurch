@@ -6,6 +6,7 @@ use v5.10;
 
 use Moose;
 use Moose::Util::TypeConstraints;
+use MooseX::Storage;
 
 has location => (
   is       => 'ro',
@@ -18,6 +19,8 @@ has error => (
   isa      => 'Str',
   required => 1
 );
+
+with Storage( format => 'JSON' );
 
 =head1 NAME
 
