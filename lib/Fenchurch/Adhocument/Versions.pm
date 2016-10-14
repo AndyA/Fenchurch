@@ -145,22 +145,25 @@ sub _last_leaf {
 }
 
 sub _build_versions {
-  my ( $self, $options, $edits, $kind, $old_docs, @docs ) = @_;
+  my ( $self, $options, $kind, $old_docs, @docs ) = @_;
 
   my $seq    = $self->_ver_sequence( map { $_->[0] } @docs );
   my $schema = $self->schema_for($kind);
   my $when   = DateTime::Format::MySQL->format_datetime( $options->{when}
      // DateTime->now );
-  my @el  = @$edits;
-  my @ver = ();
 
+  my @parents = @{ $options->{parents} || [] };
+  my @uuids   = @{ $options->{uuid}    || [] };
+  my $node    = $self->node_name;
+
+  my @ver = ();
   for my $doc (@docs) {
     my ( $oid, $new_data ) = @$doc;
     my $sn = ( $seq->{$oid}[0]{sequence} // 0 ) + 1;
-    my %edit = %{ shift @el };
-    delete $edit{serial};
     push @ver,
-     {%edit,
+     {uuid => shift(@uuids) // $self->_make_uuid,
+      parent => shift(@parents) // ( my $leaf = $self->_last_leaf ),
+      node     => $node,
       rand     => rand(),
       object   => $oid,
       when     => $when,
@@ -181,29 +184,6 @@ sub _save_versions {
   $self->emit( 'version', \@ver );
 }
 
-sub _edit_factory {
-  my ( $self, $options, $count ) = @_;
-
-  my @parents = @{ $options->{parents} || [] };
-  my @uuids   = @{ $options->{uuid}    || [] };
-
-  if ( @parents < $count ) {
-    my $leaf = $self->_last_leaf;
-    push @parents, ($leaf) x ( $count - @parents );
-  }
-
-  my $node = $self->node_name;
-
-  return [
-    map {
-      { uuid => shift(@uuids) // $self->_make_uuid,
-        parent => shift(@parents),
-        node   => $node
-      }
-    } 1 .. $count
-  ];
-}
-
 sub _old_docs {
   my ( $self, $options, $kind, @ids ) = @_;
   my $pkey = $self->pkey_for($kind);
@@ -216,7 +196,7 @@ sub _old_docs {
     my $doc_count    = scalar @$old_docs;
     my $expect_count = scalar @$expect;
 
-    die "Document / expectation count mismatch ",
+    confess "Document / expectation count mismatch ",
      "($doc_count versus $expect_count)"
      unless $doc_count == $expect_count;
 
@@ -227,7 +207,7 @@ sub _old_docs {
         $self->emit( 'conflict', $kind, $old, $doc, $options->{context} );
         if ( $self->do_default ) {
           my $id = ( $doc && $doc->{$pkey} ) // ( $old && $old->{$pkey} );
-          die "Document [$id] doesn't match expectation";
+          confess "Document [$id] doesn't match expectation";
         }
       }
     }
@@ -237,7 +217,7 @@ sub _old_docs {
 }
 
 sub _save {
-  my ( $self, $options, $edits, $kind, @docs ) = @_;
+  my ( $self, $options, $kind, @docs ) = @_;
 
   my $pkey     = $self->pkey_for($kind);
   my @ids      = map { $_->{$pkey} } @docs;
@@ -245,19 +225,19 @@ sub _save {
   my @dirty    = $self->_only_changed( $pkey, $old_docs, @docs );
 
   $self->_engine->save( $kind, @dirty );
-  $self->_save_versions( $options, $edits, $kind, $old_docs,
+  $self->_save_versions( $options, $kind, $old_docs,
     map { [$_->{$pkey}, $_] } @dirty );
 }
 
 sub _delete {
-  my ( $self, $options, $edits, $kind, @ids ) = @_;
+  my ( $self, $options, $kind, @ids ) = @_;
 
   my $pkey     = $self->pkey_for($kind);
   my @eids     = @{ $self->exists( $kind => @ids ) };
   my $old_docs = $self->_old_docs( $options, $kind, @eids );
 
   $self->_engine->delete( $kind, @eids );
-  $self->_save_versions( $options, $edits, $kind, $old_docs,
+  $self->_save_versions( $options, $kind, $old_docs,
     map { [$_, undef] } @eids );
 }
 
@@ -270,9 +250,8 @@ sub _save_or_delete {
 
   $self->transaction(
     sub {
-      my $edits = $self->_edit_factory( $options, scalar(@things) );
-      if ($save) { $self->_save( $options, $edits, $kind, @things ) }
-      else       { $self->_delete( $options, $edits, $kind, @things ) }
+      if ($save) { $self->_save( $options, $kind, @things ) }
+      else       { $self->_delete( $options, $kind, @things ) }
     }
   );
 }
