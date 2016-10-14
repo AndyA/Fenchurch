@@ -7,6 +7,8 @@ use v5.10;
 use Moose::Role;
 use Moose::Util::TypeConstraints;
 
+sub db;
+sub dbh;
 sub versions;
 
 has versions => (
