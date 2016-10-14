@@ -25,7 +25,11 @@ is $st->progress, 18, "Progress advanced to 18";
 
 $st->state('enumerate');
 
-is $st->progress, 0, "Progress reset to zero";
+is $st->progress, 0,  "Progress reset to zero";
+is $st->hwm,      18, "High water mark";
+$st->advance(13);
+is $st->progress, 13, "Advanced again";
+is $st->hwm,      18, "High water mark persists";
 
 $st->fault(
   Fenchurch::Syncotron::Fault->new(

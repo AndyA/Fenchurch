@@ -80,7 +80,20 @@ sub _build_app {
       $self->engine->known(@leaves);
       return unless $self->_update_serial($msg);
       $self->state->advance( scalar @leaves );
-      $self->state->state('recent') if $msg->{last};
+      $self->state->state('sample') if $msg->{last};
+    }
+  );
+
+  $de->on(
+    'put.sample' => sub {
+      my $msg    = shift;
+      my @sample = @{ $msg->{sample} };
+      $self->engine->known(@sample);
+      return unless $self->_update_serial($msg);
+      $self->state->advance( scalar @sample );
+      $self->state->state('recent')
+       if $msg->{last}
+       || $self->state->progress >= $self->state->hwm;
     }
   );
 
@@ -129,6 +142,13 @@ sub _transmit {
   elsif ( $state eq 'enumerate' ) {
     $self->_send(
       { type  => 'get.leaves',
+        start => $self->state->progress
+      }
+    );
+  }
+  elsif ( $state eq 'sample' ) {
+    $self->_send(
+      { type  => 'get.sample',
         start => $self->state->progress
       }
     );

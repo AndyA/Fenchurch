@@ -72,6 +72,26 @@ sub _put_leaves {
   );
 }
 
+sub _put_sample {
+  my ( $self, $start ) = @_;
+
+  my $eng = $self->engine;
+
+  my $chunk  = $self->page_size;
+  my $serial = $eng->serial;
+  my @sample = $eng->sample( $start, $chunk );
+  my $last   = @sample < $chunk ? 1 : 0;
+
+  $self->_send(
+    { type   => 'put.sample',
+      start  => $start,
+      last   => $last,
+      sample => \@sample,
+      serial => $serial
+    }
+  );
+}
+
 sub _put_versions {
   my ( $self, @uuid ) = @_;
 
@@ -118,6 +138,13 @@ sub _build_app {
     'get.leaves' => sub {
       my $msg = shift;
       $self->_put_leaves( $msg->{start} );
+    }
+  );
+
+  $de->on(
+    'get.sample' => sub {
+      my $msg = shift;
+      $self->_put_sample( $msg->{start} );
     }
   );
 

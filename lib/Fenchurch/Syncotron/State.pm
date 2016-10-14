@@ -14,11 +14,11 @@ Fenchurch::Syncotron::State - Sync state
 
 has state => (
   is      => 'rw',
-  isa     => enum( ['init', 'enumerate', 'recent', 'fault'] ),
+  isa     => enum( ['init', 'enumerate', 'sample', 'recent', 'fault'] ),
   default => 'init'
 );
 
-has ['progress', 'serial'] => (
+has ['progress', 'serial', 'hwm'] => (
   is      => 'rw',
   isa     => 'Int',
   default => 0
@@ -33,7 +33,10 @@ with Storage( format => 'JSON' );
 
 after state => sub {
   my $self = shift;
-  $self->progress(0) if @_;
+  if (@_) {
+    $self->hwm( $self->progress );
+    $self->progress(0);
+  }
 };
 
 after fault => sub {
