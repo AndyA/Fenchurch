@@ -27,7 +27,7 @@ preflight;
    "quote_name resolves aliases";
 
   is $db->quote_sql(
-    "SELECT {:tbl1.foo}, {:tbl2.bar} FROM {:tbl1}, {:tbl2}"),
+    ["SELECT {:tbl1.foo}, {:tbl2.bar}", "FROM {:tbl1}, {:tbl2}"] ),
    "SELECT `table_one`.`foo`, `table_two`.`bar` FROM `table_one`, `table_two`",
    "quote_sql resolves aliases";
 

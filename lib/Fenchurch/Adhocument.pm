@@ -40,7 +40,7 @@ sub _exists {
     ')'
   );
 
-  return $self->dbh->selectcol_arrayref( join( ' ', @sql ), {},
+  return $self->db->selectcol_arrayref( join( ' ', @sql ), {},
     @ids, @ids );
 }
 
@@ -69,7 +69,7 @@ sub _load_raw {
 
   push @sql, 'ORDER BY', join( ', ', @ord ) if @ord;
 
-  return $self->dbh->selectall_arrayref( join( ' ', @sql ),
+  return $self->db->selectall_arrayref( join( ' ', @sql ),
     { Slice => {} }, @bind );
 }
 
@@ -133,7 +133,7 @@ sub _get_pkeys {
   return @ids if $pkey eq $key;    # Already have pkey
 
   return @{
-    $self->dbh->selectcol_arrayref(
+    $self->db->selectcol_arrayref(
       join( ' ',
         'SELECT', $self->db->quote_name($pkey),
         'FROM',   $self->db->quote_name( $spec->{table} ),
@@ -153,7 +153,7 @@ sub _delete {
    'WHERE',       $self->db->quote_name($key),
    'IN (',        join( ', ', map '?', @ids ), ")";
 
-  $self->dbh->do( $sql, {}, @ids );
+  $self->db->do( $sql, {}, @ids );
 }
 
 sub _delete_deep {
@@ -221,7 +221,7 @@ sub _insert {
     }
   }
 
-  $self->dbh->do( $sql, {}, @bind );
+  $self->db->do( $sql, {}, @bind );
 }
 
 sub _insert_deep {

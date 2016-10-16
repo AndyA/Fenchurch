@@ -24,14 +24,9 @@ Fenchurch::Wiki::Engine - The Wiki engine
 sub page_list {
   my $self = shift;
   my $ve   = $self->versions;
-  return $ve->dbh->selectall_arrayref(
-    $ve->db->quote_sql(
-      "SELECT {slug}, {title}",
-      "  FROM {wiki_page}",
-      " ORDER BY {title}"
-    ),
-    { Slice => {} }
-  );
+  return $ve->db->selectall_arrayref(
+    "SELECT {slug}, {title} FROM {wiki_page} ORDER BY {title}",
+    { Slice => {} } );
 }
 
 sub _make_page {

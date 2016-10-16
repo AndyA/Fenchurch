@@ -113,18 +113,20 @@ sub _ver_sequence {
 
   my $table = $self->table;
 
-  my $sql = $self->db->quote_sql(
-    "SELECT {object}, MAX({sequence}) AS {sequence}",
-    "FROM {$table}",
-    "WHERE {object} IN (",
-    join( ", ", map "?", @ids ),
-    ")",
-    "GROUP BY {object}"
-  );
-
   return $self->db->group_by(
-    $self->dbh->selectall_arrayref( $sql, { Slice => {} }, @ids ),
-    'object' );
+    $self->db->selectall_arrayref(
+      [ "SELECT {object}, MAX({sequence}) AS {sequence}",
+        "FROM {$table}",
+        "WHERE {object} IN (",
+        join( ", ", map "?", @ids ),
+        ")",
+        "GROUP BY {object}"
+      ],
+      { Slice => {} },
+      @ids
+    ),
+    'object'
+  );
 }
 
 sub _last_leaf {
@@ -132,14 +134,9 @@ sub _last_leaf {
 
   my $table = $self->table;
 
-  my ($leaf) = $self->dbh->selectrow_array(
-    $self->db->quote_sql(
-      "SELECT {uuid}",
-      "FROM {$table}",
-      "ORDER BY {serial} DESC",
-      "LIMIT 1"
-    )
-  );
+  my ($leaf)
+   = $self->db->selectrow_array(
+    "SELECT {uuid} FROM {$table} ORDER BY {serial} DESC LIMIT 1");
 
   return $leaf;
 }

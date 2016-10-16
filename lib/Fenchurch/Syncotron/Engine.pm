@@ -43,8 +43,7 @@ sub serial {
   my $self = shift;
 
   my ($serial)
-   = $self->dbh->selectrow_array(
-    $self->db->quote_sql("SELECT MAX({serial}) FROM {:versions}") );
+   = $self->db->selectrow_array("SELECT MAX({serial}) FROM {:versions}");
 
   return $serial // 0;
 }
@@ -59,15 +58,14 @@ sub leaves {
   my ( $self, $start, $size ) = @_;
 
   return @{
-    $self->dbh->selectcol_arrayref(
-      $self->db->quote_sql(
-        "SELECT {tc1.uuid}",
+    $self->db->selectcol_arrayref(
+      [ "SELECT {tc1.uuid}",
         "FROM {:versions} AS {tc1}",
         "LEFT JOIN {:versions} AS {tc2} ON {tc2.parent} = {tc1.uuid}",
         "WHERE {tc2.parent} IS NULL",
         "ORDER BY {tc1.serial} ASC",
         "LIMIT ?, ?"
-      ),
+      ],
       {},
       $start, $size
     ) };
@@ -83,14 +81,13 @@ sub sample {
   my ( $self, $start, $size ) = @_;
 
   return @{
-    $self->dbh->selectcol_arrayref(
-      $self->db->quote_sql(
-        "SELECT {tc1.uuid}",
+    $self->db->selectcol_arrayref(
+      [ "SELECT {tc1.uuid}",
         "FROM {:versions} AS {tc1}, {:versions} AS {tc2}",
         "WHERE {tc2.parent} = {tc1.uuid}",
         "ORDER BY {tc1.rand} ASC",
         "LIMIT ?, ?"
-      ),
+      ],
       {},
       $start, $size
     ) };
@@ -106,16 +103,15 @@ number.
 sub _recent {
   my ( $self, $serial, $limit ) = @_;
 
-  return $self->dbh->selectall_arrayref(
-    $self->db->quote_sql(
-      "SELECT {uuid}, {serial} FROM {:versions}",
+  return $self->db->selectall_arrayref(
+    [ "SELECT {uuid}, {serial} FROM {:versions}",
       ( defined $serial
         ? ("WHERE {serial} > ?")
         : ()
       ),
       "ORDER BY {serial} ASC",
       ( defined $limit ? ("LIMIT ?") : () )
-    ),
+    ],
     { Slice => {} },
     grep defined,
     $serial, $limit
@@ -150,11 +146,10 @@ sub _have {
   my ( $self, $tbl, @uuid ) = @_;
   return () unless @uuid;
   return @{
-    $self->dbh->selectcol_arrayref(
-      $self->db->quote_sql(
-        "SELECT {uuid} FROM {$tbl} WHERE {uuid} IN (",
+    $self->db->selectcol_arrayref(
+      [ "SELECT {uuid} FROM {$tbl} WHERE {uuid} IN (",
         join( ", ", map "?", @uuid ), ")"
-      ),
+      ],
       {},
       @uuid
     ) };
@@ -191,13 +186,9 @@ sub known {
   my @known = $self->dont_have(@uuid);
   return unless @known;
 
-  $self->dbh->do(
-    $self->db->quote_sql(
-      "REPLACE INTO {:known} ({uuid}) VALUES ",
-      join ", ", map "(?)", @known
-    ),
-    {},
-    @known
+  $self->db->do(
+    ["REPLACE INTO {:known} ({uuid}) VALUES ", join ", ", map "(?)", @known],
+    {}, @known
   );
 }
 
@@ -206,12 +197,11 @@ sub _unknown {
 
   return unless @uuid;
 
-  $self->dbh->do(
-    $self->db->quote_sql(
-      "DELETE FROM {:known} WHERE {uuid} IN (",
+  $self->db->do(
+    [ "DELETE FROM {:known} WHERE {uuid} IN (",
       join( ", ", map "?", @uuid ),
       ")"
-    ),
+    ],
     {},
     @uuid
   );
@@ -226,9 +216,8 @@ Return a list of versions that we need.
 sub want {
   my ( $self, $start, $size ) = @_;
   return @{
-    $self->dbh->selectcol_arrayref(
-      $self->db->quote_sql(
-        "SELECT DISTINCT {uuid} FROM (",
+    $self->db->selectcol_arrayref(
+      [ "SELECT DISTINCT {uuid} FROM (",
         "  SELECT {uuid} FROM {:known}",
         "  UNION SELECT {p1.parent} AS {uuid}",
         "    FROM {:pending} AS {p1}",
@@ -237,7 +226,7 @@ sub want {
         "   WHERE {p2.uuid} IS NULL",
         ") AS {q}",
         " LIMIT ?, ?"
-      ),
+      ],
       {},
       $start, $size
     ) };
@@ -246,15 +235,14 @@ sub want {
 sub _find_ready {
   my $self = shift;
   return @{
-    $self->dbh->selectcol_arrayref(
-      $self->db->quote_sql(
-        "SELECT {p.uuid}",
+    $self->db->selectcol_arrayref(
+      [ "SELECT {p.uuid}",
         "  FROM {:pending} AS {p}",
         " WHERE {p.parent} IS NULL",
         "UNION SELECT {p.uuid}",
         "  FROM {:pending} AS {p}, {:versions} AS {v}",
         " WHERE {p.parent} = {v.uuid}"
-      )
+      ]
     ) };
 }
 

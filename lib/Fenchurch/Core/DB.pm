@@ -40,6 +40,8 @@ has _meta_cache => (
   default  => sub { {} }
 );
 
+with 'Fenchurch::Core::Role::DBIWrapper';
+
 sub transaction {
   my ( $self, $cb ) = @_;
 
@@ -48,18 +50,16 @@ sub transaction {
     return;
   }
 
-  my $dbh = $self->dbh;
-
   $self->in_transaction(1);
-  $dbh->do('START TRANSACTION');
+  $self->do('START TRANSACTION');
 
   try {
     $cb->();
-    $dbh->do('COMMIT');
+    $self->do('COMMIT');
   }
   catch {
     my $e = $_;
-    $dbh->do('ROLLBACK');
+    $self->do('ROLLBACK');
     confess $e;
   }
   finally {
@@ -83,7 +83,7 @@ sub quote_name {
 
 sub quote_sql {
   my $self = shift;
-  ( my $sql = join " ", @_ )
+  ( my $sql = join " ", map { ref $_ && 'ARRAY' eq ref $_ ? @$_ : $_ } @_ )
    =~ s/\{(:?\w+(?:\.:?\w+)*)\}/$self->quote_name(split qr{[.]}, $1)/eg;
   return $sql;
 }
@@ -91,7 +91,7 @@ sub quote_sql {
 sub _meta_for {
   my ( $self, $table ) = @_;
   my $rc
-   = $self->dbh->selectall_arrayref(
+   = $self->selectall_arrayref(
     join( ' ', 'DESCRIBE', $self->quote_name($table) ),
     { Slice => {} } );
 

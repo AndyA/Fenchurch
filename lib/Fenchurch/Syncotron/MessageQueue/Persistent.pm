@@ -35,11 +35,10 @@ sub send {
   my $from = $self->from;
   my $to   = $self->to;
 
-  $self->dbh->do(
-    $self->db->quote_sql(
-      "INSERT INTO {:queue} ({role}, {from}, {to}, {when}, {message}) VALUES ",
+  $self->db->do(
+    [ "INSERT INTO {:queue} ({role}, {from}, {to}, {when}, {message}) VALUES ",
       join( ", ", map "(?, ?, ?, NOW(), ?)", @msgs )
-    ),
+    ],
     {},
     map { ( $role, $from, $to, $self->_json_encode($_) ) } @msgs
   );
@@ -56,11 +55,10 @@ Find out how many messages are available on the queue.
 sub available {
   my $self = shift;
 
-  my ($avail) = $self->dbh->selectrow_array(
-    $self->db->quote_sql(
-      "SELECT COUNT(*) FROM {:queue}",
+  my ($avail) = $self->db->selectrow_array(
+    [ "SELECT COUNT(*) FROM {:queue}",
       " WHERE {role} = ? AND {from} = ? AND {to} = ?"
-    ),
+    ],
     {},
     $self->role,
     $self->from,
@@ -73,13 +71,12 @@ sub available {
 sub _peek {
   my ( $self, $count ) = @_;
 
-  return $self->dbh->selectall_arrayref(
-    $self->db->quote_sql(
-      "SELECT {id}, {message} FROM {:queue}",
+  return $self->db->selectall_arrayref(
+    [ "SELECT {id}, {message} FROM {:queue}",
       " WHERE {role} = ? AND {from} = ? AND {to} = ?",
       " ORDER BY {id} ASC",
       ( defined $count ? (" LIMIT ?") : () )
-    ),
+    ],
     { Slice => {} },
     $self->role,
     $self->from,
@@ -120,12 +117,9 @@ sub take {
   my @id = map { $_->{id} } @$msg;
 
   if (@id) {
-    $self->dbh->do(
-      $self->db->quote_sql(
-        "DELETE FROM {:queue} WHERE {id} IN (",
-        join( ", ", map "?", @id ),
-        ")"
-      ),
+    $self->db->do(
+      [ "DELETE FROM {:queue} WHERE {id} IN (", join( ", ", map "?", @id ), ")"
+      ],
       {},
       @id
     );
