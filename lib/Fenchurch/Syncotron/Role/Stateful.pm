@@ -7,7 +7,7 @@ use Moose::Util::TypeConstraints;
 
 use Fenchurch::Syncotron::State;
 
-requires 'node_name', 'remote_node_name', 'db', 'dbh';
+requires 'node_name', 'remote_node_name', 'db';
 
 has state => (
   is      => 'rw',
