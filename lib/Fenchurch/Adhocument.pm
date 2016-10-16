@@ -28,49 +28,46 @@ with 'Fenchurch::Core::Role::DB',
 sub _exists {
   my ( $self, $spec, @ids ) = @_;
 
-  my $pk  = $self->db->quote_name( $spec->{pkey} );
-  my @sql = (
-    "SELECT $pk FROM",
-    $self->db->quote_name( $spec->{table} ),
-    "WHERE $pk IN (",
-    join( ', ', map '?', @ids ),
-    ')',
-    'ORDER BY FIELD(',
-    join( ', ', $pk, map '?', @ids ),
-    ')'
-  );
+  my $pk    = $spec->{pkey};
+  my $table = $spec->{table};
 
-  return $self->db->selectcol_arrayref( join( ' ', @sql ), {},
-    @ids, @ids );
+  return $self->db->selectcol_arrayref(
+    [ "SELECT {$pk} FROM {$table} WHERE {$pk} IN (",
+      join( ', ', map '?', @ids ),
+      ') ORDER BY FIELD(',
+      join( ', ', "{$pk}", map '?', @ids ), ')'
+    ],
+    {},
+    @ids, @ids
+  );
 }
 
 sub _load_raw {
   my ( $self, $spec, $key, @ids ) = @_;
 
-  my @bind = @ids;
-  my @sql  = (
-    'SELECT * FROM',
-    $self->db->quote_name( $spec->{table} ),
-    'WHERE', $self->db->quote_name($key),
-    'IN (', join( ', ', map '?', @ids ), ")"
+  my @bind  = @ids;
+  my $table = $spec->{table};
+
+  my @sql = (
+    "SELECT * FROM {$table} WHERE {$key} IN (",
+    join( ', ', map '?', @ids ), ")"
   );
 
   my @ord = ();
 
   push @ord, join ' ', 'FIELD(',
-   join( ', ', $self->db->quote_name($key), map '?', @ids ), ')';
+   join( ', ', "{$key}", map '?', @ids ), ')';
   push @bind, @ids;
 
   push @ord, join ' ', $self->db->parse_order( $spec->{order} )
    if exists $spec->{order};
 
-  push @ord, $self->db->quote_name( $spec->{pkey} )
+  push @ord, "{$spec->{pkey}}"
    if exists $spec->{pkey};
 
   push @sql, 'ORDER BY', join( ', ', @ord ) if @ord;
 
-  return $self->db->selectall_arrayref( join( ' ', @sql ),
-    { Slice => {} }, @bind );
+  return $self->db->selectall_arrayref( \@sql, { Slice => {} }, @bind );
 }
 
 sub _load {
@@ -129,17 +126,15 @@ sub _get_pkeys {
   my ( $self, $spec, $key, @ids ) = @_;
 
   my $pkey = $spec->{pkey} // croak "kind has no pkey";
+  my $table = $spec->{table};
 
   return @ids if $pkey eq $key;    # Already have pkey
 
   return @{
     $self->db->selectcol_arrayref(
       join( ' ',
-        'SELECT', $self->db->quote_name($pkey),
-        'FROM',   $self->db->quote_name( $spec->{table} ),
-        'WHERE',  $self->db->quote_name($key),
-        'IN (', join( ', ', map '?', @ids ),
-        ')' ),
+        "SELECT {$pkey} FROM {$table} WHERE {$key} IN (",
+        join( ', ', map '?', @ids ), ')' ),
       {},
       @ids
     ) };
@@ -148,12 +143,16 @@ sub _get_pkeys {
 sub _delete {
   my ( $self, $spec, $key, @ids ) = @_;
 
-  my $sql = join ' ',
-   'DELETE FROM', $self->db->quote_name( $spec->{table} ),
-   'WHERE',       $self->db->quote_name($key),
-   'IN (',        join( ', ', map '?', @ids ), ")";
+  my $table = $spec->{table};
 
-  $self->db->do( $sql, {}, @ids );
+  $self->db->do(
+    [ "DELETE FROM {$table} WHERE {$key} IN (",
+      join( ', ', map '?', @ids ),
+      ")"
+    ],
+    {},
+    @ids
+  );
 }
 
 sub _delete_deep {
@@ -204,13 +203,13 @@ sub _check_columns {
 sub _insert {
   my ( $self, $spec, @docs ) = @_;
 
-  my @cols = $self->db->settable_columns_for( $spec->{table} );
+  my $table = $spec->{table};
+  my @cols  = $self->db->settable_columns_for($table);
 
   my $vals = join '', '(', join( ', ', map '?', @cols ), ')';
   my $sql = join ' ',
-   'INSERT INTO', $self->db->quote_name( $spec->{table} ),
-   '(', join( ', ', map { $self->db->quote_name($_) } @cols ),
-   ') VALUES', join( ', ', ($vals) x @docs );
+   "INSERT INTO {$table} (", join( ', ', map { "{$_}" } @cols ),
+   ") VALUES", join( ', ', ($vals) x @docs );
 
   my %is_json = map { $_ => 1 } @{ $spec->{json} // [] };
   my @bind = ();

@@ -91,9 +91,7 @@ sub quote_sql {
 sub _meta_for {
   my ( $self, $table ) = @_;
   my $rc
-   = $self->selectall_arrayref(
-    join( ' ', 'DESCRIBE', $self->quote_name($table) ),
-    { Slice => {} } );
+   = $self->selectall_arrayref( "DESCRIBE {$table}", { Slice => {} } );
 
   my %columns = ();
   my @pkey    = ();
@@ -155,8 +153,7 @@ sub parse_order {
   for my $fld ( split /\s*,\s*/, $order ) {
     my ( $dir, $fname )
      = $fld =~ m{^([-+])(.+)} ? ( $1, $2 ) : ( '+', $fld );
-    push @term, join ' ', $self->quote_name($fname),
-     $dir eq '+' ? 'ASC' : 'DESC';
+    push @term, join ' ', "{$fname}", $dir eq '+' ? 'ASC' : 'DESC';
   }
   return join( ', ', @term );
 }
