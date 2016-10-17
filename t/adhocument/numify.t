@@ -20,7 +20,12 @@ use Fenchurch::Core::DB;
 
 preflight;
 
-empty('test_programmes_v2');
+empty qw(
+ test_contributors
+ test_edit
+ test_programmes_v2
+ test_related
+);
 
 my $programmes = test_data("stash.json");
 
