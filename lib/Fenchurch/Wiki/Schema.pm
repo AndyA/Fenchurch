@@ -44,7 +44,7 @@ sub _b_db {
   my $self = shift;
   return Fenchurch::Core::DB->new(
     dbh    => $self->dbh,
-    tables => {
+    aliases => {
       queue    => 'fenchurch_queue',
       versions => 'fenchurch_versions',
       state    => 'fenchurch_state',

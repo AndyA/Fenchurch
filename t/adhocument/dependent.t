@@ -45,8 +45,8 @@ my $programmes = test_data("stash.json");
   my $adv = Fenchurch::Adhocument::Versions->new(
     schema => schema(),
     db     => Fenchurch::Core::DB->new(
-      dbh    => database,
-      tables => { versions => 'test_versions' }
+      dbh     => database,
+      aliases => { versions => 'test_versions' }
     ),
   );
 

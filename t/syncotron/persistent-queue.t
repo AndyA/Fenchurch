@@ -18,8 +18,8 @@ preflight;
 empty 'test_queue';
 
 my $db = Fenchurch::Core::DB->new(
-  dbh    => database,
-  tables => { queue => 'test_queue' }
+  dbh     => database,
+  aliases => { queue => 'test_queue' }
 );
 
 for my $vary ( 'role', 'from', 'to' ) {

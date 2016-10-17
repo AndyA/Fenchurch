@@ -16,12 +16,12 @@ preflight;
 
 {
   my $db = Fenchurch::Core::DB->new(
-    dbh    => database,
-    tables => { tbl1 => 'table_one', tbl2 => 'table_two' }
+    dbh     => database,
+    aliases => { tbl1 => 'table_one', tbl2 => 'table_two' }
   );
 
-  is $db->table("foo"),   "foo",       "literal table name OK";
-  is $db->table(":tbl1"), "table_one", "alias table name OK";
+  is $db->alias("foo"),   "foo",       "literal table name OK";
+  is $db->alias(":tbl1"), "table_one", "alias table name OK";
 
   is $db->quote_name( ":tbl2", "bar" ), "`table_two`.`bar`",
    "quote_name resolves aliases";

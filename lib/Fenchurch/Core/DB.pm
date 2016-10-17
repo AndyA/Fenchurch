@@ -27,7 +27,7 @@ has in_transaction => ( is => 'rw', isa => 'Bool', default => 0 );
 # The table name map: maps our internal table names to the
 # actual db tables.
 
-has tables => (
+has aliases => (
   is      => 'ro',
   isa     => 'HashRef[Str]',
   default => sub { {} },
@@ -70,18 +70,18 @@ sub transaction {
   };
 }
 
-sub table {
+sub alias {
   my ( $self, $alias ) = @_;
   return $alias unless $alias =~ /^:(.+)/;
-  my $table = $self->tables->{$1};
-  confess "No table for alias $1"
-   unless defined $table;
-  return $table;
+  my $actual = $self->aliases->{$1};
+  confess "No mapping for alias $1"
+   unless defined $actual;
+  return $actual;
 }
 
 sub quote_name {
   my ( $self, @name ) = @_;
-  return join ".", map { "`$_`" } map { $self->table($_) } @name;
+  return join ".", map { "`$_`" } map { $self->alias($_) } @name;
 }
 
 sub quote_sql {

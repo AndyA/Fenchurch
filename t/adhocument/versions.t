@@ -46,8 +46,8 @@ sub test_versions($$$$$$) {
   empty 'test_versions', map { $_->{table} } values %$schema;
 
   my $db = Fenchurch::Core::DB->new(
-    dbh    => database,
-    tables => { versions => 'test_versions' }
+    dbh     => database,
+    aliases => { versions => 'test_versions' }
   );
   my $scm = Fenchurch::Adhocument::Schema->new(
     schema => $schema,

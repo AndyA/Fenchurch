@@ -69,7 +69,7 @@ sub version_schema {
   my ( $self, $table, %extra ) = @_;
   return {
     version => {
-      table => $self->db->table($table),
+      table => $self->db->alias($table),
       pkey  => 'uuid',
       order => '+sequence',
       json  => ['old_data', 'new_data'],

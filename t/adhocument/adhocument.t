@@ -82,7 +82,7 @@ sub make_ver_schema {
     schema => Fenchurch::Adhocument::Schema->new( schema => $schema ),
     db     => Fenchurch::Core::DB->new(
       dbh    => database,
-      tables => { versions => 'test_versions' }
+      aliases => { versions => 'test_versions' }
     ),
   );
 }

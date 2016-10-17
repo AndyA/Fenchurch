@@ -228,8 +228,8 @@ sub make_test_db {
   );
 
   my $db = Fenchurch::Core::DB->new(
-    dbh    => $dbh,
-    tables => {
+    dbh     => $dbh,
+    aliases => {
       versions => 'test_versions',
       pending  => 'test_pending',
       known    => 'test_known',

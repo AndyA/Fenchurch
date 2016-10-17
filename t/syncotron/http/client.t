@@ -150,8 +150,8 @@ sub make_versions {
   my ( $dbh, $node ) = @_;
 
   my $db = Fenchurch::Core::DB->new(
-    dbh    => $dbh,
-    tables => {
+    dbh     => $dbh,
+    aliases => {
       versions => 'test_versions',
       pending  => 'test_pending',
       known    => 'test_known',
