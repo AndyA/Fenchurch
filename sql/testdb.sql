@@ -78,46 +78,6 @@ LOCK TABLES `test_chain_linear` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `test_conflicts`
---
-
-DROP TABLE IF EXISTS `test_conflicts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `test_conflicts` (
-  `uuid` varchar(36) NOT NULL,
-  `parent` varchar(36) DEFAULT NULL,
-  `serial` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `node` varchar(200) NOT NULL,
-  `object` varchar(36) NOT NULL,
-  `when` datetime NOT NULL,
-  `sequence` int(10) unsigned NOT NULL,
-  `rand` double NOT NULL,
-  `kind` varchar(40) NOT NULL,
-  `schema` longtext NOT NULL,
-  `old_data` longtext,
-  `new_data` longtext,
-  PRIMARY KEY (`uuid`),
-  UNIQUE KEY `test_conflicts_serial` (`serial`),
-  KEY `test_conflicts_parent` (`parent`),
-  KEY `test_conflicts_object` (`object`),
-  KEY `test_conflicts_sequence` (`sequence`),
-  KEY `test_conflicts_rand` (`rand`),
-  KEY `test_conflicts_when` (`when`),
-  KEY `test_conflicts_kind` (`kind`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `test_conflicts`
---
-
-LOCK TABLES `test_conflicts` WRITE;
-/*!40000 ALTER TABLE `test_conflicts` DISABLE KEYS */;
-/*!40000 ALTER TABLE `test_conflicts` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `test_contributors`
 --
 
@@ -242,7 +202,7 @@ CREATE TABLE `test_pending` (
   `sequence` int(10) unsigned NOT NULL,
   `rand` double NOT NULL,
   `kind` varchar(40) NOT NULL,
-  `schema` longtext NOT NULL,
+  `version` int(10) unsigned NOT NULL,
   `old_data` longtext,
   `new_data` longtext,
   PRIMARY KEY (`uuid`),
@@ -484,7 +444,7 @@ CREATE TABLE `test_versions` (
   `sequence` int(10) unsigned NOT NULL,
   `rand` double NOT NULL,
   `kind` varchar(40) NOT NULL,
-  `schema` longtext NOT NULL,
+  `version` int(10) unsigned NOT NULL,
   `old_data` longtext,
   `new_data` longtext,
   PRIMARY KEY (`uuid`),
@@ -564,4 +524,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-10-13 13:39:18
+-- Dump completed on 2016-10-17 15:32:30

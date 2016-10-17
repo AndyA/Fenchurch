@@ -68,7 +68,7 @@ sub version_schema {
       table => $self->db->table($table),
       pkey  => 'uuid',
       order => '+sequence',
-      json  => ['old_data', 'new_data', 'schema'],
+      json  => ['old_data', 'new_data'],
       %extra
     } };
 }
@@ -144,9 +144,8 @@ sub _last_leaf {
 sub _build_versions {
   my ( $self, $options, $kind, $old_docs, @docs ) = @_;
 
-  my $seq    = $self->_ver_sequence( map { $_->[0] } @docs );
-  my $schema = $self->schema_for($kind);
-  my $when   = DateTime::Format::MySQL->format_datetime( $options->{when}
+  my $seq = $self->_ver_sequence( map { $_->[0] } @docs );
+  my $when = DateTime::Format::MySQL->format_datetime( $options->{when}
      // DateTime->now );
   my @ver = ();
 
@@ -174,7 +173,7 @@ sub _build_versions {
       when     => $when,
       sequence => $sn,
       kind     => $kind,
-      schema   => $schema,
+      version  => 0,
       old_data => $old_docs->{$oid}[0],
       new_data => $new_data,
      };
