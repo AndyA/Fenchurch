@@ -130,14 +130,13 @@ sub _get_pkeys {
 
   return @ids if $pkey eq $key;    # Already have pkey
 
-  return @{
-    $self->db->selectcol_arrayref(
-      join( ' ',
-        "SELECT {$pkey} FROM {$table} WHERE {$key} IN (",
-        join( ', ', map '?', @ids ), ')' ),
-      {},
-      @ids
-    ) };
+  return $self->db->selectcol_array(
+    join( ' ',
+      "SELECT {$pkey} FROM {$table} WHERE {$key} IN (",
+      join( ', ', map '?', @ids ), ')' ),
+    {},
+    @ids
+  );
 }
 
 sub _delete {

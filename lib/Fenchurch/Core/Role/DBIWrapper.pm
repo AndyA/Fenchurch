@@ -50,6 +50,11 @@ Fenchurch::Core::Role::DBIWrapper - Provide augmented version of DBI interface
   }
 }
 
+sub selectcol_array {
+  my $self = shift;
+  return @{ $self->selectcol_arrayref(@_) };
+}
+
 1;
 
 # vim:ts=2:sw=2:sts=2:et:ft=perl

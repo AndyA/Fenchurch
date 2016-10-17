@@ -57,18 +57,17 @@ Return a page of the leaf nodes of the version tree.
 sub leaves {
   my ( $self, $start, $size ) = @_;
 
-  return @{
-    $self->db->selectcol_arrayref(
-      [ "SELECT {tc1.uuid}",
-        "FROM {:versions} AS {tc1}",
-        "LEFT JOIN {:versions} AS {tc2} ON {tc2.parent} = {tc1.uuid}",
-        "WHERE {tc2.parent} IS NULL",
-        "ORDER BY {tc1.serial} ASC",
-        "LIMIT ?, ?"
-      ],
-      {},
-      $start, $size
-    ) };
+  return $self->db->selectcol_array(
+    [ "SELECT {tc1.uuid}",
+      "FROM {:versions} AS {tc1}",
+      "LEFT JOIN {:versions} AS {tc2} ON {tc2.parent} = {tc1.uuid}",
+      "WHERE {tc2.parent} IS NULL",
+      "ORDER BY {tc1.serial} ASC",
+      "LIMIT ?, ?"
+    ],
+    {},
+    $start, $size
+  );
 }
 
 =head2 C<sample>
@@ -80,17 +79,16 @@ Return a random sample of nodes.
 sub sample {
   my ( $self, $start, $size ) = @_;
 
-  return @{
-    $self->db->selectcol_arrayref(
-      [ "SELECT {tc1.uuid}",
-        "FROM {:versions} AS {tc1}, {:versions} AS {tc2}",
-        "WHERE {tc2.parent} = {tc1.uuid}",
-        "ORDER BY {tc1.rand} ASC",
-        "LIMIT ?, ?"
-      ],
-      {},
-      $start, $size
-    ) };
+  return $self->db->selectcol_array(
+    [ "SELECT {tc1.uuid}",
+      "FROM {:versions} AS {tc1}, {:versions} AS {tc2}",
+      "WHERE {tc2.parent} = {tc1.uuid}",
+      "ORDER BY {tc1.rand} ASC",
+      "LIMIT ?, ?"
+    ],
+    {},
+    $start, $size
+  );
 }
 
 =head2 C<recent>
@@ -145,14 +143,13 @@ sub since {
 sub _have {
   my ( $self, $tbl, @uuid ) = @_;
   return () unless @uuid;
-  return @{
-    $self->db->selectcol_arrayref(
-      [ "SELECT {uuid} FROM {$tbl} WHERE {uuid} IN (",
-        join( ", ", map "?", @uuid ), ")"
-      ],
-      {},
-      @uuid
-    ) };
+  return $self->db->selectcol_array(
+    [ "SELECT {uuid} FROM {$tbl} WHERE {uuid} IN (",
+      join( ", ", map "?", @uuid ), ")"
+    ],
+    {},
+    @uuid
+  );
 }
 
 =head2 C<dont_have>
@@ -215,35 +212,33 @@ Return a list of versions that we need.
 
 sub want {
   my ( $self, $start, $size ) = @_;
-  return @{
-    $self->db->selectcol_arrayref(
-      [ "SELECT DISTINCT {uuid} FROM (",
-        "  SELECT {uuid} FROM {:known}",
-        "  UNION SELECT {p1.parent} AS {uuid}",
-        "    FROM {:pending} AS {p1}",
-        "    LEFT JOIN {:pending} AS {p2}",
-        "      ON {p1.parent} = {p2.uuid}",
-        "   WHERE {p2.uuid} IS NULL",
-        ") AS {q}",
-        " LIMIT ?, ?"
-      ],
-      {},
-      $start, $size
-    ) };
+  return $self->db->selectcol_array(
+    [ "SELECT DISTINCT {uuid} FROM (",
+      "  SELECT {uuid} FROM {:known}",
+      "  UNION SELECT {p1.parent} AS {uuid}",
+      "    FROM {:pending} AS {p1}",
+      "    LEFT JOIN {:pending} AS {p2}",
+      "      ON {p1.parent} = {p2.uuid}",
+      "   WHERE {p2.uuid} IS NULL",
+      ") AS {q}",
+      " LIMIT ?, ?"
+    ],
+    {},
+    $start, $size
+  );
 }
 
 sub _find_ready {
   my $self = shift;
-  return @{
-    $self->db->selectcol_arrayref(
-      [ "SELECT {p.uuid}",
-        "  FROM {:pending} AS {p}",
-        " WHERE {p.parent} IS NULL",
-        "UNION SELECT {p.uuid}",
-        "  FROM {:pending} AS {p}, {:versions} AS {v}",
-        " WHERE {p.parent} = {v.uuid}"
-      ]
-    ) };
+  return $self->db->selectcol_array(
+    [ "SELECT {p.uuid}",
+      "  FROM {:pending} AS {p}",
+      " WHERE {p.parent} IS NULL",
+      "UNION SELECT {p.uuid}",
+      "  FROM {:pending} AS {p}, {:versions} AS {v}",
+      " WHERE {p.parent} = {v.uuid}"
+    ]
+  );
 }
 
 sub _flush_pending {
