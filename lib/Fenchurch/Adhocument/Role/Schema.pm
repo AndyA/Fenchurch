@@ -16,7 +16,7 @@ has schema => (
   is       => 'ro',
   required => 1,
   isa      => 'Fenchurch::Adhocument::Schema',
-  handles  => ['schema_for', 'spec_for', 'spec_for_root', 'pkey_for']
+  handles  => ['spec_for', 'spec_for_root', 'pkey_for']
 );
 
 1;

@@ -64,28 +64,6 @@ for my $prof (@profile) {
       },
     }
   );
-
-  {
-    my %baz = (
-      baz => {
-        table    => 'baz',
-        pkey     => 'id',
-        child_of => { foo => 'foo_id', bar => 'bar_id' } }
-    );
-
-    my %foo = ( foo => { table => 'foo', pkey => 'id' } );
-    my %bar = ( bar => { table => 'bar', pkey => 'id' } );
-
-    my $ad = $prof->{maker}( { %foo, %bar, %baz } );
-
-    my $for_foo = dclone { %foo, %baz };
-    delete $for_foo->{baz}{child_of}{bar};
-    eq_or_diff $ad->schema_for('foo'), $for_foo, "$type: schema for foo";
-
-    my $for_bar = dclone { %bar, %baz };
-    delete $for_bar->{baz}{child_of}{foo};
-    eq_or_diff $ad->schema_for('bar'), $for_bar, "$type: schema for bar";
-  }
 }
 
 done_testing();
@@ -135,7 +113,6 @@ sub test_schema {
 
   my $ad = $prof->{maker}($schema);
   my $events = catch_events( $ad, 'load', 'save', 'delete', 'version' );
-  eq_or_diff $ad->schema_for($kind), $schema, "$type, $kind: get schema";
 
   for my $pass ( 1 .. 2 ) {
     $ad->save( $kind => @$stash );

@@ -133,30 +133,6 @@ sub _b_deps {
   return $deps;
 }
 
-sub schema_for {
-  my ( $self, $kind ) = @_;
-  my $deps   = $self->_deps;
-  my @queue  = ($kind);
-  my $schema = $self->schema;
-  my $out    = {};
-  my %seen   = ();
-  while (@queue) {
-    my $kk = shift @queue;
-    next if $seen{$kk}++;
-    croak "Unknown kind $kk" unless exists $schema->{$kk};
-    $out->{$kk} = dclone $schema->{$kk};
-    push @queue, @{ $deps->{$kk} || [] };
-  }
-
-  while ( my ( $kind, $spec ) = each %$out ) {
-    for my $co ( keys %{ $spec->{child_of} // {} } ) {
-      delete $spec->{child_of}{$co} unless $seen{$co};
-    }
-  }
-
-  return $out;
-}
-
 sub spec_for {
   my ( $self, $kind ) = @_;
   return $self->_spec->{$kind} // croak "Unknown kind $kind";
