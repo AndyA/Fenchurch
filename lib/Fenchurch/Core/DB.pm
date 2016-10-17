@@ -27,12 +27,6 @@ has in_transaction => ( is => 'rw', isa => 'Bool', default => 0 );
 # The table name map: maps our internal table names to the
 # actual db tables.
 
-has aliases => (
-  is      => 'ro',
-  isa     => 'HashRef[Str]',
-  default => sub { {} },
-);
-
 has _meta_cache => (
   is       => 'ro',
   isa      => 'HashRef',
@@ -68,27 +62,6 @@ sub transaction {
   finally {
     $self->in_transaction(0);
   };
-}
-
-sub alias {
-  my ( $self, $alias ) = @_;
-  return $alias unless $alias =~ /^:(.+)/;
-  my $actual = $self->aliases->{$1};
-  confess "No mapping for alias $1"
-   unless defined $actual;
-  return $actual;
-}
-
-sub quote_name {
-  my ( $self, @name ) = @_;
-  return join ".", map { "`$_`" } map { $self->alias($_) } @name;
-}
-
-sub quote_sql {
-  my $self = shift;
-  ( my $sql = join " ", map { ref $_ && 'ARRAY' eq ref $_ ? @$_ : $_ } @_ )
-   =~ s/\{(:?\w+(?:\.:?\w+)*)\}/$self->quote_name(split qr{[.]}, $1)/eg;
-  return $sql;
 }
 
 sub _meta_for {

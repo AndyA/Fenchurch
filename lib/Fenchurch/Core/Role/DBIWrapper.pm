@@ -9,7 +9,13 @@ use Moose::Role;
 use Class::MOP::Method;
 use Scalar::Util qw( blessed );
 
-requires 'dbh', 'quote_sql';
+requires 'dbh';
+
+has aliases => (
+  is      => 'ro',
+  isa     => 'HashRef[Str]',
+  default => sub { {} },
+);
 
 =head1 NAME
 
@@ -53,6 +59,27 @@ Fenchurch::Core::Role::DBIWrapper - Provide augmented version of DBI interface
 sub selectcol_array {
   my $self = shift;
   return @{ $self->selectcol_arrayref(@_) };
+}
+
+sub alias {
+  my ( $self, $alias ) = @_;
+  return $alias unless $alias =~ /^:(.+)/;
+  my $actual = $self->aliases->{$1};
+  confess "No mapping for alias $1"
+   unless defined $actual;
+  return $actual;
+}
+
+sub quote_name {
+  my ( $self, @name ) = @_;
+  return join ".", map { "`$_`" } map { $self->alias($_) } @name;
+}
+
+sub quote_sql {
+  my $self = shift;
+  ( my $sql = join " ", map { ref $_ && 'ARRAY' eq ref $_ ? @$_ : $_ } @_ )
+   =~ s/\{(:?\w+(?:\.:?\w+)*)\}/$self->quote_name(split qr{[.]}, $1)/eg;
+  return $sql;
 }
 
 1;
