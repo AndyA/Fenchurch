@@ -6,7 +6,7 @@ use v5.10;
 
 use Moose;
 
-use Carp qw( croak );
+use Carp qw( confess );
 
 has _handlers => (
   traits  => ['Array'],
@@ -84,7 +84,7 @@ Despatch an event to registered handlers
 sub despatch {
   my ( $self, $ev, @args ) = @_;
 
-  my $type = $ev->{type} // croak "Missing type in event";
+  my $type = $ev->{type} // confess "Missing type in event";
   my $matched = 0;
 
   for my $handler ( $self->_get_handlers ) {

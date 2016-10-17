@@ -4,7 +4,7 @@ our $VERSION = "1.00";
 
 use Moose;
 
-use Carp qw( croak );
+use Carp qw( confess );
 use Fenchurch::Adhocument::Schema;
 
 =head1 NAME
@@ -107,7 +107,7 @@ sub _load_deep {
 
   if ( exists $spec->{children} ) {
     my $pkey = $spec->{pkey}
-     // croak "Can't load children of kind with no primary key";
+     // confess "Can't load children of kind with no primary key";
     my @pids = map { $_->{$pkey} } @$docs;
     for my $name ( keys %{ $spec->{children} } ) {
       my $info  = $spec->{children}{$name};
@@ -127,7 +127,7 @@ sub _load_deep {
 sub _get_pkeys {
   my ( $self, $spec, $key, @ids ) = @_;
 
-  my $pkey = $spec->{pkey} // croak "kind has no pkey";
+  my $pkey = $spec->{pkey} // confess "kind has no pkey";
   my $table = $spec->{table};
 
   return @ids if $pkey eq $key;    # Already have pkey
@@ -191,12 +191,12 @@ sub _check_columns {
   }
 
   my @bad = sort keys %bad_cols;
-  croak "Data has columns not found in ", $spec->{table}, ": ",
+  confess "Data has columns not found in ", $spec->{table}, ": ",
    join( ', ', map "'$_'", @bad )
    if @bad;
 
   my @missing = sort keys %missing_cols;
-  croak "Data lacks columns found in ", $spec->{table}, ": ",
+  confess "Data lacks columns found in ", $spec->{table}, ": ",
    join( ', ', map "'$_'", @missing )
    if @missing;
 }
@@ -235,7 +235,7 @@ sub _insert_deep {
     sub {
       if (@kids) {
         my $pkey = $spec->{pkey}
-         // croak "Can't save a kind with no primary key";
+         // confess "Can't save a kind with no primary key";
 
         for my $name (@kids) {
           my $info  = $spec->{children}{$name};
@@ -275,7 +275,7 @@ sub load_by_key {
 sub delete {
   my ( $self, $kind, @ids ) = @_;
   my $spec = $self->spec_for_root($kind);
-  die "Can't delete: schema is append only" if $spec->{append};
+  confess "Can't delete: schema is append only" if $spec->{append};
   $self->emit( 'delete', $kind, \@ids );
   $self->_delete_deep( $spec, $spec->{pkey}, @ids );
 }
@@ -285,7 +285,7 @@ sub _only_once {
   my %seen = ();
   $seen{$_}++ for @ids;
   my @multi = grep { $seen{$_} > 1 } keys %seen;
-  croak "These ids appeared more than once: ", join( ', ', @multi )
+  confess "These ids appeared more than once: ", join( ', ', @multi )
    if @multi;
 }
 

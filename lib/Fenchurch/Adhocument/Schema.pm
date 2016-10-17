@@ -5,7 +5,7 @@ our $VERSION = "1.00";
 use Moose;
 use Moose::Util::TypeConstraints;
 
-use Carp qw( croak );
+use Carp qw( confess );
 use Storable qw( dclone );
 
 use Fenchurch::Core::Util::ValidHash;
@@ -90,9 +90,9 @@ sub _lookup_from_db {
   my ( $self, $spec ) = @_;
   return unless $self->has_db;
   my @pkey = $self->db->pkey_for( $spec->{table} );
-  croak "Can't handle compound primary keys" if @pkey > 1;
+  confess "Can't handle compound primary keys" if @pkey > 1;
 
-  croak "Spec/table pkey mismatch (", ( $spec->{pkey} // 'undef' ),
+  confess "Spec/table pkey mismatch (", ( $spec->{pkey} // 'undef' ),
    " != ", ( $pkey[0] // 'undef' )
    if exists $spec->{pkey} && ( !@pkey || $pkey[0] ne $spec->{pkey} );
 
@@ -107,13 +107,13 @@ sub _b_spec {
   for my $spec ( values %$specs ) {
     $self->_lookup_from_db($spec);
     $vs->validate($spec);
-    croak "Must have either 'table' or 'child_of'"
+    confess "Must have either 'table' or 'child_of'"
      unless exists $spec->{table} || exists $spec->{child_of};
   }
 
   while ( my ( $kind, $spec ) = each %$specs ) {
     while ( my ( $pkind, $fkey ) = each %{ $spec->{child_of} // {} } ) {
-      my $parent     = $specs->{$pkind} // croak "Unknown kind $pkind";
+      my $parent     = $specs->{$pkind} // confess "Unknown kind $pkind";
       my $child_name = $spec->{plural}  // $kind;
       $parent->{children}{$child_name} = { kind => $kind, fkey => $fkey };
     }
@@ -135,13 +135,13 @@ sub _b_deps {
 
 sub spec_for {
   my ( $self, $kind ) = @_;
-  return $self->_spec->{$kind} // croak "Unknown kind $kind";
+  return $self->_spec->{$kind} // confess "Unknown kind $kind";
 }
 
 sub spec_for_root {
   my ( $self, $kind ) = @_;
   my $spec = $self->spec_for($kind);
-  croak "$kind has no pkey" unless exists $spec->{pkey};
+  confess "$kind has no pkey" unless exists $spec->{pkey};
   return $spec;
 }
 

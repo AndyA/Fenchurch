@@ -4,7 +4,7 @@ our $VERSION = "1.00";
 
 use Moose;
 
-use Carp qw( croak );
+use Carp qw( confess );
 
 =head1 NAME
 
@@ -37,7 +37,7 @@ sub validate {
      . join( ', ', map "'$_'", sort @extra )
      if @extra;
 
-    croak ucfirst join ', and ', @msg;
+    confess ucfirst join ', and ', @msg;
   }
 }
 

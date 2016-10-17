@@ -4,7 +4,7 @@ our $VERSION = "1.00";
 
 use Moose;
 
-use Carp qw( croak );
+use Carp qw( confess );
 
 =head1 NAME
 
@@ -48,7 +48,7 @@ sub _parse_event {
 sub _parse_named_event {
   my $self = shift;
   my ( $ev, $ns ) = $self->_parse_event(@_);
-  croak "An event must be named" if $ev eq '';
+  confess "An event must be named" if $ev eq '';
   return ( $ev, $ns );
 }
 
@@ -142,7 +142,7 @@ sub _remove_from_chain {
 sub remove_listener {
   my ( $self, $event, $listener ) = @_;
   my ( $ev, $ns ) = $self->_parse_event($event);
-  croak "Must name an event or namespace" unless $ev ne '' || keys %$ns;
+  confess "Must name an event or namespace" unless $ev ne '' || keys %$ns;
   my $like = $self->_make_matcher( $ns, $listener );
   if ( $ev eq '' ) {
     for my $evx ( $self->_expand_namespaces($ns) ) {
@@ -183,7 +183,7 @@ sub _emit {
 
 sub emit {
   my ( $self, $event, @args ) = @_;
-  croak "Can't use namespaces with emit" if $event =~ /\./;
+  confess "Can't use namespaces with emit" if $event =~ /\./;
   $self->do_default(1);
   $self->_emit( $event, @args );
   return $self;
