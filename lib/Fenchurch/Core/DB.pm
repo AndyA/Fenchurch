@@ -106,7 +106,7 @@ sub numeric_columns_for {
   my $cols = $meta->{columns};
   return sort grep {
     $cols->{$_}{type} =~ /^ (?: decimal | double | float | int |
-                              (?: big | medium | small | tiny ) int)/x
+                            (?: big | medium | small | tiny ) int)/x
   } keys %$cols;
 }
 
