@@ -13,7 +13,9 @@ has versions => (
   required => 1
 );
 
-with 'Fenchurch::Core::Role::UUIDFactory';
+with qw(
+ Fenchurch::Core::Role::UUIDFactory
+);
 
 =head1 NAME
 

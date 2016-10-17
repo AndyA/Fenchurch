@@ -20,10 +20,12 @@ has numify => (
   default  => 0
 );
 
-with 'Fenchurch::Core::Role::DB',
- 'Fenchurch::Core::Role::JSON',
- 'Fenchurch::Adhocument::Role::Schema',
- 'Fenchurch::Event::Role::Emitter';
+with qw(
+ Fenchurch::Core::Role::DB
+ Fenchurch::Core::Role::JSON
+ Fenchurch::Adhocument::Role::Schema
+ Fenchurch::Event::Role::Emitter
+);
 
 sub _exists {
   my ( $self, $spec, @ids ) = @_;

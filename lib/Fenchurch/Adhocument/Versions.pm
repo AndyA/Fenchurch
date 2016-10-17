@@ -42,9 +42,13 @@ has _version_engine => (
   builder => '_b_version_engine'
 );
 
-with 'Fenchurch::Core::Role::DB', 'Fenchurch::Adhocument::Role::Schema',
- 'Fenchurch::Core::Role::JSON', 'Fenchurch::Core::Role::NodeName',
- 'Fenchurch::Core::Role::UUIDFactory';
+with qw(
+ Fenchurch::Core::Role::DB
+ Fenchurch::Adhocument::Role::Schema
+ Fenchurch::Core::Role::JSON
+ Fenchurch::Core::Role::NodeName
+ Fenchurch::Core::Role::UUIDFactory
+);
 
 =head1 NAME
 

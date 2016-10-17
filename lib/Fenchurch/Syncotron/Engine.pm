@@ -14,7 +14,9 @@ has _pending_engine => (
   builder => '_b_pending_engine'
 );
 
-with 'Fenchurch::Syncotron::Role::Versions';
+with qw(
+ Fenchurch::Syncotron::Role::Versions
+);
 
 =head1 NAME
 

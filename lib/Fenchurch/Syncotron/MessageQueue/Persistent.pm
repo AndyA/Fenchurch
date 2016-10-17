@@ -12,7 +12,10 @@ has ['role', 'from', 'to'] => (
   required => 1
 );
 
-with 'Fenchurch::Core::Role::DB', 'Fenchurch::Core::Role::JSON';
+with qw(
+ Fenchurch::Core::Role::DB
+ Fenchurch::Core::Role::JSON
+);
 
 =head1 NAME
 

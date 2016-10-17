@@ -27,7 +27,9 @@ has size => (
   default => 0
 );
 
-with 'Fenchurch::Core::Role::JSON';
+with qw(
+ Fenchurch::Core::Role::JSON
+);
 
 =head1 NAME
 
