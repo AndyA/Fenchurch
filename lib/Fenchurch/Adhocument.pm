@@ -90,7 +90,7 @@ sub _load {
   if (@$json) {
     for my $row (@$rc) {
       for my $nf (@$json) {
-        $row->{$nf} = $self->_json_decode( $row->{$nf} );
+        $row->{$nf} = $self->json_decode( $row->{$nf} );
       }
     }
   }
@@ -217,7 +217,7 @@ sub _insert {
   for my $doc (@docs) {
     for my $col (@cols) {
       my $val = $doc->{$col};
-      push @bind, $is_json{$col} ? $self->_json_encode($val) : $val;
+      push @bind, $is_json{$col} ? $self->json_encode($val) : $val;
     }
   }
 

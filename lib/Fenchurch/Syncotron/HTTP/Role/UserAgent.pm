@@ -40,11 +40,11 @@ sub _post {
 
   my $req = HTTP::Request->new( 'POST', $self->uri );
   $req->header( 'Content-Type' => 'application/json;charset=utf-8' );
-  $req->content( $stats->_count( send => $self->_json_encode($msg) ) );
+  $req->content( $stats->_count( send => $self->json_encode($msg) ) );
 
   my $resp = $self->_ua->request($req);
 
-  return $self->_json_decode( $stats->_count( receive => $resp->content ) )
+  return $self->json_decode( $stats->_count( receive => $resp->content ) )
    if $resp->is_success;
 
   die join "\n", $resp->status_line, $resp->decoded_content;

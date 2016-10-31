@@ -43,7 +43,7 @@ sub send {
       join( ", ", map "(?, ?, ?, NOW(), ?)", @msgs )
     ],
     {},
-    map { ( $role, $from, $to, $self->_json_encode($_) ) } @msgs
+    map { ( $role, $from, $to, $self->json_encode($_) ) } @msgs
   );
 
   return $self;
@@ -91,7 +91,7 @@ sub _peek {
 sub _unpack {
   my ( $self, $msg ) = @_;
   return unless $msg;
-  return map { $self->_json_decode( $_->{message} ) } @$msg;
+  return map { $self->json_decode( $_->{message} ) } @$msg;
 }
 
 =head2 C<< peek >>

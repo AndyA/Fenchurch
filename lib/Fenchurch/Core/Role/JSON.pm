@@ -29,12 +29,12 @@ has _json_raw => (
 sub _b_json     { JSON::XS->new->utf8->allow_nonref->canonical }
 sub _b_json_raw { JSON::XS->new->allow_nonref->canonical }
 
-sub _json_encode {
+sub json_encode {
   my ( $self, $data ) = @_;
   return $self->_json->encode($data);
 }
 
-sub _json_decode {
+sub json_decode {
   my ( $self, $json ) = @_;
   return undef unless defined $json;
   # If the string comes from the database it will already have been

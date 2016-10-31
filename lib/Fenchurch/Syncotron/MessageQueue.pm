@@ -63,7 +63,7 @@ sub _put {
 
 sub _decode {
   my ( $self, @msg ) = @_;
-  return map { $self->_json_decode($_) } @msg;
+  return map { $self->json_decode($_) } @msg;
 }
 
 sub _take {
@@ -75,7 +75,7 @@ sub _take {
 
 sub send {
   my ( $self, @msgs ) = @_;
-  $self->_put( map { $self->_json_encode($_) } @msgs );
+  $self->_put( map { $self->json_encode($_) } @msgs );
   return $self;
 }
 
