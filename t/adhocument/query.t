@@ -6,6 +6,7 @@ use warnings;
 use lib qw( t/lib );
 
 use DBI;
+use Storable qw( dclone );
 use Test::Differences;
 use Test::More;
 use TestSupport;
@@ -31,13 +32,22 @@ adhocument()->save( programme => @$programmes );
 
 my $ad = adhocument();
 
-my $docs = $ad->query(
-  programme => "SELECT * FROM {test_programmes_v2} WHERE {year} = ?",
-  1931
-);
+{
+  my $docs = $ad->query(
+    programme => "SELECT * FROM {test_programmes_v2} WHERE {year} = ?",
+    1931
+  );
 
-eq_or_diff $docs, [$programmes->[0]],
- "Query selected the right programme";
+  eq_or_diff $docs, [$programmes->[0]],
+   "Query selected the right programme";
+}
+
+{
+  my $rec = dclone $programmes->[0];
+  delete @{$rec}{ 'contributors', 'related' };
+  my $docs = $ad->deepen( programme => [$rec] );
+  eq_or_diff $docs, [$rec], "Deepen works as expected";
+}
 
 done_testing;
 
@@ -54,4 +64,3 @@ sub schema {
 }
 
 # vim:ts=2:sw=2:et:ft=perl
-
