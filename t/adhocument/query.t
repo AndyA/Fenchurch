@@ -46,7 +46,8 @@ my $ad = adhocument();
   my $rec = dclone $programmes->[0];
   delete @{$rec}{ 'contributors', 'related' };
   my $docs = $ad->deepen( programme => [$rec] );
-  eq_or_diff $docs, [$rec], "Deepen works as expected";
+  eq_or_diff $docs, [$programmes->[0]],
+   "Deepen deepens";
 }
 
 done_testing;
