@@ -6,6 +6,7 @@ use Moose;
 
 use Carp qw( confess );
 use Fenchurch::Adhocument::Schema;
+use Storable qw( dclone );
 
 =head1 NAME
 
@@ -266,13 +267,13 @@ sub load {
 
 sub deepen {
   my ( $self, $kind, $docs ) = @_;
-  return $self->_deepen( $self->spec_for_root($kind), $docs );
+  return $self->_deepen( $self->spec_for_root($kind), dclone $docs );
 }
 
 sub query {
   my ( $self, $kind, $sql, @bind ) = @_;
   my $docs = $self->db->selectall_arrayref( $sql, { Slice => {} }, @bind );
-  my $res = $self->deepen( $kind, $docs );
+  my $res = $self->_deepen( $self->spec_for_root($kind), $docs );
   $self->emit( 'query', $kind, $sql, \@bind, $res );
   return $res;
 }
