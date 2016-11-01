@@ -72,14 +72,12 @@ sub _load_raw {
   return $self->db->selectall_arrayref( \@sql, { Slice => {} }, @bind );
 }
 
-sub _load {
-  my ( $self, $spec, $key, @ids ) = @_;
-  my $rc = $self->_load_raw( $spec, $key, @ids );
-  return unless $rc;
+sub _deepen {
+  my ( $self, $spec, $docs ) = @_;
 
   if ( $self->numify ) {
     my @nc = $self->db->numeric_columns_for( $spec->{table} );
-    for my $row (@$rc) {
+    for my $row (@$docs) {
       for my $nf (@nc) {
         $row->{$nf} += 0 if defined $row->{$nf};
       }
@@ -88,22 +86,12 @@ sub _load {
 
   my $json = $spec->{json} // [];
   if (@$json) {
-    for my $row (@$rc) {
+    for my $row (@$docs) {
       for my $nf (@$json) {
         $row->{$nf} = $self->json_decode( $row->{$nf} );
       }
     }
   }
-
-  return $rc;
-}
-
-sub _load_deep {
-  my ( $self, $spec, $key, @ids ) = @_;
-
-  return [] unless @ids;
-
-  my $docs = $self->_load( $spec, $key, @ids );
 
   if ( exists $spec->{children} ) {
     my $pkey = $spec->{pkey}
@@ -122,6 +110,15 @@ sub _load_deep {
   }
 
   return $docs;
+}
+
+sub _load_deep {
+  my ( $self, $spec, $key, @ids ) = @_;
+
+  return [] unless @ids;
+
+  my $docs = $self->_load_raw( $spec, $key, @ids );
+  return $self->_deepen( $spec, $docs );
 }
 
 sub _get_pkeys {
@@ -264,6 +261,15 @@ sub load {
   my $by_key = $self->db->stash_by( $docs, $pkey );
   my $res    = [map { ( $by_key->{$_} // [] )->[0] } @ids];
   $self->emit( 'load', $kind, \@ids, $res );
+  return $res;
+}
+
+sub query {
+  my ( $self, $kind, $sql, @bind ) = @_;
+  my $spec = $self->spec_for_root($kind);
+  my $docs = $self->db->selectall_arrayref( $sql, { Slice => {} }, @bind );
+  my $res  = $self->_deepen( $spec, $docs );
+  $self->emit( 'query', $kind, $sql, \@bind, $res );
   return $res;
 }
 
