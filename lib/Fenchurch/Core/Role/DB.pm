@@ -13,6 +13,7 @@ Fenchurch::Core::Role::DB - A database connection
 
 =cut
 
+sub dbh;
 has db => (
   is       => 'ro',
   isa      => 'Fenchurch::Core::DB',
