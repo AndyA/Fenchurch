@@ -264,11 +264,15 @@ sub load {
   return $res;
 }
 
+sub deepen {
+  my ( $self, $kind, $docs ) = @_;
+  return $self->_deepen( $self->spec_for_root($kind), $docs );
+}
+
 sub query {
   my ( $self, $kind, $sql, @bind ) = @_;
-  my $spec = $self->spec_for_root($kind);
   my $docs = $self->db->selectall_arrayref( $sql, { Slice => {} }, @bind );
-  my $res  = $self->_deepen( $spec, $docs );
+  my $res = $self->deepen( $kind, $docs );
   $self->emit( 'query', $kind, $sql, \@bind, $res );
   return $res;
 }

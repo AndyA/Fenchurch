@@ -32,8 +32,9 @@ has _engine => (
   lazy    => 1,
   builder => '_b_engine',
   handles => [
-    'load', 'load_by_key', 'query', 'exists',
-    Fenchurch::Event::Emitter->interface
+    'load',   'load_by_key',
+    'query',  'deepen',
+    'exists', Fenchurch::Event::Emitter->interface
   ]
 );
 
