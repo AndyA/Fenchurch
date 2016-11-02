@@ -56,8 +56,9 @@ sub database(@) {
     $ENV{"${var}DSN"},
     $ENV{"${var}USER"} // 'root',
     $ENV{"${var}PASS"} // '',
-    { mysql_enable_utf8 => 1,
-      RaiseError        => 1
+    { mysql_enable_utf8   => 1,
+      RaiseError          => 1,
+      AutoInactiveDestroy => 1
     }
   );
 

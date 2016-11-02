@@ -16,11 +16,17 @@ Fenchurch::Core::DB - Database handling
 =cut
 
 has dbh => (
-  is       => 'ro',
-  isa      => duck_type( ['do'] ),
-  traits   => ['DoNotSerialize'],
-  required => 1
+  is      => 'ro',
+  isa     => duck_type( ['do'] ),
+  traits  => ['DoNotSerialize'],
+  lazy    => 1,
+  builder => '_b_dbh',
+  clearer => '_after_fork'
 );
+
+has _pid => ( is => 'rw', isa => 'Int', default => sub { $$ } );
+
+has get_connection => ( is => 'ro', isa => 'CodeRef' );
 
 has in_transaction => ( is => 'rw', isa => 'Bool', default => 0 );
 
@@ -38,6 +44,31 @@ with qw(
  Fenchurch::Core::Role::DBIWrapper
  Fenchurch::Core::Role::Group
 );
+
+before dbh => sub {
+  my $self = shift;
+
+  my $pid = $$;
+  if ( $self->_pid != $pid ) {
+    $self->_after_fork;
+    $self->_pid($pid);
+  }
+};
+
+sub _b_dbh {
+  my $self = shift;
+
+  my $gc = $self->get_connection;
+
+  confess "Neither dbh nor get_connection set"
+   unless defined $gc;
+
+  my $dbh = $gc->();
+  confess "Failed to get database handle via get_connection"
+   unless defined $dbh;
+
+  return $dbh;
+}
 
 sub transaction {
   my ( $self, $cb ) = @_;
