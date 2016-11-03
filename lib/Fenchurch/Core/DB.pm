@@ -16,17 +16,17 @@ Fenchurch::Core::DB - Database handling
 =cut
 
 has dbh => (
-  is      => 'ro',
-  isa     => duck_type( ['do'] ),
-  traits  => ['DoNotSerialize'],
-  lazy    => 1,
-  builder => '_b_dbh',
-  clearer => '_after_fork'
+  is        => 'ro',
+  isa       => duck_type( ['do'] ),
+  traits    => ['DoNotSerialize'],
+  predicate => 'has_dbh'
 );
 
-has _pid => ( is => 'rw', isa => 'Int', default => sub { $$ } );
-
-has get_connection => ( is => 'ro', isa => 'CodeRef' );
+has get_connection => (
+  is        => 'ro',
+  isa       => 'CodeRef',
+  predicate => 'has_get_connection'
+);
 
 has in_transaction => ( is => 'rw', isa => 'Bool', default => 0 );
 
@@ -45,30 +45,25 @@ with qw(
  Fenchurch::Core::Role::Group
 );
 
-before dbh => sub {
+sub BUILD {
   my $self = shift;
-
-  my $pid = $$;
-  if ( $self->_pid != $pid ) {
-    $self->_after_fork;
-    $self->_pid($pid);
-  }
-};
-
-sub _b_dbh {
-  my $self = shift;
-
-  my $gc = $self->get_connection;
-
-  confess "Neither dbh nor get_connection set"
-   unless defined $gc;
-
-  my $dbh = $gc->();
-  confess "Failed to get database handle via get_connection"
-   unless defined $dbh;
-
-  return $dbh;
+  confess "Either dbh or get_connection must be set"
+   unless $self->has_dbh || $self->has_get_connection;
 }
+
+around dbh => sub {
+  my $orig = shift;
+  my $self = shift;
+
+  if ( my $gc = $self->get_connection ) {
+    my $dbh = $gc->();
+    confess "Failed to get database handle via get_connection"
+     unless defined $dbh;
+    return $dbh;
+  }
+
+  return $self->$orig(@_);
+};
 
 sub transaction {
   my ( $self, $cb ) = @_;
