@@ -90,7 +90,7 @@ sub _lookup_from_db {
   my ( $self, $spec ) = @_;
   return unless $self->has_db;
   my @pkey = $self->db->pkey_for( $spec->{table} );
-  confess "Can't handle compound primary keys" if @pkey > 1;
+  confess "Can't handle compound primary keys for $spec->{table}" if @pkey > 1;
 
   confess "Spec/table pkey mismatch (", ( $spec->{pkey} // 'undef' ),
    " != ", ( $pkey[0] // 'undef' )
