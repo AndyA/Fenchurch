@@ -47,17 +47,6 @@ Create a new schema.
 
 has schema => ( is => 'ro', isa => 'HashRef', required => 1 );
 
-# Optional db handle. Adding this makes the schema concrete rather than
-# abstract. We'll use this to look up the primary keys for tables.
-
-has db => (
-  is  => 'ro',
-  isa => duck_type(
-    ['meta_for', 'columns_for', 'settable_columns_for', 'pkey_for']
-  ),
-  predicate => 'has_db'
-);
-
 has _spec => (
   is      => 'ro',
   isa     => 'HashRef',
@@ -79,23 +68,17 @@ has _valid_spec => (
   lazy    => 1
 );
 
+around BUILDARGS => sub {
+  my ( $orig, $class, %args ) = @_;
+  confess "Don't set db!" if exists $args{db};
+  return $class->$orig(%args);
+};
+
 sub _b_valid_spec {
   return Fenchurch::Core::Util::ValidHash->new(
     required => ['table'],
     optional => ['pkey', 'child_of', 'order', 'plural', 'append', 'json']
   );
-}
-
-sub _lookup_from_db {
-  my ( $self, $spec ) = @_;
-  return unless $self->has_db;
-  return if exists $spec->{pkey};
-
-  my @pkey = $self->db->pkey_for( $spec->{table} );
-  confess "Can't handle compound primary keys for $spec->{table}"
-   if @pkey > 1;
-
-  $spec->{pkey} = $pkey[0] if @pkey;
 }
 
 sub _b_spec {
@@ -104,10 +87,9 @@ sub _b_spec {
   my $specs = dclone $self->schema;
   my $vs    = $self->_valid_spec;
   for my $spec ( values %$specs ) {
-    $self->_lookup_from_db($spec);
     $vs->validate($spec);
-    confess "Must have either 'table' or 'child_of'"
-     unless exists $spec->{table} || exists $spec->{child_of};
+    confess "Must have either 'pkey' or 'child_of'"
+     unless exists $spec->{pkey} || exists $spec->{child_of};
   }
 
   while ( my ( $kind, $spec ) = each %$specs ) {

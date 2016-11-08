@@ -49,10 +49,8 @@ sub test_versions($$$$$$) {
     dbh     => database,
     aliases => { versions => 'test_versions' }
   );
-  my $scm = Fenchurch::Adhocument::Schema->new(
-    schema => $schema,
-    db     => $db
-  );
+
+  my $scm = Fenchurch::Adhocument::Schema->new( schema => $schema );
 
   my $ad = Fenchurch::Adhocument::Versions->new(
     schema => $scm,
@@ -175,7 +173,12 @@ sub mod_remove_node {
   return $item;
 }
 
-my @tbl_single = ( item => { table => 'test_item', } );
+my @tbl_single = (
+  item => {
+    table => 'test_item',
+    pkey  => '_uuid'
+  }
+);
 
 my @tbl_tags = (
   tag => {
@@ -189,6 +192,7 @@ my @tbl_tags = (
 my @tbl_nodes = (
   node => {
     table    => 'test_tree',
+    pkey     => '_uuid',
     child_of => { item => '_parent' },
     plural   => 'nodes'
   }

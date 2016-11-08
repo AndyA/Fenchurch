@@ -237,10 +237,12 @@ sub make_test_db {
   );
 
   my $schema = Fenchurch::Adhocument::Schema->new(
-    db     => $db,
     schema => {
-      item => { table => 'test_item', },
-      tag  => {
+      item => {
+        table => 'test_item',
+        pkey  => '_uuid'
+      },
+      tag => {
         table    => 'test_tag',
         child_of => { item => '_parent' },
         plural   => 'tags',
@@ -248,6 +250,7 @@ sub make_test_db {
       },
       node => {
         table    => 'test_tree',
+        pkey     => '_uuid',
         child_of => { item => '_parent' },
         plural   => 'nodes'
       } }

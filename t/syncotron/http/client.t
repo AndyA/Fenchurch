@@ -160,10 +160,12 @@ sub make_versions {
   );
 
   my $schema = Fenchurch::Adhocument::Schema->new(
-    db     => $db,
     schema => {
-      item => { table => 'test_item', },
-      tag  => {
+      item => {
+        table => 'test_item',
+        pkey  => '_uuid'
+      },
+      tag => {
         table    => 'test_tag',
         child_of => { item => '_parent' },
         plural   => 'tags',
