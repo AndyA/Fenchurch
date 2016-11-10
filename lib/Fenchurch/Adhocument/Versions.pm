@@ -26,7 +26,7 @@ has table => (
   default  => ':versions'
 );
 
-has _engine => (
+has unversioned => (
   is      => 'ro',
   isa     => 'Fenchurch::Adhocument',
   lazy    => 1,
@@ -236,7 +236,7 @@ sub _save {
   my $old_docs = $self->_old_docs( $options, $kind, @ids );
   my @dirty    = $self->_only_changed( $pkey, $old_docs, @docs );
 
-  $self->_engine->save( $kind, @dirty );
+  $self->unversioned->save( $kind, @dirty );
   $self->_save_versions( $options, $kind, $old_docs,
     map { [$_->{$pkey}, $_] } @dirty );
 }
@@ -248,7 +248,7 @@ sub _delete {
   my @eids     = @{ $self->exists( $kind => @ids ) };
   my $old_docs = $self->_old_docs( $options, $kind, @eids );
 
-  $self->_engine->delete( $kind, @eids );
+  $self->unversioned->delete( $kind, @eids );
   $self->_save_versions( $options, $kind, $old_docs,
     map { [$_, undef] } @eids );
 }
