@@ -19,13 +19,6 @@ has numify => (
   default  => 0
 );
 
-has table => (
-  is       => 'ro',
-  isa      => 'Str',
-  required => 1,
-  default  => ':versions'
-);
-
 has unversioned => (
   is      => 'ro',
   isa     => 'Fenchurch::Adhocument',
@@ -38,13 +31,6 @@ has unversioned => (
   ]
 );
 
-has _version_engine => (
-  is      => 'ro',
-  isa     => 'Fenchurch::Adhocument',
-  lazy    => 1,
-  builder => '_b_version_engine'
-);
-
 with qw(
  Fenchurch::Core::Role::DB
  Fenchurch::Core::Role::JSON
@@ -52,6 +38,7 @@ with qw(
  Fenchurch::Core::Role::UUIDFactory
  Fenchurch::Adhocument::Role::Schema
  Fenchurch::Adhocument::Role::VersionEngine
+ Fenchurch::Adhocument::Role::VersionModel
 );
 
 =head1 NAME
@@ -66,29 +53,6 @@ sub _b_engine {
     db     => $self->db,
     schema => $self->schema,
     numify => $self->numify,
-  );
-}
-
-sub version_schema {
-  my ( $self, $table, %extra ) = @_;
-  return {
-    version => {
-      table => $self->db->alias($table),
-      pkey  => 'uuid',
-      order => '+sequence',
-      json  => ['old_data', 'new_data'],
-      %extra
-    } };
-}
-
-sub _b_version_engine {
-  my $self = shift;
-  return Fenchurch::Adhocument->new(
-    db     => $self->db,
-    schema => Fenchurch::Adhocument::Schema->new(
-      schema => $self->version_schema( $self->table, append => 1 )
-    ),
-    numify => 1
   );
 }
 
@@ -271,56 +235,6 @@ sub _save_or_delete {
 
 sub save   { shift->_save_or_delete( 1, @_ ) }
 sub delete { shift->_save_or_delete( 0, @_ ) }
-
-sub _unpack_versions {
-  my ( $self, $kind, $doc, $versions ) = @_;
-  my @meta = ();
-  my @docs = ();
-  for my $ver (@$versions) {
-    push @docs, delete $ver->{old_data};
-    push @meta, $ver;
-  }
-  push @docs, $doc;
-  unshift @meta, { sequence => 0, kind => $kind };
-  my @out = ();
-  push @out, { meta => shift @meta, doc => shift @docs } while @docs;
-  return \@out;
-}
-
-sub versions {
-  my ( $self, $kind, @ids ) = @_;
-
-  # Load matching documents...
-  my $docs = $self->db->stash_by( $self->load( $kind, @ids ),
-    $self->pkey_for($kind) );
-
-  # ...and version history
-  my $vers
-   = $self->db->stash_by(
-    $self->_version_engine->load_by_key( 'version', 'object', @ids ),
-    'object' );
-
-  return [
-    map {
-      $self->_unpack_versions(
-        $kind,
-        ( $docs->{$_} // [] )->[0],
-        $vers->{$_} // []
-       )
-    } @ids
-  ];
-}
-
-=head2 C<load_versions>
-
-Load versions by UUID.
-
-=cut
-
-sub load_versions {
-  my ( $self, @ids ) = @_;
-  return $self->_version_engine->load( version => @ids );
-}
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
