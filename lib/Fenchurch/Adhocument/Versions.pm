@@ -47,10 +47,11 @@ has _version_engine => (
 
 with qw(
  Fenchurch::Core::Role::DB
- Fenchurch::Adhocument::Role::Schema
  Fenchurch::Core::Role::JSON
  Fenchurch::Core::Role::NodeName
  Fenchurch::Core::Role::UUIDFactory
+ Fenchurch::Adhocument::Role::Schema
+ Fenchurch::Adhocument::Role::VersionEngine
 );
 
 =head1 NAME
@@ -271,20 +272,13 @@ sub _save_or_delete {
 sub save   { shift->_save_or_delete( 1, @_ ) }
 sub delete { shift->_save_or_delete( 0, @_ ) }
 
-sub _unpack_version {
-  my ( $self, $ver ) = @_;
-  my $doc = delete $ver->{old_data};
-  return ( $ver, $doc );
-}
-
 sub _unpack_versions {
   my ( $self, $kind, $doc, $versions ) = @_;
   my @meta = ();
   my @docs = ();
   for my $ver (@$versions) {
-    my ( $meta, $vdoc ) = $self->_unpack_version($ver);
-    push @meta, $meta;
-    push @docs, $vdoc;
+    push @docs, delete $ver->{old_data};
+    push @meta, $ver;
   }
   push @docs, $doc;
   unshift @meta, { sequence => 0, kind => $kind };
