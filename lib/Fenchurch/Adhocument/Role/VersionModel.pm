@@ -25,7 +25,7 @@ sub _unpack_versions {
   push @docs, $doc;
   unshift @meta, { sequence => 0, kind => $kind };
   my @out = ();
-  push @out, { meta => shift @meta, doc => shift @docs, kind => $kind }
+  push @out, { meta => shift @meta, doc => shift @docs }
    while @docs;
   return \@out;
 }
