@@ -47,7 +47,7 @@ sub test_versions($$$$$$) {
 
   my $db = Fenchurch::Core::DB->new(
     dbh     => database,
-    aliases => { versions => 'test_versions' }
+    aliases => [versions => 'test_versions']
   );
 
   my $scm = Fenchurch::Adhocument::Schema->new( schema => $schema );

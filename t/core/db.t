@@ -17,7 +17,7 @@ preflight;
 {
   my $db = Fenchurch::Core::DB->new(
     dbh     => database,
-    aliases => { tbl1 => 'table_one', tbl2 => 'table_two' }
+    aliases => [tbl1 => 'table_one', tbl2 => 'table_two']
   );
 
   is $db->alias("foo"),   "foo",       "literal table name OK";

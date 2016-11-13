@@ -46,7 +46,7 @@ my $programmes = test_data("stash.json");
     schema => schema(),
     db     => Fenchurch::Core::DB->new(
       dbh     => database,
-      aliases => { versions => 'test_versions' }
+      aliases => [versions => 'test_versions']
     ),
   );
 

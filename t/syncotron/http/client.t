@@ -151,12 +151,12 @@ sub make_versions {
 
   my $db = Fenchurch::Core::DB->new(
     dbh     => $dbh,
-    aliases => {
+    aliases => [
       versions => 'test_versions',
       pending  => 'test_pending',
       known    => 'test_known',
       state    => 'test_state',
-    }
+    ]
   );
 
   my $schema = Fenchurch::Adhocument::Schema->new(

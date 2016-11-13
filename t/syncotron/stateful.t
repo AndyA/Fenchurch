@@ -72,7 +72,7 @@ done_testing;
 sub make_state {
   my $db = Fenchurch::Core::DB->new(
     dbh     => database("local"),
-    aliases => { state => 'test_state' }
+    aliases => [state => 'test_state']
   );
 
   my $st = consumer_of(

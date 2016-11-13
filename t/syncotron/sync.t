@@ -34,13 +34,13 @@ empty @tables;
 my $programmes = test_data("stash.json");
 
 my %common = (
-  aliases => {
+  aliases => [
     queue    => 'test_queue',
     versions => 'test_versions',
     state    => 'test_state',
     pending  => 'test_pending',
     known    => 'test_known',
-  }
+  ]
 );
 
 my $db_local

@@ -7,14 +7,16 @@ use v5.10;
 use Moose::Role;
 
 use Class::MOP::Method;
+use Fenchurch::Core::Types;
 use Scalar::Util qw( blessed );
 
 requires 'dbh';
 
 has aliases => (
   is      => 'ro',
-  isa     => 'HashRef[Str]',
+  isa     => 'HashRefMayBeArrayRef',
   default => sub { {} },
+  coerce  => 1,
 );
 
 =head1 NAME

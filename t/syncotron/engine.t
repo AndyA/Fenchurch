@@ -229,11 +229,11 @@ sub make_test_db {
 
   my $db = Fenchurch::Core::DB->new(
     dbh     => $dbh,
-    aliases => {
+    aliases => [
       versions => 'test_versions',
       pending  => 'test_pending',
       known    => 'test_known',
-    }
+    ]
   );
 
   my $schema = Fenchurch::Adhocument::Schema->new(
