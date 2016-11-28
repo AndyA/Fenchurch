@@ -6,7 +6,7 @@ use v5.10;
 
 use Moose::Role;
 
-use UUID::Tiny ':std';
+use UUID::Tiny ();
 
 =head1 NAME
 
@@ -14,7 +14,7 @@ Fenchurch::Core::Role::UUIDFactory - Create new UUIDs
 
 =cut
 
-sub _make_uuid { create_uuid_as_string(UUID_V4) }
+sub _make_uuid { UUID::Tiny::create_uuid_as_string(UUID::Tiny::UUID_V4) }
 
 1;
 
