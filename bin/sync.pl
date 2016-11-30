@@ -13,8 +13,6 @@ use Dancer::Plugin::Database;
 use Fenchurch::Adhocument::Versions;
 use Fenchurch::Core::DB;
 use Fenchurch::Syncotron::HTTP::Client;
-use Fenchurch::Syncotron::HTTP::Server;
-use Fenchurch::Wiki::Engine;
 use Fenchurch::Wiki::Schema;
 use Getopt::Long;
 use JSON();
