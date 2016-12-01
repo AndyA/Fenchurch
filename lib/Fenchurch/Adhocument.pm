@@ -22,6 +22,7 @@ has numify => (
 );
 
 with qw(
+ Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::DB
  Fenchurch::Core::Role::JSON
  Fenchurch::Adhocument::Role::Schema
@@ -256,6 +257,7 @@ sub _insert_deep {
 
 sub load {
   my ( $self, $kind, @ids ) = @_;
+  $self->log->debug( "load $kind: ", join ", ", @ids );
   my $spec   = $self->spec_for_root($kind);
   my $pkey   = $spec->{pkey};
   my $docs   = $self->_load_deep( $spec, $pkey, @ids );
@@ -267,12 +269,15 @@ sub load {
 
 sub deepen {
   my ( $self, $kind, $docs ) = @_;
+  $self->log->debug( "deepen $kind: ", scalar(@$docs), " objects" );
   return $self->_deepen( $self->spec_for_root($kind), dclone $docs );
 }
 
 sub query {
   my ( $self, $kind, $sql, @bind ) = @_;
   my $docs = $self->db->selectall_arrayref( $sql, { Slice => {} }, @bind );
+  $self->log->debug( "query $kind: ",
+    $sql, " (", join( ", ", @bind ), ")" );
   my $res = $self->_deepen( $self->spec_for_root($kind), $docs );
   $self->emit( 'query', $kind, $sql, \@bind, $res );
   return $res;
@@ -280,11 +285,13 @@ sub query {
 
 sub load_by_key {
   my ( $self, $kind, $key, @ids ) = @_;
+  $self->log->debug( "load_by_key $kind:", join ", ", $key, @ids );
   return $self->_load_deep( $self->spec_for($kind), $key, @ids );
 }
 
 sub delete {
   my ( $self, $kind, @ids ) = @_;
+  $self->log->debug( "delete $kind: ", join ", ", @ids );
   my $spec = $self->spec_for_root($kind);
   confess "Can't delete: schema is append only" if $spec->{append};
   $self->emit( 'delete', $kind, \@ids );
@@ -307,6 +314,7 @@ sub save {
   my $pkey = $spec->{pkey};
 
   my @ids = map { $_->{$pkey} } @docs;
+  $self->log->debug( "save $kind: ", join ", ", @ids );
 
   # Check each id is used only once
   $self->_only_once(@ids);

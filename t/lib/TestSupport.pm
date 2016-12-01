@@ -8,16 +8,20 @@ use feature 'state';
 use DBI;
 use Digest::SHA1 qw( sha1_hex );
 use JSON ();
+use Log::Log4perl;
 use Path::Class;
 use Storable qw( freeze );
 use Test::More;
 
 require Exporter;
+
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
  database object_hash pickone preflight randint test_data
  test_data_file empty make_uuid valid_uuid
 );
+
+Log::Log4perl->init("log4perl.conf");
 
 =head1 NAME
 

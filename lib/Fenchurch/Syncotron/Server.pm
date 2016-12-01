@@ -35,6 +35,7 @@ has max_size => (
 );
 
 with qw(
+ Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::NodeName
  Fenchurch::Syncotron::Role::Versions
  Fenchurch::Syncotron::Role::Engine
