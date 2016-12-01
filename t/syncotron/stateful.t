@@ -8,6 +8,7 @@ use warnings;
 use lib qw( t/lib );
 
 use MooseX::Test::Role;
+use Log::Log4perl;
 use Test::Differences;
 use Test::More;
 use TestSupport;
@@ -80,7 +81,8 @@ sub make_state {
     db               => sub { $db },
     dbh              => sub { $db->dbh },
     node_name        => "here",
-    remote_node_name => "there"
+    remote_node_name => "there",
+    log              => sub { Log::Log4perl->get_logger("test") }
   );
 
   return $st;

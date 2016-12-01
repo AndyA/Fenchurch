@@ -7,7 +7,7 @@ use Moose::Util::TypeConstraints;
 
 use Fenchurch::Syncotron::State;
 
-requires 'node_name', 'remote_node_name', 'db';
+requires 'node_name', 'remote_node_name', 'db', 'log';
 
 has state => (
   is      => 'rw',
@@ -26,6 +26,9 @@ Fenchurch::Syncotron::Role::Stateful - Persistent state
 sub _load_state {
   my $self = shift;
 
+  $self->log->debug( "Loading state for ",
+    join ", ", $self->node_name, $self->remote_node_name );
+
   my ($state) = $self->db->selectrow_array(
     [ "SELECT {state} FROM {:state}",
       " WHERE {local_node} = ? AND {remote_node} = ?"
@@ -36,11 +39,16 @@ sub _load_state {
   );
 
   return unless $state;
+  $self->log->debug( "Loaded state: ", $state );
   return Fenchurch::Syncotron::State->thaw($state);
 }
 
 after clear_state => sub {
   my $self = shift;
+
+  $self->log->debug( "Clearing state for ",
+    join ", ", $self->node_name, $self->remote_node_name );
+
   $self->db->do(
     "DELETE FROM {:state} WHERE {local_node} = ? AND {remote_node} = ?",
     {}, $self->node_name, $self->remote_node_name );
@@ -48,6 +56,14 @@ after clear_state => sub {
 
 sub save_state {
   my $self = shift;
+
+  my $state = $self->state->freeze;
+
+  $self->log->debug(
+    "Saving state for ",
+    join( ", ", $self->node_name, $self->remote_node_name ),
+    ": ", $state
+  );
 
   $self->db->do(
     [ "REPLACE INTO {:state}",
@@ -57,7 +73,7 @@ sub save_state {
     {},
     $self->node_name,
     $self->remote_node_name,
-    $self->state->freeze
+    $state
   );
 }
 

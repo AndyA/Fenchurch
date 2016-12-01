@@ -5,6 +5,7 @@ our $VERSION = "1.00";
 use v5.10;
 
 use Moose::Role;
+use MooseX::Storage;
 use Log::Log4perl;
 
 =head1 NAME
@@ -13,7 +14,13 @@ Fenchurch::Core::Role::Logger - Log4perl based logging
 
 =cut
 
-has 'log' => ( is => 'rw', lazy => 1, builder => '_b_log' );
+sub log;
+has 'log' => (
+  is      => 'rw',
+  lazy    => 1,
+  builder => '_b_log',
+  traits  => ['DoNotSerialize'],
+);
 
 sub _b_log { Log::Log4perl->get_logger( ref $_[0] ) }
 

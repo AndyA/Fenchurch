@@ -57,9 +57,13 @@ sub _update_serial {
   # If the serial number goes backwards that implies
   # that the node has been reset.
   if ( $msg->{serial} < $self->state->serial ) {
+    $self->log->info( "Serial went from ",
+      $self->state->serial, " to ", $msg->{serial}, ", clearing state" );
     $self->clear_state;
     return 0;
   }
+
+  $self->log->debug( "Setting serial to ", $msg->{serial} );
 
   $self->state->serial( $msg->{serial} );
   return 1;

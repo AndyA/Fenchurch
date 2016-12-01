@@ -5,11 +5,16 @@ use v5.10;
 use strict;
 use warnings;
 
+use lib qw( t/lib );
+
 use Test::Differences;
 use Test::More;
+use TestSupport;
 
 use Fenchurch::Syncotron::Fault;
 use Fenchurch::Syncotron::State;
+
+preflight;
 
 my $st = Fenchurch::Syncotron::State->new;
 

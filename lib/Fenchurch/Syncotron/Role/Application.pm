@@ -4,6 +4,7 @@ our $VERSION = "1.00";
 
 use Moose::Role;
 use Moose::Util::TypeConstraints;
+use JSON ();
 
 has _despatcher => (
   is      => 'ro',
@@ -12,7 +13,7 @@ has _despatcher => (
   builder => '_b_despatcher'
 );
 
-requires '_build_app', 'mq_out';
+requires '_build_app', 'mq_out', 'log';
 
 with qw(
  Fenchurch::Syncotron::Role::QueuePair
@@ -38,12 +39,16 @@ sub _b_despatcher {
 sub _despatch {
   my ( $self, $msg ) = @_;
   $self->emit( receive => $msg );
+  $self->log->debug( "receive: ",
+    sub { JSON->new->canonical->utf8->encode($msg) } );
   $self->_despatcher->despatch($msg);
 }
 
 sub _send {
   my ( $self, $msg ) = @_;
   $self->emit( send => $msg );
+  $self->log->debug( "send: ",
+    sub { JSON->new->canonical->utf8->encode($msg) } );
   $self->mq_out->send($msg);
 }
 

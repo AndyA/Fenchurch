@@ -31,6 +31,16 @@ has fault => (
 
 with Storage( format => 'JSON' );
 
+with qw(
+ Fenchurch::Core::Role::Logger
+);
+
+before state => sub {
+  my $self = shift;
+  $self->log->debug( "State moving from ", $self->state, " to ", @_ )
+   if @_;
+};
+
 after state => sub {
   my $self = shift;
   if (@_) {
