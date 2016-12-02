@@ -11,6 +11,8 @@ use Fenchurch::Syncotron::Stats;
 
 use LWP::UserAgent;
 
+requires 'log';
+
 has _ua => (
   is      => 'ro',
   isa     => duck_type( ['request'] ),
@@ -42,7 +44,9 @@ sub _post {
   $req->header( 'Content-Type' => 'application/json;charset=utf-8' );
   $req->content( $stats->_count( send => $self->json_encode($msg) ) );
 
+  $self->log->debug( "POST ", $self->uri );
   my $resp = $self->_ua->request($req);
+  $self->log->debug( "Response: ", $resp->status_line );
 
   return $self->json_decode( $stats->_count( receive => $resp->content ) )
    if $resp->is_success;

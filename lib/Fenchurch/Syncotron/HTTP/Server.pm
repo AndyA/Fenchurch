@@ -7,6 +7,7 @@ use v5.10;
 use Moose;
 
 with qw(
+ Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::JSON
  Fenchurch::Syncotron::HTTP::Role::Endpoint
 );
@@ -24,6 +25,8 @@ sub handle {
 
 sub handle_raw {
   my ( $self, $body ) = @_;
+
+  $self->log->debug("Handling sync request");
 
   my $msg = $self->json_decode($body);
 

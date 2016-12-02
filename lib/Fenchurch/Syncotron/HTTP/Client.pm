@@ -13,6 +13,7 @@ has uri => (
 );
 
 with qw(
+ Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::JSON
  Fenchurch::Syncotron::HTTP::Role::Endpoint
  Fenchurch::Syncotron::HTTP::Role::UserAgent
