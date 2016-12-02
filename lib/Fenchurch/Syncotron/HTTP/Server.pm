@@ -35,6 +35,8 @@ sub handle_raw {
   my $client = $self->client;
   my $server = $self->server;
 
+  $client->forget_state;    # Force reload
+
   $client->mq_in->send( @{ $msg->{client} } );
   $server->mq_in->send( @{ $msg->{server} } );
 

@@ -13,7 +13,7 @@ has state => (
   is      => 'rw',
   isa     => duck_type( ['state'] ),
   lazy    => 1,
-  clearer => 'clear_state',
+  clearer => 'forget_state',
   builder => '_b_state',
 );
 
@@ -43,8 +43,10 @@ sub _load_state {
   return Fenchurch::Syncotron::State->thaw($state);
 }
 
-after clear_state => sub {
+sub clear_state {
   my $self = shift;
+
+  $self->forget_state;
 
   $self->log->debug( "Clearing state for ",
     join ", ", $self->node_name, $self->remote_node_name );
@@ -52,7 +54,7 @@ after clear_state => sub {
   $self->db->do(
     "DELETE FROM {:state} WHERE {local_node} = ? AND {remote_node} = ?",
     {}, $self->node_name, $self->remote_node_name );
-};
+}
 
 sub save_state {
   my $self = shift;
