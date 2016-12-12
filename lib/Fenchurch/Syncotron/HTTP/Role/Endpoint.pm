@@ -79,10 +79,10 @@ sub _b_server {
 sub _handle_remote_node_name {
   my ( $self, $msg ) = @_;
 
-  die "No 'node' in message" unless defined $msg->{node};
+  confess "No 'node' in message" unless defined $msg->{node};
 
   if ( $self->has_remote_node_name ) {
-    die "Remote node name mismatch; expected ", $self->remote_node_name,
+    confess "Remote node name mismatch; expected ", $self->remote_node_name,
      " got ", $msg->{node}
      unless $msg->{node} eq $self->remote_node_name;
   }
