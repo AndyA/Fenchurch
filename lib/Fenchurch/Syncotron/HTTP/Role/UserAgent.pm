@@ -11,13 +11,18 @@ use Fenchurch::Syncotron::Stats;
 
 use LWP::UserAgent;
 
-requires 'log';
+requires 'log', 'uri';
 
 has _ua => (
   is      => 'ro',
   isa     => duck_type( ['request'] ),
   lazy    => 1,
   builder => '_b_ua'
+);
+
+has ['user', 'pass', 'facility'] => (
+  is  => 'ro',
+  isa => 'Maybe[Str]'
 );
 
 has stats => (
@@ -32,7 +37,22 @@ Fenchurch::Syncotron::HTTP::Role::UserAgent - Add an LWP::UserAgent
 
 =cut
 
-sub _b_ua    { LWP::UserAgent->new }
+sub _netloc {
+  my $self = shift;
+  my $u    = URI->new( $self->uri );
+  return join ':', $u->host, $u->port;
+}
+
+sub _b_ua {
+  my $self = shift;
+  my $ua = LWP::UserAgent->new;
+  if ( defined $self->user && defined $self->pass ) {
+    $ua->credentials( $self->_netloc, $self->facility,
+      $self->user, $self->pass );
+  }
+  return $ua;
+}
+
 sub _b_stats { Fenchurch::Syncotron::Stats->new }
 
 sub _post {
