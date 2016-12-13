@@ -14,7 +14,7 @@ Fenchurch::Core::Role::UUIDFactory - Create new UUIDs
 
 =cut
 
-sub _make_uuid { UUID::Tiny::create_uuid_as_string(UUID::Tiny::UUID_V4) }
+sub make_uuid { UUID::Tiny::create_uuid_as_string(UUID::Tiny::UUID_V4) }
 
 1;
 

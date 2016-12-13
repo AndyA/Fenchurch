@@ -55,7 +55,7 @@ my $title = join " ", map ucfirst, @slug;
 my $slug = join "-", @slug;
 
 my $page = {
-  uuid  => _make_uuid(),
+  uuid  => make_uuid(),
   slug  => $slug,
   title => $title,
   text  => $sample
@@ -75,7 +75,7 @@ if ( @uuid > MAX_PAGE ) {
   $versions->delete( page => @uuid );
 }
 
-sub _make_uuid { create_uuid_as_string(UUID_V4) }
+sub make_uuid { create_uuid_as_string(UUID_V4) }
 
 # vim:ts=2:sw=2:sts=2:et:ft=perl
 

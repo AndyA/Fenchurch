@@ -35,7 +35,7 @@ sub _make_page {
   my ( $self, $slug ) = @_;
 
   return {
-    uuid  => $self->_make_uuid,
+    uuid  => $self->make_uuid,
     title => "Fenchurch Wiki Home",
     text  => "This is the home page.",
     slug  => $slug
@@ -43,7 +43,7 @@ sub _make_page {
    if $slug eq 'home';
 
   return {
-    uuid  => $self->_make_uuid,
+    uuid  => $self->make_uuid,
     title => ucfirst $slug,
     text  => "This is a page about " . ucfirst($slug) . ".",
     slug  => $slug
