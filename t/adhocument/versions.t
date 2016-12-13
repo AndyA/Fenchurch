@@ -278,7 +278,7 @@ test_versions 'Ten documents, adding / removing tags / nodes', 10,
   \&mod_remove_tag,   \&mod_item_name
  ];
 
-done_testing();
+done_testing;
 
 # vim:ts=2:sw=2:et:ft=perl
 
