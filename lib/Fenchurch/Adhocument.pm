@@ -14,17 +14,11 @@ Fenchurch::Adhocument - Document semantics mini-ORM
 
 =cut
 
-has numify => (
-  is       => 'ro',
-  isa      => 'Bool',
-  required => 1,
-  default  => 0
-);
-
 with qw(
  Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::DB
  Fenchurch::Core::Role::JSON
+ Fenchurch::Adhocument::Role::Options
  Fenchurch::Adhocument::Role::Schema
  Fenchurch::Event::Role::Emitter
 );
@@ -189,10 +183,15 @@ sub _check_columns {
     $missing_cols{$_}++ for grep { !exists $doc->{$_} } keys %ok_cols;
   }
 
-  my @bad = sort keys %bad_cols;
-  confess "Data has columns not found in ", $spec->{table}, ": ",
-   join( ', ', map "'$_'", @bad )
-   if @bad;
+  my @bad = keys %bad_cols;
+  if (@bad) {
+    my @msg = (
+      "Data has columns not found in ",
+      $spec->{table}, ": ", join ', ', map "'$_'", sort @bad
+    );
+    $self->log->warn(@msg);
+    confess @msg unless $self->ignore_extra_columns;
+  }
 
   my @missing = sort keys %missing_cols;
   confess "Data lacks columns found in ", $spec->{table}, ": ",

@@ -12,18 +12,11 @@ use Fenchurch::Adhocument;
 use Fenchurch::Event::Emitter;
 use Storable qw( freeze );
 
-has numify => (
-  is       => 'ro',
-  isa      => 'Bool',
-  required => 1,
-  default  => 0
-);
-
 has unversioned => (
   is      => 'ro',
   isa     => 'Fenchurch::Adhocument',
   lazy    => 1,
-  builder => '_b_engine',
+  builder => '_b_unversioned',
   handles => [
     'load',   'load_by_key',
     'query',  'deepen',
@@ -36,6 +29,7 @@ with qw(
  Fenchurch::Core::Role::JSON
  Fenchurch::Core::Role::NodeName
  Fenchurch::Core::Role::UUIDFactory
+ Fenchurch::Adhocument::Role::Options
  Fenchurch::Adhocument::Role::Schema
  Fenchurch::Adhocument::Role::VersionEngine
  Fenchurch::Adhocument::Role::VersionModel
@@ -47,12 +41,12 @@ Fenchurch::Adhocument::Versions - Versioned documents
 
 =cut
 
-sub _b_engine {
+sub _b_unversioned {
   my $self = shift;
   return Fenchurch::Adhocument->new(
     db     => $self->db,
     schema => $self->schema,
-    numify => $self->numify,
+    $self->_options,
   );
 }
 
