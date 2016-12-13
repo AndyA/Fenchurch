@@ -54,7 +54,6 @@ sub _put_leaves {
   my $eng = $self->engine;
 
   my $chunk  = $self->page_size;
-  my $serial = $eng->serial;
   my @leaves = $eng->leaves( $start, $chunk );
   my $last   = @leaves < $chunk ? 1 : 0;
 
@@ -68,7 +67,6 @@ sub _put_leaves {
       start  => $start,
       last   => $last,
       leaves => \@leaves,
-      serial => $serial
     }
   );
 }
@@ -79,7 +77,6 @@ sub _put_sample {
   my $eng = $self->engine;
 
   my $chunk  = $self->page_size;
-  my $serial = $eng->serial;
   my @sample = $eng->sample( $start, $chunk );
   my $last   = @sample < $chunk ? 1 : 0;
 
@@ -88,7 +85,6 @@ sub _put_sample {
       start  => $start,
       last   => $last,
       sample => \@sample,
-      serial => $serial
     }
   );
 }
@@ -128,8 +124,9 @@ sub _build_app {
   $de->on(
     'get.info' => sub {
       $self->_send(
-        { type => 'put.info',
-          info => { node => $self->node_name },
+        { type   => 'put.info',
+          serial => $self->engine->serial,
+          info   => { node => $self->node_name, },
         }
       );
     }

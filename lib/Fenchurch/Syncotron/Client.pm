@@ -74,6 +74,8 @@ sub _build_app {
 
   $de->on(
     'put.info' => sub {
+      my $msg = shift;
+      $self->_update_serial($msg);
       $self->state->state('enumerate');
     }
   );
@@ -83,7 +85,6 @@ sub _build_app {
       my $msg    = shift;
       my @leaves = @{ $msg->{leaves} };
       $self->engine->known(@leaves);
-      return unless $self->_update_serial($msg);
       $self->state->advance( scalar @leaves );
       $self->state->state('sample') if $msg->{last};
     }
@@ -94,7 +95,6 @@ sub _build_app {
       my $msg    = shift;
       my @sample = @{ $msg->{sample} };
       $self->engine->known(@sample);
-      return unless $self->_update_serial($msg);
       $self->state->advance( scalar @sample );
       $self->state->state('recent')
        if $msg->{last}
