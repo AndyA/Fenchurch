@@ -190,7 +190,9 @@ sub _check_columns {
       $spec->{table}, ": ", join ', ', map "'$_'", sort @bad
     );
     $self->log->warn(@msg);
-    confess @msg unless $self->ignore_extra_columns;
+    confess @msg
+     unless $self->ignore_extra_columns
+     || $spec->{options}{ignore_extra_columns};
   }
 
   my @missing = sort keys %missing_cols;

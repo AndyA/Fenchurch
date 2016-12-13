@@ -20,11 +20,18 @@ preflight;
 
 empty 'test_versions', 'test_item';
 
-test_extra_rejected( make_adhocument() );
-test_extra_rejected( make_adhocument_versions() );
-test_extra_allowed( make_adhocument( ignore_extra_columns => 1 ) );
+test_extra_rejected( make_adhocument( common_options() ) );
+test_extra_rejected( make_adhocument_versions( common_options() ) );
 test_extra_allowed(
-  make_adhocument_versions( ignore_extra_columns => 1 ) );
+  make_adhocument( common_options(), ignore_extra_columns => 1 ) );
+test_extra_allowed(
+  make_adhocument_versions( common_options(), ignore_extra_columns => 1 )
+);
+test_extra_allowed(
+  make_adhocument( common_options( ignore_extra_columns => 1 ) ) );
+test_extra_allowed(
+  make_adhocument_versions( common_options( ignore_extra_columns => 1 ) )
+);
 
 sub test_extra_rejected {
   my $ad   = shift;
@@ -58,11 +65,13 @@ sub test_extra_allowed {
 done_testing;
 
 sub common_options {
+  my %options = @_;
 
   my $schema = {
     item => {
-      table => 'test_item',
-      pkey  => '_uuid'
+      table   => 'test_item',
+      pkey    => '_uuid',
+      options => \%options,
     } };
 
   my $db = Fenchurch::Core::DB->new(
@@ -79,11 +88,11 @@ sub common_options {
 }
 
 sub make_adhocument {
-  return Fenchurch::Adhocument->new( common_options(), @_ );
+  return Fenchurch::Adhocument->new(@_);
 }
 
 sub make_adhocument_versions {
-  return Fenchurch::Adhocument::Versions->new( common_options(), @_ );
+  return Fenchurch::Adhocument::Versions->new(@_);
 }
 
 # vim:ts=2:sw=2:et:ft=perl

@@ -77,12 +77,15 @@ around BUILDARGS => sub {
 sub _b_valid_spec {
   return Fenchurch::Core::Util::ValidHash->new(
     required => ['table'],
-    optional => ['pkey', 'child_of', 'order', 'plural', 'append', 'json']
+    optional =>
+     ['pkey', 'child_of', 'order', 'plural', 'append', 'json', 'options']
   );
 }
 
 sub _b_spec {
   my $self = shift;
+
+  my %default_options = ( ignore_extra_columns => 0 );
 
   my $specs = dclone $self->schema;
   my $vs    = $self->_valid_spec;
@@ -90,6 +93,7 @@ sub _b_spec {
     $vs->validate($spec);
     confess "Must have either 'pkey' or 'child_of'"
      unless exists $spec->{pkey} || exists $spec->{child_of};
+    $spec->{options} = { %default_options, %{ $spec->{options} // {} } };
   }
 
   while ( my ( $kind, $spec ) = each %$specs ) {
