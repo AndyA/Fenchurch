@@ -82,7 +82,7 @@ sub sample {
   my ( $self, $start, $size ) = @_;
 
   return $self->db->selectcol_array(
-    [ "SELECT {tc1.uuid}",
+    [ "SELECT DISTINCT {tc1.uuid}",
       "FROM {:versions} AS {tc1}, {:versions} AS {tc2}",
       "WHERE {tc2.parent} = {tc1.uuid}",
       "ORDER BY {tc1.rand} ASC",
