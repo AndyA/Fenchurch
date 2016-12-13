@@ -81,12 +81,11 @@ sub _ver_sequence {
 
   return $self->db->group_by(
     $self->db->selectall_arrayref(
-      [ "SELECT {object}, MAX({sequence}) AS {sequence}",
+      [ "SELECT {object}, {uuid}, {sequence}",
         "FROM {$table}",
         "WHERE {object} IN (",
         join( ", ", map "?", @ids ),
-        ")",
-        "GROUP BY {object}"
+        ")", "ORDER BY {sequence}"
       ],
       { Slice => {} },
       @ids
@@ -123,15 +122,18 @@ sub _build_versions {
 
   for my $doc (@docs) {
     my ( $oid, $new_data ) = @$doc;
-    my $sn = ( $seq->{$oid}[0]{sequence} // 0 ) + 1;
+    my @prev = @{ $seq->{$oid} // [] };
+    my $sn = @prev ? $prev[-1]{sequence} + 1 : 1;
 
     my $parent
-     = @parents
-     ? shift(@parents)
-     : ( $leaf //= $self->_last_leaf );
+     = @parents ? shift(@parents)
+     : @prev    ? $prev[-1]{uuid}
+     :            ( $leaf //= $self->_last_leaf );
+
+    my $uuid = $leaf = shift(@uuids) // $self->make_uuid;
 
     push @ver,
-     {uuid => shift(@uuids) // $self->_make_uuid,
+     {uuid     => $uuid,
       parent   => $parent,
       node     => $node,
       rand     => rand(),
