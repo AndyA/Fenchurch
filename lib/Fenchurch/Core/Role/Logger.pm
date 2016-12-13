@@ -22,7 +22,7 @@ has 'log' => (
   traits  => ['DoNotSerialize'],
 );
 
-sub _b_log { Log::Log4perl->get_logger( ref $_[0] // $_[0] ) }
+sub _b_log { Log::Log4perl->get_logger( ref $_[0] || $_[0] ) }
 
 1;
 
