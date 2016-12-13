@@ -169,7 +169,8 @@ sub walk_versions {
   my @root = ();
   for my $ver (@$vers) {
     if ( defined $ver->{parent} ) {
-      my $parent = $by_uuid{ $ver->{parent} };
+      my $parent = $by_uuid{ $ver->{parent} }
+       || die "Missing parent $ver->{parent}";
       push @{ $parent->{children} }, $ver;
     }
     else {
