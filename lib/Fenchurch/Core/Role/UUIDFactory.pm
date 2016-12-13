@@ -5,8 +5,17 @@ our $VERSION = "1.00";
 use v5.10;
 
 use Moose::Role;
+use Moose::Util::TypeConstraints;
 
-use UUID::Tiny ();
+use Fenchurch::Core::UUIDFactory;
+
+has uuid_factory => (
+  is      => 'ro',
+  isa     => duck_type( ["make_uuid"] ),
+  handles => ["make_uuid"],
+  lazy    => 1,
+  builder => "_b_uuid_factory"
+);
 
 =head1 NAME
 
@@ -14,7 +23,7 @@ Fenchurch::Core::Role::UUIDFactory - Create new UUIDs
 
 =cut
 
-sub make_uuid { UUID::Tiny::create_uuid_as_string(UUID::Tiny::UUID_V4) }
+sub _b_uuid_factory { Fenchurch::Core::UUIDFactory->new }
 
 1;
 
