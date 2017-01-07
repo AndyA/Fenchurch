@@ -12,7 +12,11 @@ Fenchurch::Adhocument::Role::Options - Common options
 
 =cut
 
-has ['numify', 'ignore_extra_columns'] => (
+my @OPTIONS = qw(
+ numify ignore_extra_columns write_auto
+);
+
+has [@OPTIONS] => (
   is       => 'ro',
   isa      => 'Bool',
   required => 1,
@@ -21,7 +25,7 @@ has ['numify', 'ignore_extra_columns'] => (
 
 sub _options {
   my $self = shift;
-  return map { $_ => $self->$_() } qw( numify ignore_extra_columns );
+  return map { $_ => $self->$_() } @OPTIONS;
 }
 
 1;

@@ -170,11 +170,17 @@ sub _delete_deep {
   );
 }
 
+sub _columns_for_table {
+  my ( $self, $table ) = @_;
+  return $self->db->columns_for($table) if $self->write_auto;
+  return $self->db->settable_columns_for($table);
+}
+
 sub _check_columns {
   my ( $self, $spec, $extra, @docs ) = @_;
 
   my %ok_cols = map { $_ => 1 } @$extra,
-   $self->db->settable_columns_for( $spec->{table} );
+   $self->_columns_for_table( $spec->{table} );
   my %bad_cols     = ();
   my %missing_cols = ();
 
@@ -205,7 +211,7 @@ sub _insert {
   my ( $self, $spec, @docs ) = @_;
 
   my $table = $spec->{table};
-  my @cols  = $self->db->settable_columns_for($table);
+  my @cols  = $self->_columns_for_table($table);
 
   my $vals = join '', '(', join( ', ', map '?', @cols ), ')';
   my $sql = join ' ',
