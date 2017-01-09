@@ -221,8 +221,7 @@ sub _save_or_delete {
   my $options = ref $_[0] ? shift : {};
   my ( $kind, @things ) = @_;
 
-  $self->locked_transaction(
-    [$self->table, $self->tables_for($kind)],
+  $self->transaction(
     sub {
       if ($save) { $self->_save( $options, $kind, @things ) }
       else       { $self->_delete( $options, $kind, @things ) }
