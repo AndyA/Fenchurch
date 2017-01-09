@@ -7,6 +7,7 @@ use Moose::Util::TypeConstraints;
 use MooseX::Storage;
 
 use Carp qw( confess );
+use Fenchurch::Util::Data qw( flatten );
 use Try::Tiny;
 
 =head1 NAME
@@ -28,7 +29,8 @@ has get_connection => (
   predicate => 'has_get_connection'
 );
 
-has in_transaction => ( is => 'rw', isa => 'Bool', default => 0 );
+has ['in_transaction', 'in_lock'] =>
+ ( is => 'rw', isa => 'Bool', default => 0 );
 
 # The table name map: maps our internal table names to the
 # actual db tables.
@@ -65,6 +67,30 @@ around dbh => sub {
   return $self->$orig(@_);
 };
 
+sub lock {
+  my ( $self, $tables, $cb ) = @_;
+
+  if ( $self->in_lock ) {
+    $cb->();
+    return;
+  }
+
+  $self->in_lock(1);
+  $self->do(
+    ["LOCK TABLES", join ", ", map { "{$_} WRITE" } flatten $tables] );
+  try {
+    $cb->();
+  }
+  catch {
+    my $e = $_;
+    confess $e;
+  }
+  finally {
+    $self->do("UNLOCK TABLES");
+    $self->in_lock(0);
+  };
+}
+
 sub transaction {
   my ( $self, $cb ) = @_;
 
@@ -88,6 +114,11 @@ sub transaction {
   finally {
     $self->in_transaction(0);
   };
+}
+
+sub locked_transaction {
+  my ( $self, $tables, $cb ) = @_;
+  $self->lock( $tables, sub { $self->transaction($cb) } );
 }
 
 sub _meta_for {

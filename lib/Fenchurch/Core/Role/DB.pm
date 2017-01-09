@@ -22,7 +22,7 @@ has db => (
   isa      => 'Fenchurch::Core::DB',
   required => 1,
   traits   => ['DoNotSerialize'],
-  handles  => ['dbh', 'transaction']
+  handles  => ['dbh', 'transaction', 'lock', 'locked_transaction']
 );
 
 1;
