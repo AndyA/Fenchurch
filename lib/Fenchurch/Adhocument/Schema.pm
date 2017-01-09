@@ -8,7 +8,7 @@ use Moose::Util::TypeConstraints;
 use Carp qw( confess );
 use Storable qw( dclone );
 
-use Fenchurch::Core::Util::ValidHash;
+use Fenchurch::Util::ValidHash;
 
 =head1 NAME
 
@@ -63,7 +63,7 @@ has _deps => (
 
 has _valid_spec => (
   is      => 'ro',
-  isa     => 'Fenchurch::Core::Util::ValidHash',
+  isa     => 'Fenchurch::Util::ValidHash',
   builder => '_b_valid_spec',
   lazy    => 1
 );
@@ -75,7 +75,7 @@ around BUILDARGS => sub {
 };
 
 sub _b_valid_spec {
-  return Fenchurch::Core::Util::ValidHash->new(
+  return Fenchurch::Util::ValidHash->new(
     required => ['table'],
     optional =>
      ['pkey', 'child_of', 'order', 'plural', 'append', 'json', 'options']
@@ -135,7 +135,27 @@ sub pkey_for {
   return $self->spec_for_root(@_)->{pkey};
 }
 
+sub table_for {
+  my $self = shift;
+  return $self->spec_for(@_)->{table};
+}
+
+sub tables_for {
+  my ( $self, @queue ) = @_;
+  my %seen   = ();
+  my %tables = ();
+  while (@queue) {
+    my $kind = shift @queue;
+    next if $seen{$kind}++;
+    my $spec = $self->spec_for($kind);
+    $tables{ $spec->{table} }++;
+    push @queue, map { $_->{kind} } values %{ $spec->{children} // {} };
+  }
+  return sort keys %tables;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
 # vim:ts=2:sw=2:sts=2:et:ft=perl
+## Please see file perltidy.ERR
