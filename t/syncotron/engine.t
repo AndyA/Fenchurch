@@ -233,6 +233,7 @@ sub make_test_db {
       versions => 'test_versions',
       pending  => 'test_pending',
       known    => 'test_known',
+      lock     => 'test_lock',
     ]
   );
 

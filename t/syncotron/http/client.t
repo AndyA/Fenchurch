@@ -156,6 +156,7 @@ sub make_versions {
       pending  => 'test_pending',
       known    => 'test_known',
       state    => 'test_state',
+      lock     => 'test_lock',
     ]
   );
 

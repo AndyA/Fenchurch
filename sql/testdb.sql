@@ -186,6 +186,30 @@ LOCK TABLES `test_known` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `test_lock`
+--
+
+DROP TABLE IF EXISTS `test_lock`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `test_lock` (
+  `name` varchar(80) NOT NULL COMMENT 'Lock name',
+  `locked_by` varchar(80) DEFAULT NULL COMMENT 'Lock holder or NULL',
+  `when` datetime NOT NULL COMMENT 'Date/time of last change',
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `test_lock`
+--
+
+LOCK TABLES `test_lock` WRITE;
+/*!40000 ALTER TABLE `test_lock` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_lock` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `test_pending`
 --
 

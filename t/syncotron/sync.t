@@ -40,6 +40,7 @@ my %common = (
     state    => 'test_state',
     pending  => 'test_pending',
     known    => 'test_known',
+    lock     => 'test_lock',
   ]
 );
 
