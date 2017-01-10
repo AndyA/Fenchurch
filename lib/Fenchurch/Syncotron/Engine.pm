@@ -7,11 +7,26 @@ our $VERSION = "1.00";
 use Moose;
 use Moose::Util::TypeConstraints;
 
+use Fenchurch::Core::Lock;
+
+has timeout => (
+  is      => 'ro',
+  isa     => 'Num',
+  default => 600
+);
+
 has _pending_engine => (
   is      => 'ro',
   isa     => 'Fenchurch::Adhocument',
   lazy    => 1,
   builder => '_b_pending_engine'
+);
+
+has _lock => (
+  is      => 'ro',
+  isa     => 'Fenchurch::Core::Lock',
+  lazy    => 1,
+  builder => '_b_lock'
 );
 
 with qw(
@@ -32,6 +47,14 @@ sub _b_pending_engine {
       schema => $self->versions->version_schema(":pending")
     ),
     numify => 1
+  );
+}
+
+sub _b_lock {
+  my $self = shift;
+  return Fenchurch::Core::Lock->new(
+    db  => $self->db,
+    key => "sync"
   );
 }
 
@@ -287,7 +310,8 @@ have been satisfied.
 sub add_versions {
   my ( $self, @vers ) = @_;
 
-  $self->db->transaction(
+  my $done = $self->_lock->locked(
+    $self->timeout,
     sub {
       my @uuid = map { $_->{uuid} } @vers;
       $self->_unknown(@uuid);
@@ -310,6 +334,8 @@ sub add_versions {
       1 while $self->_flush_pending;
     }
   );
+
+  die "Timeout while waiting for lock" unless $done;
 }
 
 no Moose;
