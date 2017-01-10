@@ -31,6 +31,7 @@ has _lock => (
 
 with qw(
  Fenchurch::Syncotron::Role::Versions
+ Fenchurch::Event::Role::Emitter
 );
 
 =head1 NAME
@@ -280,6 +281,8 @@ sub _flush_pending {
 
   my $changes = $pe->load( version => @ready );
 
+  $self->emit( flush_pending => $changes );
+
   for my $ch (@$changes) {
     my @args = (
       { uuid    => [$ch->{uuid}],
@@ -326,6 +329,8 @@ sub add_versions {
       }
 
       my $pe = $self->_pending_engine;
+
+      $self->emit( add_versions => \@new );
 
       # Mark them all pending
       $pe->save( version => @new );
