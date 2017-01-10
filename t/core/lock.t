@@ -21,13 +21,34 @@ my $db = Fenchurch::Core::DB->new(
 my $lock1 = Fenchurch::Core::Lock->new( db => $db, key => "test 1" );
 my $lock2 = Fenchurch::Core::Lock->new( db => $db, key => "test 2" );
 
-for ( 1 .. 2 ) {
-  my $token1 = $lock1->acquire;
-  ok !!$token1, "Got lock 1";
-  my $token2 = $lock2->acquire;
-  ok !!$token2, "Got lock 2";
-  my $token3 = $lock1->acquire;
-  ok !$token3, "Can't get lock 1 again";
+for ( 1 .. 4 ) {
+  {
+    my $token = $lock1->acquire;
+    ok !!$token, "Got lock 1";
+  }
+
+  {
+    my $done = $lock1->locked( 0, sub { } );
+    ok !$done, "Can't get lock 1 for locked operation";
+  }
+
+  {
+    my $cb_run = 0;
+    my $done = $lock2->locked( 1, sub { $cb_run++ } );
+    ok $done, "Got lock 2 for locked operation";
+    is $cb_run, 1, "Locked op run once";
+  }
+
+  {
+    my $token = $lock2->acquire;
+    ok !!$token, "Got lock 2";
+  }
+
+  {
+    my $token = $lock1->acquire;
+    ok !$token, "Can't get lock 1 again";
+  }
+
   $lock2->release;
   $lock1->release;
 }

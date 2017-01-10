@@ -6,9 +6,11 @@ use v5.10;
 
 use Moose;
 
+use Carp qw( confess );
 use POSIX qw( uname );
 use Sys::Hostname;
 use Time::HiRes qw( sleep time );
+use Try::Tiny;
 
 =head1 NAME
 
@@ -176,6 +178,19 @@ sub release_named {
 sub release {
   my $self = shift;
   return $self->release_named( $self->host_key );
+}
+
+sub locked {
+  my ( $self, $timeout, $cb ) = @_;
+
+  my $token = $self->wait_for($timeout);
+  return unless defined $token;
+
+  try { $cb->() }
+  catch { confess $_ }
+  finally { $self->release };
+
+  return 1;
 }
 
 no Moose;
