@@ -12,6 +12,12 @@ has uri => (
   required => 1
 );
 
+has persist => (
+  is      => 'ro',
+  isa     => 'Bool',
+  default => 0
+);
+
 with qw(
  Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::JSON
@@ -42,6 +48,10 @@ sub next {
 
   my $client = $self->client;
   my $server = $self->server;
+
+  # Save slightly old state so we don't
+  # lose anything if we're stopped.
+  $client->save_state if $self->persist;
 
   $client->next;
   $server->next;
