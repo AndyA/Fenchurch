@@ -257,6 +257,9 @@ sub _flush_pending {
   # Process pending edits that either have a NULL parent or a parent
   # that is already applied.
 
+  # TODO it's possible to process versions in the pending queue
+  # that have parents also in pending.
+
   my @ready = $self->_find_ready;
   return 0 unless @ready;
 
