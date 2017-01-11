@@ -7,8 +7,6 @@ our $VERSION = "1.00";
 use Moose;
 use Moose::Util::TypeConstraints;
 
-use Fenchurch::Core::Lock;
-
 has timeout => (
   is      => 'ro',
   isa     => 'Num',
@@ -22,16 +20,10 @@ has _pending_engine => (
   builder => '_b_pending_engine'
 );
 
-has _lock => (
-  is      => 'ro',
-  isa     => 'Fenchurch::Core::Lock',
-  lazy    => 1,
-  builder => '_b_lock'
-);
-
 with qw(
  Fenchurch::Syncotron::Role::Versions
  Fenchurch::Event::Role::Emitter
+ Fenchurch::Core::Role::Lock
 );
 
 =head1 NAME
@@ -48,14 +40,6 @@ sub _b_pending_engine {
       schema => $self->versions->version_schema(":pending")
     ),
     numify => 1
-  );
-}
-
-sub _b_lock {
-  my $self = shift;
-  return Fenchurch::Core::Lock->new(
-    db  => $self->db,
-    key => "sync"
   );
 }
 
@@ -313,7 +297,7 @@ have been satisfied.
 sub add_versions {
   my ( $self, @vers ) = @_;
 
-  my $done = $self->_lock->locked(
+  my $done = $self->lock( key => "sync" )->locked(
     $self->timeout,
     sub {
       my @uuid = map { $_->{uuid} } @vers;
