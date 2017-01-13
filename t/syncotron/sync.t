@@ -7,6 +7,7 @@ use warnings;
 
 use lib qw( t/lib );
 
+use Sanity;
 use Test::Differences;
 use Test::More;
 use TestSupport;
@@ -73,6 +74,9 @@ check_data( $client->versions, $server->versions, @$programmes );
 
 eq_or_diff [walk_versions( $db_remote->dbh )],
  [walk_versions( $db_local->dbh )], "Version tree matches";
+
+test_sanity($db_local);
+test_sanity($db_remote);
 
 done_testing;
 

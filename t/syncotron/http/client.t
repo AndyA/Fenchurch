@@ -11,6 +11,7 @@ use Test::Differences;
 use Test::More;
 use TestSupport;
 use TestUA;
+use Sanity;
 
 use Fenchurch::Adhocument::Schema;
 use Fenchurch::Adhocument::Versions;
@@ -73,6 +74,9 @@ while ( my ( $kind, $stats ) = each %$report ) {
   ok $stats->{average} >= $stats->{min}
    && $stats->{average} <= $stats->{max}, "$kind: average looks sane";
 }
+
+test_sanity( $local_versions->db );
+test_sanity( $remote_versions->db );
 
 done_testing;
 

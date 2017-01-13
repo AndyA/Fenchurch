@@ -13,6 +13,7 @@ use Storable qw( dclone freeze );
 use Test::Differences;
 use Test::More;
 use TestSupport;
+use Sanity;
 
 use Fenchurch::Core::DB;
 use Fenchurch::Adhocument::Schema;
@@ -113,6 +114,8 @@ sub test_versions($$$$$$) {
     my $del = $ad->load( item => @ids );
     eq_or_diff $del, [(undef) x @ids], "$desc: documents were deleted";
   }
+
+  test_sanity( $ad->db );
 }
 
 sub make_item {

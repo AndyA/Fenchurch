@@ -18,7 +18,7 @@ require Exporter;
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(
  database object_hash pickone preflight randint test_data
- test_data_file empty make_uuid valid_uuid
+ test_data_file empty make_uuid valid_uuid insert
 );
 
 Log::Log4perl->init("log4perl.conf");
@@ -80,14 +80,10 @@ sub database(@) {
   return $dbh;
 }
 
-sub test_data_file {
-  my $name = shift;
-  return file( 't', 'data', $name );
-}
+sub test_data_file { file 't', 'data', @_ }
 
 sub test_data {
-  my $name = shift;
-  return JSON->new->decode( scalar test_data_file($name)->slurp );
+  return JSON->new->decode( scalar test_data_file(@_)->slurp );
 }
 
 sub empty(@) {
@@ -95,6 +91,17 @@ sub empty(@) {
     my $dbh = database($conn);
     $dbh->do("TRUNCATE `$_`") for @_;
   }
+}
+
+sub insert {
+  my ( $db, $table, $data ) = @_;
+  return unless @$data;
+  my @keys   = sort keys %{ $data->[0] };
+  my $values = "(" . join( ", ", map "?", @keys ) . ")";
+  my $sql    = join ' ',
+   "INSERT INTO `$table` (", join( ", ", map "`$_`", @keys ), ")",
+   "VALUES", join( ", ", ($values) x @$data );
+  $db->do( $sql, {}, map { @{$_}{@keys} } @$data );
 }
 
 sub randint($) { int( rand() * $_[0] ) }

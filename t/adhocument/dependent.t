@@ -12,6 +12,7 @@ use Storable qw( dclone );
 use Test::Differences;
 use Test::More;
 use TestSupport;
+use Sanity;
 
 use Fenchurch::Adhocument::Schema;
 use Fenchurch::Adhocument::Versions;
@@ -67,14 +68,12 @@ my $programmes = test_data("stash.json");
 
           if ( $old_state ne "accepted" && $new_state eq "accepted" ) {
             # Accepting
-            $adv->save(
-              { %common, parents => [$ver->{uuid}], expect => [$edit->{old_data}] },
+            $adv->save( { %common, expect => [$edit->{old_data}] },
               $edit->{kind}, $edit->{new_data} );
           }
           elsif ( $old_state eq "accepted" && $new_state ne "accepted" ) {
             # Rejecting
-            $adv->save(
-              { %common, parents => [$ver->{uuid}], expect => [$edit->{new_data}] },
+            $adv->save( { %common, expect => [$edit->{new_data}] },
               $edit->{kind}, $edit->{old_data} );
           }
           elsif ( $old_state eq "accepted" && $new_state eq "accepted" ) {
@@ -192,6 +191,7 @@ my $programmes = test_data("stash.json");
     eq_or_diff [count_versions( $adv, edit => map { $_->{uuid} } @edit )],
      [6, 6, 6],
      "apply(2): expected number of edit versions";
+    test_sanity( $adv->db );
   }
 
   {
@@ -225,6 +225,7 @@ my $programmes = test_data("stash.json");
     eq_or_diff [count_versions( $adv, edit => map { $_->{uuid} } @edit )],
      [3, 3, 3],
      "expected number of edit versions";
+    test_sanity( $adv->db );
   }
 
   {
@@ -275,6 +276,7 @@ my $programmes = test_data("stash.json");
     eq_or_diff [count_versions( $adv, edit => map { $_->{uuid} } @edit )],
      [2, 2, 2],
      "expected number of edit versions";
+    test_sanity( $adv->db );
   }
 
   # Create a new programme via an edit
@@ -302,6 +304,7 @@ my $programmes = test_data("stash.json");
 
     my $saved_prog = $adv->load( programme => $new_prog->{_uuid} );
     eq_or_diff $saved_prog->[0], $new_prog, "New programme created via edit";
+    test_sanity( $adv->db );
   }
 }
 
