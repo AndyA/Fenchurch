@@ -108,7 +108,7 @@ my $programmes = test_data("stash.json");
     type       => "Unknown"
    };
 
-  $prog[0]{title} = "The F\x{c3}undati\x{c3}ns \x{c3}f Music";
+  $prog[0]{title} = "The F\x{c3}undati\x{c3}ns \x{c3}f Music \x{2023}";
 
   push @{ $prog[2]{contributors} },
    {code       => undef,
