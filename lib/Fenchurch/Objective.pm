@@ -25,20 +25,27 @@ has engine => (
   handles  => ['db', 'schema', 'delete', 'exists'],
 );
 
-has _class_cache => (
+has ['_class_cache', '_meta_cache'] => (
   is      => 'ro',
   isa     => 'HashRef',
   default => sub { {} },
 );
 
-sub _spec_and_meta {
+sub _make_spec_and_meta {
   my ( $self, $kind ) = @_;
+
   my $spec = $self->schema->spec_for($kind);
   my $meta = $self->db->meta_for( $spec->{table} );
   my %cols = %{ $meta->{columns} };
   # Don't generate attributes for foreign keys
   delete $cols{$_} for values %{ $spec->{child_of} // {} };
-  return ( $spec, $meta, \%cols );
+  return [$spec, $meta, \%cols];
+}
+
+sub _spec_and_meta {
+  my ( $self, $kind ) = @_;
+  return @{ $self->_meta_cache->{$kind} //=
+     $self->_make_spec_and_meta($kind) };
 }
 
 sub _load_instance {
