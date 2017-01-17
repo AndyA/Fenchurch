@@ -1,5 +1,25 @@
 #!perl
 
+package My::Programme;
+
+use Moose;
+
+sub double_title {
+  my $self = shift;
+  return join " ", $self->title, $self->title;
+}
+
+package My::Contributor;
+
+use Moose;
+
+sub name {
+  my $self = shift;
+  return join " ", grep defined, $self->first_name, $self->last_name;
+}
+
+package main;
+
 use v5.10;
 
 use strict;
@@ -56,7 +76,34 @@ my $programmes = test_data("stash.json");
   eq_or_diff $got, $want, "modify + save works";
 }
 
+{
+  empty(@tables);
+  my $ad = Fenchurch::Adhocument->new(
+    db => Fenchurch::Core::DB->new( dbh => database ),
+    schema =>
+     Fenchurch::Adhocument::Schema->new( schema => instance_schema() )
+  );
+  my $obj = Fenchurch::Objective->new( engine => $ad );
+  $obj->save( programme => @$programmes );
+  my $progs = $obj->load( programme => map { $_->{_uuid} } @$programmes );
+
+  isa_ok $progs->[0], "Fenchurch::Objective::Instance";
+  isa_ok $progs->[0], "My::Programme";
+  is $progs->[0]->double_title,
+   join( " ", $programmes->[0]{title}, $programmes->[0]{title} ),
+   "My::Programme->double_title works";
+  is $progs->[0]->contributors->[0]->name, "Cyril Smith",
+   "My::Contributor->name works";
+}
+
 done_testing;
+
+sub instance_schema {
+  my $schema = schema();
+  $schema->{programme}{instance}   = "My::Programme";
+  $schema->{contributor}{instance} = "My::Contributor";
+  return $schema;
+}
 
 sub schema {
   return {
