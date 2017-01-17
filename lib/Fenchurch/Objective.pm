@@ -9,6 +9,7 @@ use Moose::Util::TypeConstraints;
 use Moose::Meta::Class;
 
 use Class::MOP;
+use Class::MOP::Method;
 use Class::Load qw( load_class );
 use Fenchurch::Objective::Instance;
 
