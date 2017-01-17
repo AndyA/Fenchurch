@@ -73,6 +73,8 @@ my $programmes = test_data("stash.json");
   is $progs->[0]->title, $programmes->[0]{title},
    "title attribute populated";
 
+  eq_or_diff $progs->[0]->get_data, $programmes->[0], "get_data";
+
   for my $prog (@$progs) {
     $prog->title( $prog->title . " (modified)" );
   }

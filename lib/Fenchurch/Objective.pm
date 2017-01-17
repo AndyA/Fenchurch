@@ -84,6 +84,24 @@ sub _make_class_for_kind {
     $class->add_attribute( $child, is => 'rw', required => 1 );
   }
 
+  $class->add_method(
+    "get_data",
+    Class::MOP::Method->wrap(
+      sub {
+        my $self = shift;
+        my $d    = {};
+        $d->{$_} = $self->$_() for keys %$cols;
+        while ( my ( $child, $info ) = each %{ $spec->{children} // {} } ) {
+          $d->{$child} = [map { $_->get_data } @{ $self->$child() }];
+        }
+        return $d;
+      },
+      name                 => "get_data",
+      package_name         => __PACKAGE__,
+      associated_metaclass => $class
+    )
+  );
+
   $class->make_immutable;
 
   return $class unless defined $ins_meta;
@@ -124,17 +142,10 @@ sub _make_objects {
 sub _get_data {
   my ( $self, $kind, $objects ) = @_;
 
-  my ( $spec, $meta, $cols ) = $self->_spec_and_meta($kind);
   my @data = ();
-
   for my $obj (@$objects) {
     unless ( defined $obj && blessed $obj) { push @data, $obj; next }
-    my $d = {};
-    $d->{$_} = $obj->$_() for keys %$cols;
-    while ( my ( $child, $info ) = each %{ $spec->{children} // {} } ) {
-      $d->{$child} = $self->_get_data( $info->{kind}, $obj->$child() );
-    }
-    push @data, $d;
+    push @data, $obj->get_data;
   }
 
   return \@data;
