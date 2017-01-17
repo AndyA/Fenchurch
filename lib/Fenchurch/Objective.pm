@@ -22,7 +22,7 @@ has engine => (
   is       => 'ro',
   isa      => duck_type( ['db', 'schema'] ),
   required => 1,
-  handles => ['db', 'schema'],
+  handles  => ['db', 'schema', 'delete', 'exists'],
 );
 
 has _class_cache => (
@@ -125,10 +125,30 @@ sub save {
     @{ $self->_get_data( $kind, \@docs ) } );
 }
 
-sub load {
-  my ( $self, $kind, @args ) = @_;
-  return $self->_make_objects( $kind,
-    $self->engine->load( $kind, @args ) );
+{
+  my @METHODS = qw(
+   load
+   deepen
+   query
+   load_by_key
+  );
+
+  my $meta = __PACKAGE__->meta;
+  for my $method (@METHODS) {
+    $meta->add_method(
+      $method,
+      Class::MOP::Method->wrap(
+        sub {
+          my ( $self, $kind, @args ) = @_;
+          return $self->_make_objects( $kind,
+            $self->engine->$method( $kind, @args ) );
+        },
+        name                 => $method,
+        package_name         => __PACKAGE__,
+        associated_metaclass => $meta
+      )
+    );
+  }
 }
 
 no Moose;
