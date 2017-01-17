@@ -71,8 +71,10 @@ has _valid_spec => (
 sub _b_valid_spec {
   return Fenchurch::Util::ValidHash->new(
     required => ['table'],
-    optional =>
-     ['pkey', 'child_of', 'order', 'plural', 'append', 'json', 'options']
+    optional => [
+      'pkey',   'child_of', 'order',   'plural',
+      'append', 'json',     'options', 'instance'
+    ]
   );
 }
 
