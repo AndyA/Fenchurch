@@ -41,13 +41,33 @@ sub _spec_and_meta {
   return ( $spec, $meta, \%cols );
 }
 
+sub _load_instance {
+  my ( $self, $instance ) = @_;
+
+  return unless defined $instance;
+
+  load_class($instance);
+
+  my $ins_meta = Class::MOP::class_of($instance);
+
+  $ins_meta->make_mutable;
+  return $ins_meta;
+}
+
 sub _make_class_for_kind {
   my ( $self, $kind ) = @_;
 
   my ( $spec, $meta, $cols ) = $self->_spec_and_meta($kind);
 
-  my $class = Moose::Meta::Class->create_anon_class(
-    superclasses => ["Fenchurch::Objective::Instance"] );
+  my $ins_meta = $self->_load_instance( $spec->{instance} );
+
+  my @super
+   = defined $ins_meta
+   ? $ins_meta->superclasses
+   : ("Fenchurch::Objective::Instance");
+
+  my $class
+   = Moose::Meta::Class->create_anon_class( superclasses => [@super] );
 
   while ( my ( $col, $info ) = each %$cols ) {
     $class->add_attribute( $col, is => 'rw', required => 1 );
@@ -59,14 +79,8 @@ sub _make_class_for_kind {
 
   $class->make_immutable;
 
-  my $instance = $spec->{instance};
-  return $class unless defined $instance;
+  return $class unless defined $ins_meta;
 
-  load_class($instance);
-
-  my $ins_meta = Class::MOP::class_of($instance);
-
-  $ins_meta->make_mutable;
   $ins_meta->superclasses( $class->name );
   $ins_meta->make_immutable;
 

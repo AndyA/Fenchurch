@@ -1,8 +1,18 @@
 #!perl
 
+package My::Thing;
+
+use Moose;
+
+extends 'Fenchurch::Objective::Instance';
+
+sub generic { "thing" }
+
 package My::Programme;
 
 use Moose;
+
+extends 'My::Thing';
 
 sub double_title {
   my $self = shift;
@@ -12,6 +22,8 @@ sub double_title {
 package My::Contributor;
 
 use Moose;
+
+extends 'My::Thing';
 
 sub name {
   my $self = shift;
@@ -88,12 +100,18 @@ my $programmes = test_data("stash.json");
   my $progs = $obj->load( programme => map { $_->{_uuid} } @$programmes );
 
   isa_ok $progs->[0], "Fenchurch::Objective::Instance";
+  isa_ok $progs->[0], "My::Thing";
   isa_ok $progs->[0], "My::Programme";
+
   is $progs->[0]->double_title,
    join( " ", $programmes->[0]{title}, $programmes->[0]{title} ),
    "My::Programme->double_title works";
+  is $progs->[0]->generic, "thing", "My::Programme->generic works";
+
   is $progs->[0]->contributors->[0]->name, "Cyril Smith",
    "My::Contributor->name works";
+  is $progs->[0]->contributors->[0]->generic, "thing",
+   "My::Contributor->generic works";
 }
 
 done_testing;
