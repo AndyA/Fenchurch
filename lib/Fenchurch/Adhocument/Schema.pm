@@ -68,12 +68,6 @@ has _valid_spec => (
   lazy    => 1
 );
 
-around BUILDARGS => sub {
-  my ( $orig, $class, %args ) = @_;
-  confess "Don't set db!" if exists $args{db};
-  return $class->$orig(%args);
-};
-
 sub _b_valid_spec {
   return Fenchurch::Util::ValidHash->new(
     required => ['table'],
