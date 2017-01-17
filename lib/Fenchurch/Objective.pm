@@ -82,7 +82,14 @@ sub _make_class_for_kind {
   }
 
   while ( my ( $child, $info ) = each %{ $spec->{children} // {} } ) {
-    $class->add_attribute( $child, is => 'rw', required => 1 );
+    my $child_class = $self->_class_for_kind( $info->{kind} )->name;
+    $class->add_attribute(
+      $child,
+      is       => 'rw',
+      isa      => "ArrayRef[$child_class]",
+      required => 1,
+      default  => sub { [] },
+    );
   }
 
   $class->add_method(
