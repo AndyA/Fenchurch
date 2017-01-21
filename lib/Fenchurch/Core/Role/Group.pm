@@ -6,6 +6,8 @@ use v5.10;
 
 use Moose::Role;
 
+use Carp qw( confess );
+
 =head1 NAME
 
 Fenchurch::Core::Role::Group - Group hashes by key(s)
@@ -40,7 +42,33 @@ sub stash_by {
     push @{ $slot->{ $row->{$leaf} } }, $row;
   }
   return $hash;
+}
 
+sub _deep_unique {
+  my ( $self, $obj ) = @_;
+
+  die unless ref $obj;
+
+  if ( 'ARRAY' eq ref $obj ) {
+    confess "Multiple values for key" unless 1 == @$obj;
+    return $obj->[0];
+  }
+
+  if ( 'HASH' eq ref $obj ) {
+    return { map { $_ => $self->_deep_unique( $obj->{$_} ) } keys %$obj };
+  }
+
+  die;
+}
+
+sub group_unique_by {
+  my ( $self, @args ) = @_;
+  return $self->_deep_unique( $self->group_by(@args) );
+}
+
+sub stash_unique_by {
+  my ( $self, @args ) = @_;
+  return $self->_deep_unique( $self->stash_by(@args) );
 }
 
 1;
