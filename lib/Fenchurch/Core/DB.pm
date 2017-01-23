@@ -91,6 +91,17 @@ sub transaction {
   };
 }
 
+sub server_variables {
+  my $self = shift;
+
+  my $rc = $self->selectall_arrayref( "SHOW VARIABLES", { Slice => {} } );
+  my $vars = {};
+  for my $var (@$rc) {
+    $vars->{ $var->{Variable_name} } = $var->{Value};
+  }
+  return $vars;
+}
+
 sub _meta_for {
   my ( $self, $table ) = @_;
   my $rc

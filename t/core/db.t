@@ -241,6 +241,9 @@ preflight;
 
   my @pkey = $db->pkey_for('test_programmes_v2');
   eq_or_diff [@pkey], [@pkey_want], "pkeys match";
+
+  my $vars = $db->server_variables;
+  ok scalar( keys %$vars ) > 100, "got some variables";
 }
 
 done_testing;
