@@ -43,13 +43,6 @@ sub preflight() {
   }
 }
 
-sub set_all {
-  my ( $dbh, $val, @var ) = @_;
-  for my $var ( sort @var ) {
-    $dbh->do("SET $var = $val");
-  }
-}
-
 sub database(@) {
   my $conn = uc( shift // 'local' );
   my $var = "FENCHURCH_ADHOCUMENT_${conn}_";
@@ -65,17 +58,6 @@ sub database(@) {
       AutoInactiveDestroy => 1
     }
   );
-
-  # We do this in our Dancer config so do it here. It normalises
-  # differences between Debian and Ubuntu MariaDB defaults.
-
-  my @vars = (
-    "character_set_client",  "character_set_connection",
-    "character_set_results", "character_set_database",
-    "character_set_server"
-  );
-
-  set_all( $dbh, "latin1", @vars );
 
   return $dbh;
 }

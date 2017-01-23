@@ -2,6 +2,8 @@
 
 use v5.10;
 
+use utf8;
+
 use autodie;
 use strict;
 use warnings;
@@ -104,11 +106,11 @@ my $programmes = test_data("stash.json");
     group      => "crew",
     index      => "2",
     kind       => "member",
-    last_name  => "Simm\x{c3}nds.",
+    last_name  => "Simmönds.",
     type       => "Unknown"
    };
 
-  $prog[0]{title} = "The F\x{c3}undati\x{c3}ns \x{c3}f Music \x{2023}";
+  $prog[0]{title} = "The Föundatiöns öf Music ‣";
 
   push @{ $prog[2]{contributors} },
    {code       => undef,
@@ -116,7 +118,7 @@ my $programmes = test_data("stash.json");
     group      => "crew",
     index      => "15",
     kind       => "member",
-    last_name  => "Simm\x{c3}ns.",
+    last_name  => "Simmöns.",
     type       => "Unknown"
    };
 

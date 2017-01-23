@@ -197,7 +197,7 @@ CREATE TABLE `test_lock` (
   `locked_by` varchar(80) DEFAULT NULL COMMENT 'Lock holder or NULL',
   `when` datetime NOT NULL COMMENT 'Date/time of last change',
   PRIMARY KEY (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

@@ -2,6 +2,8 @@
 
 use v5.10;
 
+use utf8;
+
 use strict;
 use warnings;
 
@@ -136,10 +138,10 @@ sub make_test_data {
       name  => another("Item"),
       tags  => [
         { index => "0",
-          name  => another("T\x{1f601}g")
+          name  => another("Tåg")
         },
         { index => "1",
-          name  => another("T\x{1f601}g") }
+          name  => another("Tåg") }
       ],
       nodes => [
         { _uuid => make_uuid(),
