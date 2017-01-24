@@ -14,7 +14,7 @@ Fenchurch::Adhocument::Role::VersionEngine - Work with versions
 
 requires 'db';
 
-sub _version_engine;
+sub version_engine;
 
 has table => (
   is       => 'ro',
@@ -23,7 +23,7 @@ has table => (
   default  => ':versions'
 );
 
-has _version_engine => (
+has version_engine => (
   is      => 'ro',
   isa     => 'Fenchurch::Adhocument',
   lazy    => 1,

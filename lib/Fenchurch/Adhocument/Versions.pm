@@ -153,7 +153,7 @@ sub _build_versions {
 sub _save_versions {
   my $self = shift;
   my @ver  = $self->_build_versions(@_);
-  $self->_version_engine->save( version => @ver );
+  $self->version_engine->save( version => @ver );
   $self->emit( 'version', \@ver );
 }
 

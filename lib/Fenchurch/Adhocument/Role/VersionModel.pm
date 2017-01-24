@@ -12,7 +12,7 @@ Fenchurch::Adhocument::Role::VersionModel - Version table handling
 
 =cut
 
-requires 'db', '_version_engine', 'load';
+requires 'db', 'version_engine', 'load';
 
 sub _unpack_versions {
   my ( $self, $kind, $doc, $versions ) = @_;
@@ -46,7 +46,7 @@ sub versions {
   # ...and version history
   my $vers
    = $self->db->stash_by(
-    $self->_version_engine->load_by_key( 'version', 'object', @ids ),
+    $self->version_engine->load_by_key( 'version', 'object', @ids ),
     'object' );
 
   return [
@@ -68,7 +68,7 @@ Load versions by UUID.
 
 sub load_versions {
   my ( $self, @ids ) = @_;
-  return $self->_version_engine->load( version => @ids );
+  return $self->version_engine->load( version => @ids );
 }
 
 1;
