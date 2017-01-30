@@ -18,20 +18,12 @@ has page_size => (
   default  => 10_000
 );
 
-# Tuning: approx size of an edit
-has edit_size => (
-  is       => 'ro',
-  isa      => 'Int',
-  required => 1,
-  default  => 10_000
-);
-
 # Maximum size of a put.versions message.
 has max_size => (
   is       => 'ro',
   isa      => 'Int',
   required => 1,
-  default  => 1000_000
+  default  => 100_000
 );
 
 with qw(
