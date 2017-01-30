@@ -59,6 +59,13 @@ sub database(@) {
     }
   );
 
+  $dbh->do("SET character_set_client = utf8");
+  $dbh->do("SET character_set_connection = utf8");
+  $dbh->do("SET character_set_results = utf8");
+  $dbh->do("SET character_set_server = utf8");
+  $dbh->do("SET collation_connection = utf8_general_ci");
+  $dbh->do("SET collation_server = utf8_general_ci");
+
   return $dbh;
 }
 
