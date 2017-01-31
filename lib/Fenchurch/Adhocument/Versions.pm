@@ -195,7 +195,11 @@ sub _save {
   my $pkey     = $self->pkey_for($kind);
   my @ids      = map { $_->{$pkey} } @docs;
   my $old_docs = $self->_old_docs( $options, $kind, @ids );
-  my @dirty    = $self->_only_changed( $pkey, $old_docs, @docs );
+
+  my @dirty
+   = $options->{force_save}
+   ? @docs
+   : $self->_only_changed( $pkey, $old_docs, @docs );
 
   $self->unversioned->save( $kind, @dirty );
   $self->_save_versions( $options, $kind, $old_docs,

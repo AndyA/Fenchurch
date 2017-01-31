@@ -272,9 +272,10 @@ sub _flush_pending {
 
   for my $ch (@$changes) {
     my @args = (
-      { uuid    => [$ch->{uuid}],
-        parents => [$ch->{parent}],
-        expect  => [$ch->{old_data}]
+      { uuid       => [$ch->{uuid}],
+        parents    => [$ch->{parent}],
+        expect     => [$ch->{old_data}],
+        force_save => 1
       },
       $ch->{kind}
     );
