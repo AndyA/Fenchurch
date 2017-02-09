@@ -7,6 +7,8 @@ our $VERSION = "1.00";
 use Moose;
 use Moose::Util::TypeConstraints;
 
+use Time::HiRes qw( time );
+
 has timeout => (
   is      => 'ro',
   isa     => 'Num',
@@ -289,6 +291,15 @@ sub _flush_pending {
   return scalar(@ready);
 }
 
+sub flush_pending {
+  my ( $self, $timeout ) = @_;
+
+  my $deadline = time + $timeout;
+  while ( time < $deadline ) {
+    return unless $self->_flush_pending;
+  }
+}
+
 =head2 C<add_versions>
 
 Add a list of versions to those that we know about. If the versions
@@ -324,7 +335,7 @@ sub add_versions {
       $pe->save( version => @new );
 
       # Flush any pending versions that are now complete.
-      1 while $self->_flush_pending;
+      #      1 while $self->_flush_pending;
     }
   );
 

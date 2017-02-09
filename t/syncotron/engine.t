@@ -69,6 +69,7 @@ preflight;
 
   my $leaves = $vl->load_versions(@leaves);
   $er->add_versions(@$leaves);
+  $er->flush_pending(10);
 
   eq_or_diff [$er->dont_have(@since)], [@sample],
    "Remote needs non-leaf nodes";
@@ -78,6 +79,7 @@ preflight;
 
   my $wanted = $vl->load_versions(@want);
   $er->add_versions(@$wanted);
+  $er->flush_pending(10);
 
   eq_or_diff [$er->dont_have(@since)], [], "Remote has all versions";
   eq_or_diff [$er->want( 0, 100 )], [], "Remote wants no versions";
@@ -178,6 +180,7 @@ sub sync_complete {
   my @leaves = $er->dont_have( $el->leaves( 0, 1_000_000 ) );
   my $leaves = $vl->load_versions(@leaves);
   $er->add_versions(@$leaves);
+  $er->flush_pending(10);
 
   my %seen = ();
 
@@ -188,6 +191,7 @@ sub sync_complete {
     eq_or_diff [@dup], [], "$name: no duplicates";
     my $want = $vl->load_versions(@want);
     $er->add_versions(@$want);
+    $er->flush_pending(10);
   }
 }
 

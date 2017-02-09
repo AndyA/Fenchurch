@@ -128,6 +128,12 @@ sub _build_app {
       );
     }
   );
+
+  $de->on(
+    'put.*' => sub {
+      $self->engine->flush_pending(30);
+    }
+  );
 }
 
 sub _receive {
