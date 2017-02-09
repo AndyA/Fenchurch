@@ -43,6 +43,7 @@ has _meta_cache => (
 
 with qw(
  Fenchurch::Core::Role::DBIWrapper
+ Fenchurch::Core::Role::DBHelper
  Fenchurch::Core::Role::Group
 );
 
