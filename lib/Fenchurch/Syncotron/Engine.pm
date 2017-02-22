@@ -294,10 +294,15 @@ sub _flush_pending {
 sub flush_pending {
   my ( $self, $timeout ) = @_;
 
-  my $deadline = time + $timeout;
-  while ( time < $deadline ) {
-    return unless $self->_flush_pending;
-  }
+  my $done = $self->lock( key => "sync" )->locked(
+    $self->timeout,
+    sub {
+      my $deadline = time + $timeout;
+      while ( time < $deadline ) {
+        return unless $self->_flush_pending;
+      }
+    }
+  );
 }
 
 =head2 C<add_versions>
@@ -333,9 +338,6 @@ sub add_versions {
 
       # Mark them all pending
       $pe->save( version => @new );
-
-      # Flush any pending versions that are now complete.
-      #      1 while $self->_flush_pending;
     }
   );
 
