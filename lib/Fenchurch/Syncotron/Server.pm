@@ -51,7 +51,7 @@ sub _put_leaves {
 
   # Stuff the last page of results with a random sample
   # if it's not full
-  push @leaves, $eng->sample( 0, $chunk - @leaves )
+  push @leaves, $eng->random( 0, $chunk - @leaves )
    if $last && $start == 0;
 
   $self->_send(
@@ -69,7 +69,7 @@ sub _put_sample {
   my $eng = $self->engine;
 
   my $chunk  = $self->page_size;
-  my @sample = $eng->sample( $start, $chunk );
+  my @sample = $eng->random( $start, $chunk );
   my $last   = @sample < $chunk ? 1 : 0;
 
   $self->_send(

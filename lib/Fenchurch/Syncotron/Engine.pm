@@ -71,11 +71,31 @@ sub leaves {
 
   return $self->db->selectcol_array(
     [ "SELECT {tc1.uuid}",
-      "FROM {:versions} AS {tc1}",
-      "LEFT JOIN {:versions} AS {tc2} ON {tc2.parent} = {tc1.uuid}",
-      "WHERE {tc2.parent} IS NULL",
-      "ORDER BY {tc1.serial} ASC",
-      "LIMIT ?, ?"
+      "  FROM {:versions} AS {tc1}",
+      "  LEFT JOIN {:versions} AS {tc2} ON {tc2.parent} = {tc1.uuid}",
+      " WHERE {tc2.parent} IS NULL",
+      " ORDER BY {tc1.serial} ASC",
+      " LIMIT ?, ?"
+    ],
+    {},
+    $start, $size
+  );
+}
+
+=head2 C<random>
+
+Return a random sample of nodes.
+
+=cut
+
+sub random {
+  my ( $self, $start, $size ) = @_;
+
+  return $self->db->selectcol_array(
+    [ "SELECT {uuid}",
+      "  FROM {:versions}",
+      " ORDER BY {rand} ASC",
+      " LIMIT ?, ?"
     ],
     {},
     $start, $size
@@ -84,7 +104,7 @@ sub leaves {
 
 =head2 C<sample>
 
-Return a random sample of nodes.
+Return a random sample of non-leaf nodes.
 
 =cut
 
@@ -93,10 +113,10 @@ sub sample {
 
   return $self->db->selectcol_array(
     [ "SELECT DISTINCT {tc1.uuid}",
-      "FROM {:versions} AS {tc1}, {:versions} AS {tc2}",
-      "WHERE {tc2.parent} = {tc1.uuid}",
-      "ORDER BY {tc1.rand} ASC",
-      "LIMIT ?, ?"
+      "  FROM {:versions} AS {tc1}, {:versions} AS {tc2}",
+      " WHERE {tc2.parent} = {tc1.uuid}",
+      " ORDER BY {tc1.rand} ASC",
+      " LIMIT ?, ?"
     ],
     {},
     $start, $size
