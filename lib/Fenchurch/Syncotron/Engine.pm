@@ -315,7 +315,7 @@ sub flush_pending {
   my ( $self, $timeout ) = @_;
 
   my $done = $self->lock( key => "sync" )->locked(
-    $self->timeout,
+    $timeout,
     sub {
       my $deadline = time + $timeout;
       while ( time < $deadline ) {
