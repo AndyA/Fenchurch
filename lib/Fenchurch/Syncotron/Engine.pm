@@ -296,14 +296,14 @@ sub _flush_pending {
     my @args = (
       { uuid       => [$ch->{uuid}],
         parents    => [$ch->{parent}],
-        expect     => [grep defined, $ch->{old_data}],
+        expect     => [$ch->{old_data}],
         force_save => 1
       },
       $ch->{kind}
     );
 
     if ( defined $ch->{new_data} ) { $ve->save( @args, $ch->{new_data} ) }
-    else                           { $ve->delete( @args, $ch->{object} ) }
+    elsif ( defined $ch->{old_data} ) { $ve->delete( @args, $ch->{object} ) }
   }
 
   $pe->delete( version => @ready );
