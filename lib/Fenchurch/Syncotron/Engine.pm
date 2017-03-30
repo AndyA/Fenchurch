@@ -296,7 +296,7 @@ sub _flush_pending {
     my @args = (
       { uuid       => [$ch->{uuid}],
         parents    => [$ch->{parent}],
-        expect     => [$ch->{old_data}],
+        expect     => [grep defined, $ch->{old_data}],
         force_save => 1
       },
       $ch->{kind}
