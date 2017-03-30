@@ -304,6 +304,10 @@ sub _flush_pending {
 
     if ( defined $ch->{new_data} ) { $ve->save( @args, $ch->{new_data} ) }
     elsif ( defined $ch->{old_data} ) { $ve->delete( @args, $ch->{object} ) }
+    else {
+      delete $ch->{serial};
+      $ve->version_engine->save( version => $ch );
+    }
   }
 
   $pe->delete( version => @ready );
