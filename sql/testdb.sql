@@ -250,6 +250,30 @@ LOCK TABLES `test_pending` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `test_ping`
+--
+
+DROP TABLE IF EXISTS `test_ping`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `test_ping` (
+  `origin_node` varchar(200) NOT NULL DEFAULT '',
+  `ttl` int(10) DEFAULT NULL,
+  `path` longtext,
+  PRIMARY KEY (`origin_node`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `test_ping`
+--
+
+LOCK TABLES `test_ping` WRITE;
+/*!40000 ALTER TABLE `test_ping` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_ping` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `test_programmes_v2`
 --
 
