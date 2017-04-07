@@ -258,7 +258,8 @@ DROP TABLE IF EXISTS `test_ping`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `test_ping` (
   `origin_node` varchar(200) NOT NULL DEFAULT '',
-  `ttl` int(10) DEFAULT NULL,
+  `when` datetime NOT NULL,
+  `ttl` int(10) NOT NULL,
   `path` longtext,
   `status` longtext,
   PRIMARY KEY (`origin_node`)
@@ -573,4 +574,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-04-07 11:31:58
+-- Dump completed on 2017-04-07 14:45:27

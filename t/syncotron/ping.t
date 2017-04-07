@@ -31,8 +31,18 @@ my @pings = (
 
 $ping->put(@pings);
 
-my @got = $ping->get_all;
-eq_or_diff [@got], [@pings], "pings saved and loaded";
+{
+  my @got = $ping->get_all;
+  eq_or_diff [@got], [@pings], "pings saved and loaded";
+}
+
+$pings[0]{status}{changed} = 1;
+$ping->put( $pings[0] );
+
+{
+  my @got = $ping->get_all;
+  eq_or_diff [@got], [@pings], "ping updated";
+}
 
 done_testing;
 
