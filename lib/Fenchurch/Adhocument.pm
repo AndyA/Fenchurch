@@ -43,19 +43,23 @@ sub _exists {
 sub _load_raw {
   my ( $self, $spec, $key, @ids ) = @_;
 
-  my @bind  = @ids;
   my $table = $spec->{table};
+  my ( @sql, @bind, @ord );
 
-  my @sql = (
-    "SELECT * FROM {$table} WHERE {$key} IN (",
-    join( ', ', map '?', @ids ), ")"
-  );
+  push @sql, ("SELECT * FROM {$table}");
 
-  my @ord = ();
+  my @wild = grep { $_ eq '*' } @ids;
 
-  push @ord, join ' ', 'FIELD(',
-   join( ', ', "{$key}", map '?', @ids ), ')';
-  push @bind, @ids;
+  if (@wild) {
+    confess "Can't mix wildcards with regular keys"
+     unless @wild == 1 && @ids == 1;
+  }
+  else {
+    push @sql, ( "WHERE {$key} IN (", join( ', ', map '?', @ids ), ")" );
+    push @ord,
+     join ' ', 'FIELD(', join( ', ', "{$key}", map '?', @ids ), ')';
+    push @bind, @ids, @ids;
+  }
 
   push @ord, join ' ', $self->db->parse_order( $spec->{order} )
    if exists $spec->{order};
@@ -265,11 +269,12 @@ sub _insert_deep {
 sub load {
   my ( $self, $kind, @ids ) = @_;
   $self->log->debug( "load $kind: ", join ", ", @ids );
-  my $spec   = $self->spec_for_root($kind);
-  my $pkey   = $spec->{pkey};
-  my $docs   = $self->_load_deep( $spec, $pkey, @ids );
+  my $spec = $self->spec_for_root($kind);
+  my $pkey = $spec->{pkey};
+  my $docs = $self->_load_deep( $spec, $pkey, @ids );
+  return $docs if grep { $_ eq '*' } @ids;
   my $by_key = $self->db->stash_by( $docs, $pkey );
-  my $res    = [map { ( $by_key->{$_} // [] )->[0] } @ids];
+  my $res = [map { ( $by_key->{$_} // [] )->[0] } @ids];
   $self->emit( 'load', $kind, \@ids, $res );
   return $res;
 }

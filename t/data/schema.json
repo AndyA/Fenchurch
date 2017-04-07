@@ -15,6 +15,14 @@
       "pkey" : "uuid",
       "table" : "test_edit"
    },
+   "ping" : {
+      "json" : [
+         "path",
+         "status"
+      ],
+      "pkey" : "origin_node",
+      "table" : "test_ping"
+   },
    "programme" : {
       "pkey" : "_uuid",
       "plural" : "programmes",
