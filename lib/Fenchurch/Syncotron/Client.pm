@@ -39,13 +39,6 @@ has _next_ping => (
   default  => 0
 );
 
-has _ping => (
-  is      => 'ro',
-  isa     => 'Fenchurch::Syncotron::Ping',
-  lazy    => 1,
-  builder => '_b_ping'
-);
-
 with qw(
  Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::NodeName
@@ -60,12 +53,6 @@ with qw(
 Fenchurch::Syncotron::Client - The Syncotron Client
 
 =cut
-
-sub _b_ping {
-  my $self = shift;
-  return Fenchurch::Syncotron::Ping->new(
-    engine => $self->versions->unversioned );
-}
 
 sub _get_versions {
   my ( $self, @uuid ) = @_;
@@ -206,6 +193,20 @@ sub _send_messages {
 
 sub _send_pings {
   my $self = shift;
+
+  my $p = $self->ping;
+
+  $p->put(
+    $p->make_ping( status => { stats => $self->engine->statistics } ) );
+
+  my @pings = $p->get_for_remote( $self->remote_node_name );
+
+  $self->_send(
+    { type   => 'put.pings',
+      serial => $self->state->serial,
+      pings  => \@pings
+    }
+  );
 }
 
 sub _transmit {

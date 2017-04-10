@@ -151,6 +151,13 @@ sub _build_app {
       $self->_put_versions( @{ $msg->{uuid} } );
     }
   );
+
+  $de->on(
+    'put.pings' => sub {
+      my $msg = shift;
+      $self->ping->put( @{ $msg->{pings} } );
+    }
+  );
 }
 
 sub next {
