@@ -7,6 +7,8 @@ use v5.10;
 use Moose;
 use Moose::Util::TypeConstraints;
 
+use DateTime::Format::MySQL;
+use Storable qw( dclone );
 use Time::HiRes qw( time );
 
 =head1 NAME
@@ -35,33 +37,38 @@ with qw(
 );
 
 sub put {
-  my ( $self, @ping ) = @_;
-  $self->engine->save( ping => @ping );
+  my ( $self, @pings ) = @_;
+  my @save = ();
+
+  for my $ping ( map { dclone $_} @pings ) {
+    next if $ping->{ttl} <= 0;
+    $ping->{ttl}--;
+
+    push @{ $ping->{path} },
+     {node => $self->node_name,
+      time => time,
+     };
+
+    push @save, $ping;
+  }
+
+  $self->engine->save( ping => @save );
 }
 
-sub get_all {
-  my $self = shift;
-  return @{ $self->engine->load( ping => '*' ) };
-}
+sub get_all { @{ shift->engine->load( ping => '*' ) } }
 
 sub get_for_remote {
   my ( $self, $remote_node ) = @_;
 
-  my @pings = $self->get_all;
   my @out   = ();
+  my @pings = $self->get_all;
 
   for my $ping (@pings) {
-    $ping->{ttl}--;
     next if $ping->{ttl} <= 0;
     next if $ping->{origin_node} eq $remote_node;
 
     my %seen = map { $_->{node} => 1 } @{ $ping->{path} };
     next if $seen{$remote_node};
-
-    push @{ $ping->{path} },
-     {node => $remote_node,
-      time => time,
-     };
 
     push @out, $ping;
   }
@@ -69,18 +76,17 @@ sub get_for_remote {
   return @out;
 }
 
+sub _ts { DateTime::Format::MySQL->format_datetime( DateTime->now ) }
+
 sub make_ping {
   my ( $self, %ping ) = @_;
 
   return {
     origin_node => $self->node_name,
     ttl         => $self->ttl,
-    path        => [
-      { node => $self->node_name,
-        time => time,
-      }
-    ],
-    status => {},
+    when        => $self->_ts,
+    path        => [],
+    status      => {},
     %ping
   };
 }
