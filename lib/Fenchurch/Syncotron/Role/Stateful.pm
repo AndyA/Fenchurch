@@ -17,6 +17,11 @@ has state => (
   builder => '_b_state',
 );
 
+with qw(
+ Fenchurch::Core::Role::Logger
+ Fenchurch::Core::Role::JSON
+);
+
 =head1 NAME
 
 Fenchurch::Syncotron::Role::Stateful - Persistent state
@@ -41,6 +46,22 @@ sub _load_state {
   return unless $state;
   $self->log->debug( "Loaded state: ", $state );
   return Fenchurch::Syncotron::State->thaw($state);
+}
+
+sub load_all_states {
+  my $self = shift;
+
+  my $states = $self->db->selectall_arrayref(
+    "SELECT {state}, {remote_node} FROM {:state} WHERE {local_node} = ?",
+    { Slice => {} },
+    $self->node_name
+  );
+
+  my $out = {};
+  for my $row (@$states) {
+    $out->{ $row->{remote_node} } = $self->json_decode( $row->{state} );
+  }
+  return $out;
 }
 
 sub clear_state {

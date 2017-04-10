@@ -189,8 +189,16 @@ sub _send_pings {
 
   my $p = $self->ping;
 
-  $p->put(
-    $p->make_ping( status => { stats => $self->engine->statistics } ) );
+  if ( $p->need_new_ping( $self->ping_interval ) ) {
+    $p->put(
+      $p->make_ping(
+        status => {
+          states     => $self->load_all_states,
+          statistics => $self->engine->statistics
+        }
+      )
+    );
+  }
 
   my @pings = $p->get_for_remote( $self->remote_node_name );
 
