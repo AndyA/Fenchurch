@@ -368,6 +368,30 @@ sub add_versions {
   die "Timeout while waiting for lock" unless $done;
 }
 
+=head2 C<statistics>
+
+Get some statistics about sync.
+
+=cut
+
+sub statistics {
+  my $self = shift;
+
+  my $stats = $self->db->selectall_arrayref(
+    join( " UNION ",
+      map { "SELECT '$_' AS {table}, COUNT(*) AS {count} FROM {:$_}" }
+       qw( pending known versions ) ),
+    { Slice => {} }
+  );
+
+  my $out = {};
+  for my $row (@$stats) {
+    $out->{ $row->{table} } = 1 * $row->{count};
+  }
+
+  return $out;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
