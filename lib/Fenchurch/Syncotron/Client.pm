@@ -9,6 +9,7 @@ use Moose::Util::TypeConstraints;
 
 use Fenchurch::Syncotron::Despatcher;
 use Fenchurch::Syncotron::Fault;
+use Fenchurch::Syncotron::Ping;
 use Try::Tiny;
 
 has remote_node_name => (
@@ -22,6 +23,27 @@ has page_size => (
   isa      => 'Int',
   required => 1,
   default  => 10_000
+);
+
+has ping_interval => (
+  is       => 'ro',
+  isa      => 'Int',
+  required => 1,
+  default  => 60
+);
+
+has _next_ping => (
+  is       => 'rw',
+  isa      => 'Int',
+  required => 1,
+  default  => 0
+);
+
+has _ping => (
+  is      => 'ro',
+  isa     => 'Fenchurch::Syncotron::Ping',
+  lazy    => 1,
+  builder => '_b_ping'
 );
 
 with qw(
@@ -38,6 +60,12 @@ with qw(
 Fenchurch::Syncotron::Client - The Syncotron Client
 
 =cut
+
+sub _b_ping {
+  my $self = shift;
+  return Fenchurch::Syncotron::Ping->new(
+    engine => $self->versions->unversioned );
+}
 
 sub _get_versions {
   my ( $self, @uuid ) = @_;
@@ -143,7 +171,7 @@ sub _receive {
   }
 }
 
-sub _transmit {
+sub _send_messages {
   my $self  = shift;
   my $state = $self->state->state;
 
@@ -173,6 +201,22 @@ sub _transmit {
   }
   else {
     die "Unhandled state ", $state;
+  }
+}
+
+sub _send_pings {
+  my $self = shift;
+}
+
+sub _transmit {
+  my $self = shift;
+
+  $self->_send_messages;
+
+  my $now = time;
+  if ( $now > $self->_next_ping ) {
+    $self->_send_pings;
+    $self->_next_ping( $now + $self->ping_interval );
   }
 
   $self->_get_versions( $self->engine->want( 0, $self->page_size ) );
