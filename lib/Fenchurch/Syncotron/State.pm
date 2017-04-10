@@ -18,7 +18,7 @@ has state => (
   default => 'init'
 );
 
-has ['progress', 'serial', 'hwm'] => (
+has ['progress', 'serial', 'hwm', 'next_ping'] => (
   is      => 'rw',
   isa     => 'Int',
   default => 0

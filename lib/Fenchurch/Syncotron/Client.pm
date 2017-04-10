@@ -29,14 +29,7 @@ has ping_interval => (
   is       => 'ro',
   isa      => 'Int',
   required => 1,
-  default  => 60
-);
-
-has _next_ping => (
-  is       => 'rw',
-  isa      => 'Int',
-  required => 1,
-  default  => 0
+  default  => 10
 );
 
 with qw(
@@ -215,9 +208,9 @@ sub _transmit {
   $self->_send_messages;
 
   my $now = time;
-  if ( $now > $self->_next_ping ) {
+  if ( $now > $self->state->next_ping ) {
     $self->_send_pings;
-    $self->_next_ping( $now + $self->ping_interval );
+    $self->state->next_ping( $now + $self->ping_interval );
   }
 
   $self->_get_versions( $self->engine->want( 0, $self->page_size ) );
