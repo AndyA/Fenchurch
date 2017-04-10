@@ -26,6 +26,11 @@ my $ping = Fenchurch::Syncotron::Ping->new(
   ttl       => 5,
 );
 
+{
+  my $our_ping = $ping->get_our_ping;
+  ok !defined $our_ping, "no ping for us";
+}
+
 my @pings = (
   $ping->make_ping(
     origin_node => "test1.remote",
@@ -76,7 +81,20 @@ $want[0]{status}{changed} = 1;
    {node => "test.local",
     time => $got[0]{path}[-1]{time} };
 
-  eq_or_diff [@got], [$want];
+  eq_or_diff [@got], [$want], "got live remote pings";
+}
+
+{
+  my $our_ping = $ping->get_our_ping;
+  ok !defined $our_ping, "still no ping for us";
+}
+
+my $op = $ping->make_ping;
+$ping->put($op);
+
+{
+  my $our_ping = $ping->get_our_ping;
+  ok defined $our_ping, "got a ping for us";
 }
 
 done_testing;

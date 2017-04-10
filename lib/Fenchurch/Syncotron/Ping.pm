@@ -57,6 +57,19 @@ sub put {
 
 sub get_all { @{ shift->engine->load( ping => '*' ) } }
 
+sub get_our_ping {
+  my $self = shift;
+  return $self->engine->load( ping => $self->node_name )->[0];
+}
+
+sub need_new_ping {
+  my ( $self, $age ) = @_;
+  my $our_ping = $self->get_our_ping;
+  return 1 unless defined $our_ping;
+  my $when = DateTime::Format::MySQL->parse_datetime( $our_ping->{when} );
+  return time - $when->epoch >= $age;
+}
+
 sub get_for_remote {
   my ( $self, $remote_node ) = @_;
 
