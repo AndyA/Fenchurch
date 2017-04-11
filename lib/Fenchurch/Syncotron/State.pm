@@ -18,9 +18,15 @@ has state => (
   default => 'init'
 );
 
-has ['progress', 'serial', 'hwm', 'next_ping'] => (
+has ['progress', 'serial', 'hwm'] => (
   is      => 'rw',
   isa     => 'Int',
+  default => 0
+);
+
+has next_ping => (
+  is      => 'rw',
+  isa     => 'Num',
   default => 0
 );
 
