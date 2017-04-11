@@ -186,6 +186,9 @@ sub _send_messages {
       }
     );
   }
+  elsif ( $state eq 'fault') {
+    # Ignore fault state
+  } 
   else {
     die "Unhandled state ", $state;
   }
