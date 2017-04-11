@@ -168,6 +168,11 @@ sub make_versions {
 
   my $schema = Fenchurch::Adhocument::Schema->new(
     schema => {
+      ping => {
+        json  => ["path", "status"],
+        pkey  => "origin_node",
+        table => "test_ping"
+      },
       item => {
         table => 'test_item',
         pkey  => '_uuid'
