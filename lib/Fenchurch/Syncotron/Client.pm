@@ -32,6 +32,13 @@ has ping_interval => (
   default  => 10
 );
 
+has ping_jitter => (
+  is       => 'ro',
+  isa      => 'Num',
+  required => 1,
+  default  => 1
+);
+
 with qw(
  Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::NodeName
@@ -214,33 +221,35 @@ sub _transmit {
   my $self = shift;
 
   $self->_send_messages;
+  $self->_get_versions( $self->engine->want( 0, $self->page_size ) );
+}
+
+sub _pings {
+  my $self = shift;
 
   my $now = time;
   if ( $now > $self->state->next_ping ) {
     $self->_send_pings;
-    $self->state->next_ping( $now + $self->ping_interval );
+    my $interval = $self->ping_interval;
+    $self->state->next_ping(
+      $now + $interval + $self->ping_jitter * $interval * ( rand() - 0.5 ) );
   }
-
-  $self->_get_versions( $self->engine->want( 0, $self->page_size ) );
 }
 
 sub next {
   my $self = shift;
 
-  if ( $self->state->state eq 'fault' ) {
-    my $fault = $self->state->fault;
-    die "Can't continue in faulted state (location: ", $fault->location,
-     ", error: ", $fault->error, ")";
-  }
-
   try {
-    $self->_receive;
-    $self->_transmit;
+    if ( $self->state->state ne 'fault' ) {
+      $self->_receive;
+      $self->_transmit;
+    }
+    $self->_pings;
   }
   catch {
     $self->state->fault(
       Fenchurch::Syncotron::Fault->new(
-        error    => $_,
+        error    => "$_",
         location => 'local'
       )
      )
