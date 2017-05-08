@@ -31,6 +31,22 @@ preflight;
    "SELECT `table_one`.`foo`, `table_two`.`bar` FROM `table_one`, `table_two`",
    "quote_sql resolves aliases";
 
+  {
+    my @want = (
+      'test_chain',        'test_chain_linear',
+      'test_contributors', 'test_edit',
+      'test_item',         'test_known',
+      'test_lock',         'test_pending',
+      'test_ping',         'test_programmes_v2',
+      'test_queue',        'test_related',
+      'test_state',        'test_tag',
+      'test_tree',         'test_versions',
+      'utf8_test',         'utf8_test_chars'
+    );
+    my @got = $db->tables;
+    eq_or_diff [@got], [@want], "got tables"
+  }
+
   my $meta_want = {
     columns => {
       _modified => {
