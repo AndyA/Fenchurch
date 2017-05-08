@@ -31,9 +31,6 @@ has get_connection => (
 
 has in_transaction => ( is => 'rw', isa => 'Bool', default => 0 );
 
-# The table name map: maps our internal table names to the
-# actual db tables.
-
 has _meta_cache => (
   is       => 'ro',
   isa      => 'HashRef',
