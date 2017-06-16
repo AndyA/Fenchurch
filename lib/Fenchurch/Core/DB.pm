@@ -139,6 +139,13 @@ sub columns_for {
   return sort keys %{ $meta->{columns} };
 }
 
+sub has_column {
+  my ( $self, $table, @column ) = @_;
+  my $meta = $self->meta_for($table);
+  my @got = grep { exists $meta->{columns}{$_} } @column;
+  return @got == @column;
+}
+
 sub numeric_columns_for {
   my ( $self, $table ) = @_;
   my $meta = $self->meta_for($table);

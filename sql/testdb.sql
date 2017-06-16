@@ -196,6 +196,7 @@ CREATE TABLE `test_lock` (
   `name` varchar(80) NOT NULL COMMENT 'Lock name',
   `locked_by` varchar(80) DEFAULT NULL COMMENT 'Lock holder or NULL',
   `when` datetime NOT NULL COMMENT 'Date/time of last change',
+  `session` varchar(80) NOT NULL COMMENT 'Session of lock',
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -207,6 +208,30 @@ CREATE TABLE `test_lock` (
 LOCK TABLES `test_lock` WRITE;
 /*!40000 ALTER TABLE `test_lock` DISABLE KEYS */;
 /*!40000 ALTER TABLE `test_lock` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `test_lock_no_session`
+--
+
+DROP TABLE IF EXISTS `test_lock_no_session`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `test_lock_no_session` (
+  `name` varchar(80) NOT NULL COMMENT 'Lock name',
+  `locked_by` varchar(80) DEFAULT NULL COMMENT 'Lock holder or NULL',
+  `when` datetime NOT NULL COMMENT 'Date/time of last change',
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `test_lock_no_session`
+--
+
+LOCK TABLES `test_lock_no_session` WRITE;
+/*!40000 ALTER TABLE `test_lock_no_session` DISABLE KEYS */;
+/*!40000 ALTER TABLE `test_lock_no_session` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --

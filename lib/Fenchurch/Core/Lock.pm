@@ -18,22 +18,23 @@ Fenchurch::Core::Lock - A database based lock
 
 =cut
 
-with qw(
- Fenchurch::Core::Role::Logger
- Fenchurch::Core::Role::DB
-);
-
-has 'key' => (
+has key => (
   is       => 'ro',
   isa      => 'Str',
   required => 1
 );
 
-has 'table' => (
+has table => (
   is       => 'ro',
   isa      => 'Str',
   required => 1,
   default  => ":lock"
+);
+
+with qw(
+ Fenchurch::Core::Role::Logger
+ Fenchurch::Core::Role::DB
+ Fenchurch::Core::Role::Session
 );
 
 sub host_key {
@@ -45,10 +46,27 @@ sub _decode_host_key {
   return split /-/, $host_key;
 }
 
+sub _has_session {
+  my $self = shift;
+  return $self->db->has_column( $self->table, "session" );
+}
+
+sub _prune_old_sessions {
+  my $self = shift;
+
+  return unless $self->_has_session;
+
+  my $table   = $self->table;
+  my $session = $self->session;
+
+  $self->db->do( "DELETE FROM {$table} WHERE {session} NOT IN (?)",
+    {}, $session );
+}
+
 sub _get_owner {
   my ( $self, $lock_name ) = @_;
 
-  my $table = $self->{table};
+  my $table = $self->table;
 
   my ($owner)
    = $self->db->selectrow_array(
@@ -61,7 +79,7 @@ sub _get_owner {
 sub _with_lock {
   my ( $self, $code ) = @_;
 
-  my $table = $self->{table};
+  my $table = $self->table;
 
   $self->db->do("LOCK TABLES {$table} WRITE");
   my $rv = eval { $code->() };
@@ -110,16 +128,28 @@ sub acquire {
 
   return $self->_with_lock(
     sub {
+      $self->_prune_old_sessions;
+
       my $locked_by = $self->_get_owner($lock_name);
       return if $self->_valid_lock($locked_by);
 
+      my @col = qw( when name locked_by );
+      my @bind = ( $lock_name, $host_key );
+
+      if ( $self->_has_session ) {
+        push @col,  "session";
+        push @bind, $self->session;
+      }
+
       $self->db->do(
-        [ "REPLACE INTO {$table} ({name}, {locked_by}, {when})",
-          "VALUES (?, ?, NOW())"
+        [ "REPLACE INTO {$table} (",
+          join( ", ", map "{$_}", @col ),
+          ") VALUES (",
+          join( ", ", "NOW()", map "?", @bind ),
+          ")"
         ],
         {},
-        $lock_name,
-        $host_key
+        @bind
       );
 
       return $host_key;
