@@ -31,8 +31,14 @@ has get_connection => (
 
 has in_transaction => ( is => 'rw', isa => 'Bool', default => 0 );
 
-# The table name map: maps our internal table names to the
-# actual db tables.
+has _tables => (
+  traits  => ['Array'],
+  is      => 'ro',
+  isa     => 'ArrayRef',
+  lazy    => 1,
+  builder => '_b_tables',
+  handles => { tables => 'elements' }
+);
 
 has _meta_cache => (
   is       => 'ro',
@@ -102,6 +108,8 @@ sub server_variables {
   }
   return $vars;
 }
+
+sub _b_tables { shift->selectcol_arrayref("SHOW TABLES") }
 
 sub _meta_for {
   my ( $self, $table ) = @_;
