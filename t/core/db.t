@@ -33,15 +33,16 @@ preflight;
 
   {
     my @want = (
-      'test_chain',        'test_chain_linear',
-      'test_contributors', 'test_edit',
-      'test_item',         'test_known',
-      'test_lock',         'test_pending',
-      'test_ping',         'test_programmes_v2',
-      'test_queue',        'test_related',
-      'test_state',        'test_tag',
-      'test_tree',         'test_versions',
-      'utf8_test',         'utf8_test_chars'
+      'test_chain',         'test_chain_linear',
+      'test_contributors',  'test_edit',
+      'test_item',          'test_known',
+      'test_lock',          'test_lock_no_session',
+      'test_pending',       'test_ping',
+      'test_programmes_v2', 'test_queue',
+      'test_related',       'test_state',
+      'test_tag',           'test_tree',
+      'test_versions',      'utf8_test',
+      'utf8_test_chars'
     );
     my @got = $db->tables;
     eq_or_diff [@got], [@want], "got tables"

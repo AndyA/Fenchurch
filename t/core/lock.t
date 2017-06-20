@@ -30,22 +30,16 @@ for my $table ( 'test_lock', 'test_lock_no_session' ) {
 
   {
     my $session = strftime '%Y%m%d-%H%M%S', gmtime $time;
-
-    my $dir = File::Temp->newdir;
-    my $sf = file $dir, "session";
-
-    $sf->openw->print("$session\n");
+    local $ENV{FENCHURCH_SESSION} = $session;
 
     my $lock1 = Fenchurch::Core::Lock->new(
-      db           => $db,
-      key          => "test 1",
-      session_file => "$sf"
+      db  => $db,
+      key => "test 1",
     );
 
     my $lock2 = Fenchurch::Core::Lock->new(
-      db           => $db,
-      key          => "test 2",
-      session_file => "$sf"
+      db  => $db,
+      key => "test 2",
     );
 
     is $lock1->session, $session, "lock1 session";
@@ -89,16 +83,11 @@ for my $table ( 'test_lock', 'test_lock_no_session' ) {
 
   {
     my $session = strftime '%Y%m%d-%H%M%S', gmtime $time + 1;
-
-    my $dir = File::Temp->newdir;
-    my $sf = file $dir, "session";
-
-    $sf->openw->print("$session\n");
+    local $ENV{FENCHURCH_SESSION} = $session;
 
     my $lock1 = Fenchurch::Core::Lock->new(
-      db           => $db,
-      key          => "test 1",
-      session_file => "$sf"
+      db  => $db,
+      key => "test 1"
     );
 
     if ( $lock1->_has_session ) {
