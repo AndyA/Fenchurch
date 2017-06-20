@@ -119,8 +119,6 @@ sub test_schema {
     eq_or_diff $stash, $o_stash, "$type, $kind: stash unchanged";
     my $docs = $ad->load( $kind => @ids );
     eq_or_diff $docs, $stash, "$type, $kind: save, load, pass $pass";
-    eq_or_diff object_hash($docs), object_hash($stash),
-     "$type, $kind: digest matches, pass $pass";
   }
 
   # Test that missing documents leave holes in the results array
