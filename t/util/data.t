@@ -10,7 +10,6 @@ use Test::More;
 
 use Fenchurch::Util::Data qw( flatten );
 
-ok 1, "that's ok";
 eq_or_diff [flatten "Hello"], ["Hello"], "flatten - single scalar";
 eq_or_diff [flatten "Hello", "World"], ["Hello", "World"],
  "flatten - two scalars";
