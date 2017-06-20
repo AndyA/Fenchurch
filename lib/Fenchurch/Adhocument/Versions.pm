@@ -10,6 +10,7 @@ use DateTime::Format::MySQL;
 use Fenchurch::Adhocument::Schema;
 use Fenchurch::Adhocument;
 use Fenchurch::Event::Emitter;
+use Fenchurch::Util::Compare qw( same );
 use Storable qw( freeze );
 
 has unversioned => (
@@ -52,10 +53,7 @@ sub _b_unversioned {
 
 sub _eq {
   my ( $self, $a, $b ) = @_;
-  return 1 unless defined $a || defined $b;
-  return 0 unless defined $a && defined $b;
-  my $json = $self->_json;
-  return $json->encode($a) eq $json->encode($b);
+  return same $a, $b;
 }
 
 sub _only_changed {
