@@ -4,4 +4,5 @@
 /.build
 /.prove
 /Session.vim
+/dbd_mysql/
 /fenchurch.log
