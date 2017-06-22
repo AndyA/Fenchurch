@@ -20,7 +20,7 @@ Fenchurch::Syncotron::HTTP::Server - Handle HTTP sync requests
 
 sub handle {
   my $self = shift;
-  return $self->json_encode( $self->handle_raw(@_) );
+  return $self->json_encode_utf8( $self->handle_raw(@_) );
 }
 
 sub handle_raw {
@@ -28,7 +28,7 @@ sub handle_raw {
 
   $self->log->debug("Handling sync request");
 
-  my $msg = $self->json_decode($body);
+  my $msg = $self->json_decode_utf8($body);
 
   $self->_handle_remote_node_name($msg);
 

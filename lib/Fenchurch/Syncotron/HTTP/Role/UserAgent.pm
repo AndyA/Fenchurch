@@ -45,7 +45,7 @@ sub _netloc {
 
 sub _b_ua {
   my $self = shift;
-  my $ua = LWP::UserAgent->new;
+  my $ua   = LWP::UserAgent->new;
   if ( defined $self->user && defined $self->pass ) {
     $ua->credentials( $self->_netloc, $self->facility,
       $self->user, $self->pass );
@@ -62,13 +62,14 @@ sub _post {
 
   my $req = HTTP::Request->new( 'POST', $self->uri );
   $req->header( 'Content-Type' => 'application/json;charset=utf-8' );
-  $req->content( $stats->_count( send => $self->json_encode($msg) ) );
+  $req->content( $stats->count( send => $self->json_encode_utf8($msg) ) );
 
   $self->log->debug( "POST ", $self->uri );
   my $resp = $self->_ua->request($req);
   $self->log->debug( "Response: ", $resp->status_line );
 
-  return $self->json_decode( $stats->_count( receive => $resp->content ) )
+  return $self->json_decode_utf8(
+    $stats->count( receive => $resp->content ) )
    if $resp->is_success;
 
   die join "\n", $resp->status_line, $resp->decoded_content;

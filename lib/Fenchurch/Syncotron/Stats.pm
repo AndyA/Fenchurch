@@ -19,7 +19,7 @@ Fenchurch::Syncotron::Stats - Gather connection statistics
 
 =cut
 
-sub _count {
+sub count {
   my ( $self, $kind, $msg ) = @_;
 
   my $st = $self->stats->{$kind} //= {};
