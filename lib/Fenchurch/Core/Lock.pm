@@ -7,6 +7,7 @@ use v5.10;
 use Moose;
 
 use Carp qw( confess );
+use Fenchurch::Util qw( unique );
 use POSIX qw( uname );
 use Sys::Hostname;
 use Time::HiRes qw( sleep time );
@@ -56,11 +57,16 @@ sub _prune_old_sessions {
 
   return unless $self->_has_session;
 
-  my $table   = $self->table;
-  my $session = $self->session;
+  my $table = $self->table;
+  my @session = unique( $self->session, $self->session_unknown );
 
-  $self->db->do( "DELETE FROM {$table} WHERE {session} NOT IN (?)",
-    {}, $session );
+  $self->db->do(
+    [ "DELETE FROM {$table} WHERE {session} NOT IN (",
+      join( ", ", map "?", @session ), ")"
+    ],
+    {},
+    @session
+  );
 }
 
 sub _get_owner {

@@ -19,9 +19,15 @@ has session => (
   builder => '_b_session'
 );
 
+has session_unknown => (
+  is      => 'ro',
+  isa     => 'Str',
+  default => "UNKNOWN"
+);
+
 sub _b_session {
   my $self = shift;
-  return $ENV{FENCHURCH_SESSION} // "UNKNOWN";
+  return $ENV{FENCHURCH_SESSION} // $self->session_unknown;
 }
 
 1;
