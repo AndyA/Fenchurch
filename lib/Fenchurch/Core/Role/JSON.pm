@@ -6,9 +6,6 @@ use Moose::Role;
 
 use JSON ();
 
-# Transitional shim - depend on DBD::mysql version
-use DBD::mysql;
-
 =head1 NAME
 
 Fenchurch::Core::Role::JSON - Create a JSON (de)serialiser
@@ -22,39 +19,25 @@ has _json_utf8 => (
   builder => '_b_json_utf8'
 );
 
-has _json_raw => (
+has _json => (
   is      => 'ro',
   isa     => 'JSON',
   lazy    => 1,
-  builder => '_b_json_raw'
+  builder => '_b_json'
 );
 
 sub _b_json_utf8 { JSON->new->utf8->allow_nonref->canonical }
-sub _b_json_raw  { JSON->new->allow_nonref->canonical }
-
-sub _old_dbd_mysql {
-  return $DBD::mysql::VERSION < 4.042;
-}
+sub _b_json      { JSON->new->allow_nonref->canonical }
 
 sub json_encode {
   my ( $self, $data ) = @_;
-  if ( $self->_old_dbd_mysql ) { return $self->_json_utf8->encode($data) }
-  else                         { return $self->_json_raw->encode($data) }
+  return $self->_json->encode($data);
 }
 
 sub json_decode {
   my ( $self, $json ) = @_;
   return undef unless defined $json;
-  if ( $self->_old_dbd_mysql ) {
-    # If the string comes from the database it will already have been
-    # decoded and its utf8 flag will be set.
-    return $self->_json_raw->decode($json) if utf8::is_utf8($json);
-    # Otherwise we have a utf-8 byte string
-    return $self->_json_utf8->decode($json);
-  }
-  else {
-    return $self->_json_raw->decode($json);
-  }
+  return $self->_json->decode($json);
 }
 
 sub json_encode_utf8 {
