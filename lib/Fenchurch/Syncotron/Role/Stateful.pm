@@ -17,6 +17,13 @@ has state => (
   builder => '_b_state',
 );
 
+has max_age => (
+  is       => 'ro',
+  isa      => 'Int',
+  required => 1,
+  default  => 7 * 24 * 60 * 60
+);
+
 with qw(
  Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::JSON
@@ -46,6 +53,18 @@ sub _load_state {
   return unless $state;
   $self->log->debug( "Loaded state: ", $state );
   return Fenchurch::Syncotron::State->thaw($state);
+}
+
+sub reap {
+  my $self = shift;
+
+  $self->db->do(
+    [ "DELETE FROM {:state}",
+      " WHERE {updated} < DATE_SUB(NOW(), INTERVAL ? SECOND)"
+    ],
+    {},
+    $self->max_age
+  );
 }
 
 sub load_all_states {

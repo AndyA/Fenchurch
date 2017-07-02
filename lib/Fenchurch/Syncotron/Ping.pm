@@ -31,10 +31,29 @@ has ttl => (
   default  => 10
 );
 
+has max_age => (
+  is       => 'ro',
+  isa      => 'Int',
+  required => 1,
+  default  => 7 * 24 * 60 * 60
+);
+
 with qw(
  Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::NodeName
 );
+
+sub reap {
+  my $self = shift;
+
+  $self->db->do(
+    [ "DELETE FROM {:ping}",
+      " WHERE {when} < DATE_SUB(NOW(), INTERVAL ? SECOND)"
+    ],
+    {},
+    $self->max_age
+  );
+}
 
 sub put {
   my ( $self, @pings ) = @_;

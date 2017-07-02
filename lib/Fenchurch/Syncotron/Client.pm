@@ -186,9 +186,9 @@ sub _send_messages {
       }
     );
   }
-  elsif ( $state eq 'fault') {
+  elsif ( $state eq 'fault' ) {
     # Ignore fault state
-  } 
+  }
   else {
     die "Unhandled state ", $state;
   }
@@ -239,10 +239,17 @@ sub _pings {
   }
 }
 
+sub _reap {
+  my $self = shift;
+  $self->reap;
+  $self->ping->reap;
+}
+
 sub next {
   my $self = shift;
 
   try {
+    $self->_reap;
     if ( $self->state->state ne 'fault' ) {
       $self->_receive;
       $self->_transmit;

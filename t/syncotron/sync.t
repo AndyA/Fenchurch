@@ -39,6 +39,7 @@ my %common = (
     queue    => 'test_queue',
     versions => 'test_versions',
     state    => 'test_state',
+    ping     => 'test_ping',
     pending  => 'test_pending',
     known    => 'test_known',
     lock     => 'test_lock',
