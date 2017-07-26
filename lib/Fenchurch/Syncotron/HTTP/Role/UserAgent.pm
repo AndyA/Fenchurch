@@ -20,9 +20,10 @@ has _ua => (
   builder => '_b_ua'
 );
 
-has ['user', 'pass', 'facility'] => (
-  is  => 'ro',
-  isa => 'Maybe[Str]'
+has config => (
+  is      => 'ro',
+  isa     => 'HashRef',
+  default => sub { {} }
 );
 
 has stats => (
@@ -45,11 +46,25 @@ sub _netloc {
 
 sub _b_ua {
   my $self = shift;
+  my $cfg  = $self->config;
   my $ua   = LWP::UserAgent->new;
-  if ( defined $self->user && defined $self->pass ) {
-    $ua->credentials( $self->_netloc, $self->facility,
-      $self->user, $self->pass );
+
+  # Handle HTTP auth
+  if ( defined $cfg->{user} && defined $cfg->{pass} ) {
+    $ua->credentials( $self->_netloc, $cfg->{facility},
+      $cfg->{user}, $cfg->{pass} );
   }
+
+  # Handle SSL options
+  my %ssl_opt = ();
+  for my $key ( 'ca_file', 'cert_file', 'key_file' ) {
+    $ssl_opt{"SSL_$key"} = $cfg->{$key}
+     if defined $cfg->{$key};
+  }
+
+  $ua->ssl_opts(%ssl_opt)
+   if keys %ssl_opt;
+
   return $ua;
 }
 
