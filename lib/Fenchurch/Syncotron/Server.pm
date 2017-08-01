@@ -89,11 +89,17 @@ sub _put_versions {
   while (@uuid) {
     my @chunk = splice @uuid, 0, 25;
     my @ver = grep { defined } @{ $self->versions->load_versions(@chunk) };
-    while (@ver) {
-      $self->_send( { type => 'put.versions', versions => [shift @ver] } );
-      if ( $self->mq_out->size > $self->max_size ) {
-        $self->mq_out->unsend(1);
-        return;
+    if (1) {
+      $self->_send( { type => 'put.versions', versions => [@ver] } );
+    }
+    else {
+      # Chunked
+      while (@ver) {
+        $self->_send( { type => 'put.versions', versions => [shift @ver] } );
+        if ( $self->mq_out->size > $self->max_size ) {
+          $self->mq_out->unsend(1);
+          return;
+        }
       }
     }
   }
