@@ -244,15 +244,23 @@ Return a list of versions that we need.
 
 sub want {
   my ( $self, $start, $size ) = @_;
+
+  die "Non-zero start not supported"
+   unless $start == 0;
+
+  my @known
+   = $self->db->selectcol_array(
+    ["SELECT {uuid} FROM {:known} LIMIT ?, ?"],
+    {}, $start, $size );
+
+  return @known if @known;
+
   return $self->db->selectcol_array(
-    [ "SELECT DISTINCT {uuid} FROM (",
-      "  SELECT {uuid} FROM {:known}",
-      "  UNION SELECT {p1.parent} AS {uuid}",
-      "    FROM {:pending} AS {p1}",
-      "    LEFT JOIN {:pending} AS {p2}",
-      "      ON {p1.parent} = {p2.uuid}",
-      "   WHERE {p2.uuid} IS NULL",
-      ") AS {q}",
+    [ "SELECT DISTINCT {p1.parent} AS {uuid}",
+      "  FROM {:pending} AS {p1}",
+      "  LEFT JOIN {:pending} AS {p2}",
+      "    ON {p1.parent} = {p2.uuid}",
+      " WHERE {p2.uuid} IS NULL",
       " LIMIT ?, ?"
     ],
     {},
