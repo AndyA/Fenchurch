@@ -49,6 +49,8 @@ sub _b_ua {
   my $cfg  = $self->config;
   my $ua   = LWP::UserAgent->new;
 
+  $ua->timeout( 60 * 15 );    # 15 minute timeout
+
   # Handle HTTP auth
   if ( defined $cfg->{user} && defined $cfg->{pass} ) {
     $ua->credentials( $self->_netloc, $cfg->{facility},
