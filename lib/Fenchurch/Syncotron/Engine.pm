@@ -338,15 +338,18 @@ sub _flush_pending {
 }
 
 sub flush_pending {
-  my ( $self, $timeout ) = @_;
+  my ( $self, $lock_timeout, $work_timeout ) = @_;
+
+  $work_timeout //= $lock_timeout;
 
   my $stash = {};
   my $done = $self->lock( key => "sync" )->locked(
-    $timeout,
+    $lock_timeout,
     sub {
-      my $deadline = time + $timeout;
+      my $deadline = time + $work_timeout;
       while ( time < $deadline ) {
-        return unless $self->_flush_pending($stash);
+        my $done = $self->_flush_pending($stash);
+        last unless $done;
       }
     }
   );
