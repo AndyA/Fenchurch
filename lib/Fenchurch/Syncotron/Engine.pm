@@ -273,16 +273,29 @@ sub _find_ready {
   );
 }
 
+sub _find_by_parent {
+  my ( $self, @uuid ) = @_;
+  return unless @uuid;
+  return $self->db->selectcol_array(
+    [ "SELECT {uuid} FROM {:pending} WHERE {parent} IN (",
+      join( ", ", map "?", @uuid ), ")"
+    ],
+    {},
+    @uuid
+  );
+}
+
 sub _flush_pending {
-  my $self = shift;
+  my ( $self, $stash ) = @_;
+
+  my $recent = $stash->{recent} //= [];
 
   # Process pending edits that either have a NULL parent or a parent
   # that is already applied.
 
-  # TODO it's possible to process versions in the pending queue
-  # that have parents also in pending.
+  my @ready = $self->_find_by_parent(@$recent);
+  @ready = $self->_find_ready unless @ready;
 
-  my @ready = $self->_find_ready;
   return 0 unless @ready;
 
   my $pe = $self->_pending_engine;
@@ -293,6 +306,7 @@ sub _flush_pending {
   $self->emit( flush_pending => $changes );
 
   for my $ch (@$changes) {
+    push @$recent, $ch->{uuid};
     my @args = (
       { uuid       => [$ch->{uuid}],
         parents    => [$ch->{parent}],
@@ -318,12 +332,13 @@ sub _flush_pending {
 sub flush_pending {
   my ( $self, $timeout ) = @_;
 
+  my $stash = {};
   my $done = $self->lock( key => "sync" )->locked(
     $timeout,
     sub {
       my $deadline = time + $timeout;
       while ( time < $deadline ) {
-        return unless $self->_flush_pending;
+        return unless $self->_flush_pending($stash);
       }
     }
   );
