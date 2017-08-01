@@ -73,6 +73,15 @@ sub _take {
   return @msgs;
 }
 
+sub message_size {
+  my ( $self, @msgs ) = @_;
+  my $size = 0;
+  for my $msg (@msgs) {
+    $size += length $self->json_encode($msg);
+  }
+  return $size;
+}
+
 sub send {
   my ( $self, @msgs ) = @_;
   $self->_put( map { $self->json_encode($_) } @msgs );

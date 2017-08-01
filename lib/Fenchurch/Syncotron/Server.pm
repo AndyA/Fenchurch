@@ -23,7 +23,7 @@ has max_size => (
   is       => 'ro',
   isa      => 'Int',
   required => 1,
-  default  => 100_000
+  default  => 500_000
 );
 
 with qw(
@@ -86,12 +86,21 @@ sub _put_versions {
 
   @uuid = shuffle @uuid;
 
-  while (@uuid) {
+  my $limit   = $self->max_size;
+  my $size    = 0;
+  my @payload = ();
+
+  UUID: while (@uuid) {
     my @chunk = splice @uuid, 0, 25;
     my @ver = grep { defined } @{ $self->versions->load_versions(@chunk) };
-    $self->_send( { type => 'put.versions', versions => [@ver] } );
-    last if $self->mq_out->size > $self->max_size;
+    for my $ver (@ver) {
+      $size += $self->mq_out->message_size($ver);
+      last UUID if @payload && $size > $limit;
+      push @payload, $ver;
+    }
   }
+
+  $self->_send( { type => 'put.versions', versions => [@payload] } );
 }
 
 sub _put_recent {
