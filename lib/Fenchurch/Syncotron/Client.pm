@@ -146,7 +146,7 @@ sub _build_app {
 
   $de->on(
     'put.*' => sub {
-      $self->engine->flush_pending(5, 300);
+      $self->engine->flush_pending(5, 120);
     }
   );
 }
