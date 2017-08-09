@@ -27,6 +27,7 @@ has unversioned => (
 
 with qw(
  Fenchurch::Core::Role::DB
+ Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::JSON
  Fenchurch::Core::Role::NodeName
  Fenchurch::Core::Role::UUIDFactory

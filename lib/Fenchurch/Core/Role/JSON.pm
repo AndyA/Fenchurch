@@ -4,6 +4,8 @@ our $VERSION = "1.00";
 
 use Moose::Role;
 
+requires 'log';
+
 use JSON ();
 
 =head1 NAME

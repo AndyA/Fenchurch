@@ -28,6 +28,7 @@ has size => (
 );
 
 with qw(
+ Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::JSON
 );
 

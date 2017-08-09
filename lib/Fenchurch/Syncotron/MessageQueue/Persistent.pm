@@ -14,6 +14,7 @@ has ['role', 'from', 'to'] => (
 
 with qw(
  Fenchurch::Core::Role::DB
+ Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::JSON
 );
 
