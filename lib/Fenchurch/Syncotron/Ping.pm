@@ -41,6 +41,7 @@ has max_age => (
 with qw(
  Fenchurch::Core::Role::Logger
  Fenchurch::Core::Role::NodeName
+ Fenchurch::Core::Role::Lock
 );
 
 sub reap {
@@ -71,7 +72,8 @@ sub put {
     push @save, $ping;
   }
 
-  $self->engine->save( ping => @save );
+  $self->lock( key => "ping" )
+   ->locked( 30, sub { $self->engine->save( ping => @save ) } );
 }
 
 sub get_all { @{ shift->engine->load( ping => '*' ) } }
