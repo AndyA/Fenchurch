@@ -4,6 +4,7 @@ our $VERSION = "0.01";
 
 use Fenchurch::Moose;
 use Moose::Util::TypeConstraints;
+use URI;
 
 =head1 NAME
 
@@ -25,6 +26,12 @@ coerce 'HashRefMayBeArrayRef', from 'ArrayRef[Str]', via {
   }
   return $out;
 };
+
+subtype 'Fenchurch::URI' => as class_type('URI');
+
+coerce
+ 'Fenchurch::URI' => ( from 'Object' => via { $_ } ),
+ ( from 'Str' => via { URI->new( $_, 'http' ) } );
 
 1;
 
