@@ -5,8 +5,6 @@ our $VERSION = "1.00";
 use Fenchurch::Module;
 use Moose::Role;
 
-requires 'log';
-
 use JSON ();
 
 =head1 NAME
@@ -40,7 +38,6 @@ sub json_encode {
 sub json_decode {
   my ( $self, $json ) = @_;
   return undef unless defined $json;
-  $self->log->debug( "json_decode: ", $json );
   return $self->_json->decode($json);
 }
 
@@ -52,7 +49,6 @@ sub json_encode_utf8 {
 sub json_decode_utf8 {
   my ( $self, $json ) = @_;
   return undef unless defined $json;
-  $self->log->debug( "json_decode_utf8: ", $json );
   return $self->_json_utf8->decode($json);
 }
 
