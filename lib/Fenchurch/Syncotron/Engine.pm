@@ -299,7 +299,7 @@ sub _flush_pending {
   # Process pending edits that either have a NULL parent or a parent
   # that is already applied.
 
-  my @ready = $self->_find_by_parent(@$recent);
+  my @ready = $self->_find_by_parent( splice @$recent );
   @ready = $self->_find_ready unless @ready;
 
   return 0 unless @ready;
