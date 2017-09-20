@@ -176,23 +176,38 @@ sub _have {
   );
 }
 
+sub _dont_have {
+  my ( $self, $tbls, @uuid ) = @_;
+
+  my %need = map { $_ => 1 } @uuid;
+
+  for my $tbl (@$tbls) {
+    my @got = $self->_have( $tbl, keys %need );
+    delete @need{@got};
+    last unless keys %need;
+  }
+
+  return grep { $need{$_} } @uuid;
+}
+
 =head2 C<dont_have>
 
-Given a list of change UUIDs return those that we don't already have
+Given a list of change UUIDs return those that we don't already have in versions or pending.
 
 =cut
 
 sub dont_have {
-  my ( $self, @uuid ) = @_;
+  shift->_dont_have( [":pending", ":versions"], @_ );
+}
 
-  my %need = map { $_ => 1 } @uuid;
+=head2 C<dont_have_versions>
 
-  for my $tbl ( ":versions", ":pending" ) {
-    my @got = $self->_have( $tbl, keys %need );
-    delete @need{@got};
-  }
+Given a list of change UUIDs return those that we don't already have in versions.
 
-  return grep { $need{$_} } @uuid;
+=cut
+
+sub dont_have_versions {
+  shift->_dont_have( [":versions"], @_ );
 }
 
 =head2 C<known>
@@ -247,7 +262,7 @@ sub want {
 
   return @known if @known;
 
-  return $self->db->selectcol_array(
+  my @want = $self->db->selectcol_array(
     [ "SELECT DISTINCT {p1.parent} AS {uuid}",
       "  FROM {:pending} AS {p1}",
       "  LEFT JOIN {:pending} AS {p2}",
@@ -258,6 +273,8 @@ sub want {
     {},
     $start, $size
   );
+
+  return $self->dont_have_versions(@want);
 }
 
 sub _find_ready {
