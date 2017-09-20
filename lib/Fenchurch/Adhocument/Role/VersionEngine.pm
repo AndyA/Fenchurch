@@ -2,8 +2,7 @@ package Fenchurch::Adhocument::Role::VersionEngine;
 
 our $VERSION = "0.01";
 
-use v5.10;
-
+use Fenchurch::Module;
 use Moose::Role;
 
 =head1 NAME

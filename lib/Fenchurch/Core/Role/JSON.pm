@@ -2,6 +2,7 @@ package Fenchurch::Core::Role::JSON;
 
 our $VERSION = "1.00";
 
+use Fenchurch::Module;
 use Moose::Role;
 
 requires 'log';

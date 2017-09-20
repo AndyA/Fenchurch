@@ -2,8 +2,7 @@ package Fenchurch::Core::Types;
 
 our $VERSION = "0.01";
 
-use v5.10;
-
+use Fenchurch::Moose;
 use Moose::Util::TypeConstraints;
 
 =head1 NAME

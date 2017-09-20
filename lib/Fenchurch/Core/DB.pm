@@ -2,7 +2,7 @@ package Fenchurch::Core::DB;
 
 our $VERSION = "1.00";
 
-use Moose;
+use Fenchurch::Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::Storage;
 

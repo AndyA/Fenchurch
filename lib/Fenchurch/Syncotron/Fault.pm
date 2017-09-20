@@ -2,9 +2,7 @@ package Fenchurch::Syncotron::Fault;
 
 our $VERSION = "1.00";
 
-use v5.10;
-
-use Moose;
+use Fenchurch::Moose;
 use Moose::Util::TypeConstraints;
 use MooseX::Storage;
 

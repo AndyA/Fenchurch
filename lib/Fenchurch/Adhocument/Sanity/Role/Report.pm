@@ -2,8 +2,7 @@ package Fenchurch::Adhocument::Sanity::Role::Report;
 
 our $VERSION = "0.01";
 
-use v5.10;
-
+use Fenchurch::Module;
 use Moose::Role;
 use Moose::Util::TypeConstraints;
 

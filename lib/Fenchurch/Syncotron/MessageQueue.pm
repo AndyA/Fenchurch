@@ -2,9 +2,7 @@ package Fenchurch::Syncotron::MessageQueue;
 
 our $VERSION = "1.00";
 
-use v5.10;
-
-use Moose;
+use Fenchurch::Moose;
 
 use Carp qw( confess );
 use Try::Tiny;

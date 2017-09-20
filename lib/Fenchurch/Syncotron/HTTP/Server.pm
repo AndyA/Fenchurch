@@ -2,9 +2,7 @@ package Fenchurch::Syncotron::HTTP::Server;
 
 our $VERSION = "1.00";
 
-use v5.10;
-
-use Moose;
+use Fenchurch::Moose;
 
 with qw(
  Fenchurch::Core::Role::Logger

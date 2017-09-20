@@ -1,10 +1,8 @@
 package Fenchurch::Syncotron::Engine;
 
-use v5.10;
-
 our $VERSION = "1.00";
 
-use Moose;
+use Fenchurch::Moose;
 use Moose::Util::TypeConstraints;
 
 use Time::HiRes qw( time );

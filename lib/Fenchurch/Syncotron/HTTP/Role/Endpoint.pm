@@ -2,8 +2,7 @@ package Fenchurch::Syncotron::HTTP::Role::Endpoint;
 
 our $VERSION = "1.00";
 
-use v5.10;
-
+use Fenchurch::Module;
 use Moose::Role;
 use Moose::Util::TypeConstraints;
 
@@ -51,7 +50,6 @@ sub _b_client {
    unless $self->has_remote_node_name;
 
   my $client = Fenchurch::Syncotron::Client->new(
-    db               => $self->db,
     node_name        => $self->node_name,
     remote_node_name => $self->remote_node_name,
     versions         => $self->versions
@@ -66,7 +64,6 @@ sub _b_server {
   my $self = shift;
 
   my $server = Fenchurch::Syncotron::Server->new(
-    db        => $self->db,
     node_name => $self->node_name,
     versions  => $self->versions
   );

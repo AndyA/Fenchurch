@@ -2,6 +2,7 @@ package Fenchurch::Core::Role::DB;
 
 our $VERSION = "1.00";
 
+use Fenchurch::Module;
 use Moose::Role;
 use MooseX::Storage;
 

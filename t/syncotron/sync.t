@@ -136,7 +136,6 @@ sub make_versions {
 sub make_server {
   my $db = shift;
   return Fenchurch::Syncotron::Server->new(
-    db        => $db,
     node_name => 'other_node',
     versions  => make_versions($db),
     page_size => 5,
@@ -146,7 +145,6 @@ sub make_server {
 sub make_client {
   my $db = shift;
   return Fenchurch::Syncotron::Client->new(
-    db               => $db,
     node_name        => 'test_node',
     remote_node_name => 'other_node',
     versions         => make_versions($db),

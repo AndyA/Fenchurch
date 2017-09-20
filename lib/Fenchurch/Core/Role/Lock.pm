@@ -2,8 +2,7 @@ package Fenchurch::Core::Role::Lock;
 
 our $VERSION = "0.01";
 
-use v5.10;
-
+use Fenchurch::Module;
 use Moose::Role;
 
 use Fenchurch::Core::Lock;

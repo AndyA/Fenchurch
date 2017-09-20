@@ -2,10 +2,7 @@ package Fenchurch::Util::Data;
 
 our $VERSION = "1.00";
 
-use v5.10;
-
-use strict;
-use warnings;
+use Fenchurch::Module;
 
 use base qw( Exporter );
 

@@ -2,10 +2,7 @@ package Fenchurch::Util::Compare;
 
 our $VERSION = "1.00";
 
-use v5.10;
-
-use strict;
-use warnings;
+use Fenchurch::Module;
 
 use Scalar::Util qw( looks_like_number );
 
@@ -14,15 +11,13 @@ use base qw( Exporter );
 our @EXPORT_OK = qw( same );
 our %EXPORT_TAGS = ( all => [@EXPORT_OK] );
 
-sub same($$);
-
 =head1 NAME
 
 Fenchurch::Util::Compare - Deep comparison
 
 =cut
 
-sub same($$) {
+sub same {
   my ( $a, $b ) = @_;
 
   return 1 unless defined $a || defined $b;

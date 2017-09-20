@@ -2,9 +2,7 @@ package Fenchurch::Syncotron::Ping;
 
 our $VERSION = "0.01";
 
-use v5.10;
-
-use Moose;
+use Fenchurch::Moose;
 use Moose::Util::TypeConstraints;
 
 use DateTime::Format::MySQL;

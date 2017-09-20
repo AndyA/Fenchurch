@@ -2,9 +2,7 @@ package Fenchurch::Wiki::Schema;
 
 our $VERSION = "0.01";
 
-use v5.10;
-
-use Moose;
+use Fenchurch::Moose;
 
 use Fenchurch::Adhocument::Schema;
 use Fenchurch::Core::DB;

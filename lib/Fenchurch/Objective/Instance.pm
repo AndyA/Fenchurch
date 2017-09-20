@@ -2,9 +2,7 @@ package Fenchurch::Objective::Instance;
 
 our $VERSION = "0.01";
 
-use v5.10;
-
-use Moose;
+use Fenchurch::Moose;
 
 =head1 NAME
 

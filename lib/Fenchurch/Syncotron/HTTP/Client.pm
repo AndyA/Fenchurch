@@ -2,9 +2,7 @@ package Fenchurch::Syncotron::HTTP::Client;
 
 our $VERSION = "1.00";
 
-use v5.10;
-
-use Moose;
+use Fenchurch::Moose;
 
 has uri => (
   is       => 'ro',

@@ -2,9 +2,7 @@ package Fenchurch::Objective;
 
 our $VERSION = "0.01";
 
-use v5.10;
-
-use Moose;
+use Fenchurch::Moose;
 use Moose::Util::TypeConstraints;
 use Moose::Meta::Class;
 

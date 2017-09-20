@@ -2,7 +2,7 @@ package Fenchurch::Adhocument::Versions;
 
 our $VERSION = "1.00";
 
-use Moose;
+use Fenchurch::Moose;
 use Moose::Util::TypeConstraints;
 
 use Carp qw( confess );
@@ -54,7 +54,7 @@ sub _b_unversioned {
 
 sub _eq {
   my ( $self, $a, $b ) = @_;
-  return same $a, $b;
+  return same( $a, $b );
 }
 
 sub _only_changed {

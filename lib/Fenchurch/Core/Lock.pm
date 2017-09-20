@@ -2,9 +2,7 @@ package Fenchurch::Core::Lock;
 
 our $VERSION = "0.01";
 
-use v5.10;
-
-use Moose;
+use Fenchurch::Moose;
 
 use Carp qw( confess );
 use Fenchurch::Util qw( unique );

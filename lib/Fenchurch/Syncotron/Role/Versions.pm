@@ -2,8 +2,7 @@ package Fenchurch::Syncotron::Role::Versions;
 
 our $VERSION = "1.00";
 
-use v5.10;
-
+use Fenchurch::Module;
 use Moose::Role;
 use Moose::Util::TypeConstraints;
 

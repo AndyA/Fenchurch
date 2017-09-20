@@ -2,8 +2,7 @@ package Fenchurch::Core::Role::DBHelper;
 
 our $VERSION = "1.00";
 
-use v5.10;
-
+use Fenchurch::Module;
 use Moose::Role;
 
 requires 'do';

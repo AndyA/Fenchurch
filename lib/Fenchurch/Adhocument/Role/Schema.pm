@@ -2,6 +2,7 @@ package Fenchurch::Adhocument::Role::Schema;
 
 our $VERSION = "1.00";
 
+use Fenchurch::Module;
 use Moose::Role;
 
 use Fenchurch::Adhocument::Schema;

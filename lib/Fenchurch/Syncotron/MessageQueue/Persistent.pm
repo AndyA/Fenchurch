@@ -2,9 +2,7 @@ package Fenchurch::Syncotron::MessageQueue::Persistent;
 
 our $VERSION = "1.00";
 
-use v5.10;
-
-use Moose;
+use Fenchurch::Moose;
 
 has ['role', 'from', 'to'] => (
   is       => 'ro',
