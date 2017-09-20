@@ -195,7 +195,7 @@ sub dont_have {
 
   for my $tbl ( ":versions", ":pending" ) {
     my @got = $self->_have( $tbl, keys %need );
-    delete $need{$_} for @got;
+    delete @need{@got};
   }
 
   return grep { $need{$_} } @uuid;
