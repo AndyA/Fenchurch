@@ -7,12 +7,6 @@ use Moose::Util::TypeConstraints;
 
 use Time::HiRes qw( time );
 
-has timeout => (
-  is      => 'ro',
-  isa     => 'Num',
-  default => 600
-);
-
 has _pending_engine => (
   is      => 'ro',
   isa     => 'Fenchurch::Adhocument',
@@ -365,31 +359,26 @@ have been satisfied.
 sub add_versions {
   my ( $self, @vers ) = @_;
 
-  my $done = $self->lock( key => "sync" )->locked(
-    $self->timeout,
-    sub {
-      my @uuid = map { $_->{uuid} } @vers;
-      $self->_unknown(@uuid);
-      my %need = map { $_ => 1 } $self->dont_have(@uuid);
+  my @uuid = map { $_->{uuid} } @vers;
+  my %need = map { $_ => 1 } $self->dont_have(@uuid);
 
-      my @new = ();
-      for my $ver (@vers) {
-        next unless $need{ $ver->{uuid} };
-        my $nv = {%$ver};    # Shallow
-        delete $nv->{serial};
-        push @new, $nv;
-      }
+  my @new = ();
+  for my $ver (@vers) {
+    next unless $need{ $ver->{uuid} };
+    my $nv = {%$ver};    # Shallow
+    delete $nv->{serial};
+    push @new, $nv;
+  }
 
-      my $pe = $self->_pending_engine;
+  my $pe = $self->_pending_engine;
 
-      $self->emit( add_versions => \@new );
+  $self->emit( add_versions => \@new );
 
-      # Mark them all pending
-      $pe->save( version => @new );
-    }
-  );
+  # Mark them all pending
+  $pe->save( version => @new );
 
-  die "Timeout while waiting for lock" unless $done;
+  # And, when saved, as not needed
+  $self->_unknown(@uuid);
 }
 
 =head2 C<statistics>
