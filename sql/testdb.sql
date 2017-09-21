@@ -172,7 +172,9 @@ DROP TABLE IF EXISTS `test_known`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `test_known` (
   `uuid` varchar(36) NOT NULL,
-  PRIMARY KEY (`uuid`)
+  `serial` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`uuid`),
+  KEY `serial` (`serial`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
