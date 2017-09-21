@@ -210,6 +210,10 @@ sub dont_have_versions {
   shift->_dont_have( [":versions"], @_ );
 }
 
+sub _coerce_v2_to_v1 {
+  map { ref $_ ? $_->{uuid} : $_ } @_;
+}
+
 =head2 C<known>
 
 Add UUIDs of known versions
@@ -217,7 +221,9 @@ Add UUIDs of known versions
 =cut
 
 sub known {
-  my ( $self, @uuid ) = @_;
+  my ( $self, @ver_or_uuid ) = @_;
+
+  my @uuid = $self->_coerce_v2_to_v1(@ver_or_uuid);
 
   my @known = $self->dont_have(@uuid);
   return unless @known;
