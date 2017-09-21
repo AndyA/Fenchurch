@@ -61,15 +61,15 @@ Return a page of the leaf nodes of the version tree.
 sub leaves {
   my ( $self, $start, $size ) = @_;
 
-  return $self->db->selectcol_array(
-    [ "SELECT {tc1.uuid}",
+  return $self->db->selectall_array(
+    [ "SELECT {tc1.uuid}, {tc1.serial}",
       "  FROM {:versions} AS {tc1}",
       "  LEFT JOIN {:versions} AS {tc2} ON {tc2.parent} = {tc1.uuid}",
       " WHERE {tc2.parent} IS NULL",
       " ORDER BY {tc1.serial} ASC",
       " LIMIT ?, ?"
     ],
-    {},
+    { Slice => {} },
     $start, $size
   );
 }
@@ -103,14 +103,14 @@ Return a random sample of non-leaf nodes.
 sub sample {
   my ( $self, $start, $size ) = @_;
 
-  return $self->db->selectcol_array(
-    [ "SELECT DISTINCT {tc1.uuid}",
+  return $self->db->selectall_array(
+    [ "SELECT DISTINCT {tc1.uuid}, {tc1.serial}",
       "  FROM {:versions} AS {tc1}, {:versions} AS {tc2}",
       " WHERE {tc2.parent} = {tc1.uuid}",
       " ORDER BY {tc1.rand} ASC",
       " LIMIT ?, ?"
     ],
-    {},
+    { Slice => {} },
     $start, $size
   );
 }
@@ -146,7 +146,7 @@ sub recent {
   my $recent = $self->_recent( $serial, $limit );
   my $next = @$recent ? $recent->[-1]{serial} : $serial;
   return {
-    recent => [map { $_->{uuid} } @$recent],
+    recent => $recent,
     serial => $next
   };
 }
@@ -161,7 +161,7 @@ sub since {
   my ( $self, $serial, $limit ) = @_;
 
   my $recent = $self->_recent( $serial, $limit );
-  return map { $_->{uuid} } @$recent;
+  return @$recent;
 }
 
 sub _have {
@@ -210,22 +210,28 @@ sub dont_have_versions {
   shift->_dont_have( [":versions"], @_ );
 }
 
+sub _coerce_to_v2 {
+  my ( $self, @list ) = @_;
+  return map { ref $_ ? $_ : { uuid => $_, serial => 0 } }
+   grep { defined } @list;
+}
+
 =head2 C<known>
 
-Add UUIDs of known versions
+Add to known versions
 
 =cut
 
 sub known {
-  my ( $self, @uuid ) = @_;
+  my ( $self, @list ) = @_;
 
-  my @known = $self->dont_have(@uuid);
-  return unless @known;
+  # Transitional hack
+  my @ver = $self->_coerce_to_v2(@list);
+  my @uuid = map { $_->{uuid} } @ver;
 
-  $self->db->do(
-    ["REPLACE INTO {:known} ({uuid}) VALUES ", join ", ", map "(?)", @known],
-    {}, @known
-  );
+  my %want = map { $_ => 1 } $self->dont_have(@uuid);
+  my @need = grep { $want{ $_->{uuid} } } @ver;
+  $self->db->replace( ':known', @need );
 }
 
 sub _unknown {
@@ -257,7 +263,7 @@ sub want {
 
   my @known
    = $self->db->selectcol_array(
-    ["SELECT {uuid} FROM {:known} LIMIT ?, ?"],
+    ["SELECT {uuid} FROM {:known} ORDER BY {serial} LIMIT ?, ?"],
     {}, $start, $size );
 
   return @known if @known;
@@ -268,6 +274,7 @@ sub want {
       "  LEFT JOIN {:pending} AS {p2}",
       "    ON {p1.parent} = {p2.uuid}",
       " WHERE {p2.uuid} IS NULL",
+      " ORDER BY {p1.serial}",
       " LIMIT ?, ?"
     ],
     {},
