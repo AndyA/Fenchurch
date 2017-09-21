@@ -83,13 +83,13 @@ Return a random sample of nodes.
 sub random {
   my ( $self, $start, $size ) = @_;
 
-  return $self->db->selectcol_array(
-    [ "SELECT {uuid}",
+  return $self->db->selectall_array(
+    [ "SELECT {uuid}, {serial}",
       "  FROM {:versions}",
       " ORDER BY {rand} ASC",
       " LIMIT ?, ?"
     ],
-    {},
+    { Slice => {} },
     $start, $size
   );
 }
