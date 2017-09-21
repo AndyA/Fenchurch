@@ -20,6 +20,14 @@ use Fenchurch::Syncotron::Engine;
 
 preflight;
 
+sub by_serial {
+  $a->{serial} <=> $b->{serial} || $a->{uuid} cmp $b->{uuid};
+}
+
+sub ex_uuid (@) {
+  map { $_->{uuid} } @_;
+}
+
 {
   my ( $vl, $el ) = make_test_db( database("local") );
   my ( $vr, $er ) = make_test_db( database("remote") );
@@ -52,36 +60,41 @@ preflight;
   is scalar(@leaves), 2, "Two leaf nodes";
   is scalar(@sample), 1, "One non-leaf node";
 
-  eq_or_diff [sort @leaves, @sample], [sort @since],
+  eq_or_diff [sort by_serial @leaves, @sample],
+   [sort by_serial @since],
    "Leaves + sample = since";
 
-  ok valid_uuid(@since),  "Since: valid UUIDs";
-  ok valid_uuid(@leaves), "Leaves: valid UUIDs";
-  ok valid_uuid(@sample), "Sample: valid UUIDs";
+  ok valid_uuid( ex_uuid @since ),  "Since: valid UUIDs";
+  ok valid_uuid( ex_uuid @leaves ), "Leaves: valid UUIDs";
+  ok valid_uuid( ex_uuid @sample ), "Sample: valid UUIDs";
 
-  eq_or_diff [$el->dont_have(@since)], [], "Local has all versions";
-  eq_or_diff [$er->dont_have(@since)], [@since], "Remote has no versions";
+  eq_or_diff [$el->dont_have( ex_uuid @since )], [],
+   "Local has all versions";
+  eq_or_diff [$er->dont_have( ex_uuid @since )], [ex_uuid @since],
+   "Remote has no versions";
 
   eq_or_diff [$er->want( 0, 100 )], [], "Remote wants nothing";
   $er->known(@leaves);
-  eq_or_diff [sort $er->want( 0, 100 )], [sort @leaves],
-   "Remote wants leaves";
+  my @leaves_uuid = ex_uuid @leaves;
+  eq_or_diff [sort $er->want( 0, 100 )],
+   [sort @leaves_uuid], "Remote wants leaves";
 
-  my $leaves = $vl->load_versions(@leaves);
+  my $leaves = $vl->load_versions(@leaves_uuid);
   $er->add_versions(@$leaves);
-  $er->flush_pending(10);
+  $er->flush_pending( 10, 100 );
 
-  eq_or_diff [$er->dont_have(@since)], [@sample],
+  eq_or_diff [$er->dont_have( ex_uuid @since )], [ex_uuid @sample],
    "Remote needs non-leaf nodes";
 
   my @want = $er->want( 0, 100 );
-  eq_or_diff [@want], [@sample], "Remote wants non-leaf nodes";
+  eq_or_diff [@want], [ex_uuid @sample], "Remote wants non-leaf nodes";
 
   my $wanted = $vl->load_versions(@want);
   $er->add_versions(@$wanted);
   $er->flush_pending(10);
 
-  eq_or_diff [$er->dont_have(@since)], [], "Remote has all versions";
+  eq_or_diff [$er->dont_have( ex_uuid @since )], [],
+   "Remote has all versions";
   eq_or_diff [$er->want( 0, 100 )], [], "Remote wants no versions";
 
   check_data( $vl, $vr, @items );
@@ -178,7 +191,7 @@ sub sync_complete {
   my $name = another("Sync");
 
   my @leaves = $er->dont_have( $el->leaves( 0, 1_000_000 ) );
-  my $leaves = $vl->load_versions(@leaves);
+  my $leaves = $vl->load_versions( ex_uuid @leaves );
   $er->add_versions(@$leaves);
   $er->flush_pending(10);
 
