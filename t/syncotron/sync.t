@@ -122,6 +122,7 @@ sub iterate {
     pump( $client, $server );
     $server->next;
     pump( $client, $server );
+    $client->engine->flush_pending( 10, 60 );
   }
 }
 

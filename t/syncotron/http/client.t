@@ -45,7 +45,9 @@ my $ua = TestUA->new(
       versions  => $remote_versions,
       node_name => "remote"
     );
-    return $server->handle($body);
+    my $rc = $server->handle($body);
+    $server->client->engine->flush_pending( 10, 60 );
+    return $rc;
   }
 );
 
@@ -62,7 +64,10 @@ my @remote_data = make_test_data(4);
 $local_versions->save( item => @local_data );
 $remote_versions->save( item => @remote_data );
 
-$client->next for 1 .. 7;
+for ( 1 .. 7 ) {
+  $client->next;
+  $client->client->engine->flush_pending( 10, 60 );
+}
 
 eq_or_diff [walk_versions( $remote_versions->dbh )],
  [walk_versions( $local_versions->dbh )], "Version tree matches";

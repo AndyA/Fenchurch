@@ -179,7 +179,7 @@ sub _have {
 sub _dont_have {
   my ( $self, $tbls, @uuid ) = @_;
 
-  my %need = map { $_ => 1 } @uuid;
+  my %need = map { $_ => 1 } grep defined, @uuid;
 
   for my $tbl (@$tbls) {
     my @got = $self->_have( $tbl, keys %need );
@@ -187,7 +187,7 @@ sub _dont_have {
     last unless keys %need;
   }
 
-  return grep { $need{$_} } @uuid;
+  return grep { $need{$_} } grep defined, @uuid;
 }
 
 =head2 C<dont_have>
