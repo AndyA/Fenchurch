@@ -14,6 +14,12 @@ has _pending_engine => (
   builder => '_b_pending_engine'
 );
 
+has _recent_cache => (
+  is      => 'ro',
+  isa     => 'ArrayRef',
+  default => sub { [] }
+);
+
 with qw(
  Fenchurch::Syncotron::Role::Versions
  Fenchurch::Event::Role::Emitter
@@ -310,9 +316,9 @@ sub _find_by_parent {
 }
 
 sub _flush_pending {
-  my ( $self, $stash ) = @_;
+  my ($self) = @_;
 
-  my $recent = $stash->{recent} //= [];
+  my $recent = $self->_recent_cache;
 
   # Process pending edits that either have a NULL parent or a parent
   # that is already applied.
@@ -358,13 +364,12 @@ sub flush_pending {
 
   $work_timeout //= $lock_timeout;
 
-  my $stash = {};
   my $done = $self->lock( key => "sync" )->locked(
     $lock_timeout,
     sub {
       my $deadline = time + $work_timeout;
       while ( time < $deadline ) {
-        my $done = $self->_flush_pending($stash);
+        my $done = $self->_flush_pending;
         last unless $done;
       }
     }
