@@ -73,6 +73,28 @@ around dbh => sub {
   return $self->$orig(@_);
 };
 
+sub no_transaction {
+  my ( $self, $cb ) = @_;
+
+  if ( $self->in_transaction ) {
+    $cb->();
+    return;
+  }
+
+  $self->in_transaction(1);
+
+  try {
+    $cb->();
+  }
+  catch {
+    my $e = $_;
+    confess $e;
+  }
+  finally {
+    $self->in_transaction(0);
+  };
+}
+
 sub transaction {
   my ( $self, $cb ) = @_;
 

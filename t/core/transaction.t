@@ -63,6 +63,24 @@ my $db = Fenchurch::Core::DB->new( dbh => $fake );
   is $db->in_transaction, 0, "transaction lock removed";
 }
 
+# no_transaction
+
+{
+  my $done_it = 0;
+  my @txn     = ();
+
+  $db->no_transaction(
+    sub {
+      push @txn, $db->in_transaction;
+      $db->transaction( sub { $done_it++; push @txn, $db->in_transaction } );
+    }
+  );
+
+  eq_or_diff [$fake->history], [], "no transaction";
+  eq_or_diff [@txn], [1, 1], "in_transaction true";
+  is $done_it, 1, "executed code once";
+}
+
 done_testing;
 
 # vim:ts=2:sw=2:et:ft=perl
