@@ -185,6 +185,8 @@ sub _have {
 sub _dont_have {
   my ( $self, $tbls, @uuid ) = @_;
 
+  return () unless @uuid;
+
   my %need = map { $_ => 1 } grep defined, @uuid;
 
   for my $tbl (@$tbls) {
@@ -318,6 +320,7 @@ sub _find_by_parent {
 sub _flush_pending {
   my ($self) = @_;
 
+  my $pe     = $self->_pending_engine;
   my $recent = $self->_recent_cache;
 
   # Process pending edits that either have a NULL parent or a parent
@@ -326,36 +329,37 @@ sub _flush_pending {
   my @ready = $self->_find_by_parent( splice @$recent );
   @ready = $self->_find_ready unless @ready;
 
-  return 0 unless @ready;
+  my @need = $self->dont_have_versions(@ready);
+  if (@need) {
 
-  my $pe = $self->_pending_engine;
-  my $ve = $self->versions;
+    my $ve = $self->versions;
 
-  my $changes = $pe->load( version => @ready );
+    my $changes = $pe->load( version => @need );
 
-  $self->emit( flush_pending => $changes );
+    $self->emit( flush_pending => $changes );
 
-  for my $ch (@$changes) {
-    push @$recent, $ch->{uuid};
-    my @args = (
-      { uuid       => [$ch->{uuid}],
-        parents    => [$ch->{parent}],
-        expect     => [$ch->{old_data}],
-        force_save => 1
-      },
-      $ch->{kind}
-    );
+    for my $ch (@$changes) {
+      push @$recent, $ch->{uuid};
+      my @args = (
+        { uuid       => [$ch->{uuid}],
+          parents    => [$ch->{parent}],
+          expect     => [$ch->{old_data}],
+          force_save => 1
+        },
+        $ch->{kind}
+      );
 
-    $self->db->no_transaction(
-      sub {
-        if ( defined $ch->{new_data} ) { $ve->save( @args, $ch->{new_data} ) }
-        elsif ( defined $ch->{old_data} ) { $ve->delete( @args, $ch->{object} ) }
-        else {
-          delete $ch->{serial};
-          $ve->version_engine->save( version => $ch );
+      $self->db->no_transaction(
+        sub {
+          if ( defined $ch->{new_data} ) { $ve->save( @args, $ch->{new_data} ) }
+          elsif ( defined $ch->{old_data} ) { $ve->delete( @args, $ch->{object} ) }
+          else {
+            delete $ch->{serial};
+            $ve->version_engine->save( version => $ch );
+          }
         }
-      }
-    );
+      );
+    }
   }
 
   $pe->delete( version => @ready );
