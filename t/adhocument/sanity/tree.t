@@ -13,6 +13,8 @@ use Sanity;
 use Fenchurch::Adhocument::Sanity::Tree;
 use Fenchurch::Core::DB;
 
+preflight;
+
 my $db = Fenchurch::Core::DB->new(
   dbh     => database,
   aliases => [versions => 'test_versions']
