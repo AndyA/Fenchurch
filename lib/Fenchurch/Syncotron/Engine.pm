@@ -349,16 +349,12 @@ sub _flush_pending {
         $ch->{kind}
       );
 
-      $self->db->no_transaction(
-        sub {
-          if ( defined $ch->{new_data} ) { $ve->save( @args, $ch->{new_data} ) }
-          elsif ( defined $ch->{old_data} ) { $ve->delete( @args, $ch->{object} ) }
-          else {
-            delete $ch->{serial};
-            $ve->version_engine->save( version => $ch );
-          }
-        }
-      );
+      if ( defined $ch->{new_data} ) { $ve->save( @args, $ch->{new_data} ) }
+      elsif ( defined $ch->{old_data} ) { $ve->delete( @args, $ch->{object} ) }
+      else {
+        delete $ch->{serial};
+        $ve->version_engine->save( version => $ch );
+      }
     }
   }
 
@@ -411,15 +407,11 @@ sub add_versions {
 
   $self->emit( add_versions => \@new );
 
-  $self->db->no_transaction(
-    sub {
-      # Mark them all pending
-      $pe->save( version => @new );
+  # Mark them all pending
+  $pe->save( version => @new );
 
-      # And, when saved, as not needed
-      $self->_unknown(@uuid);
-    }
-  );
+  # And, when saved, as not needed
+  $self->_unknown(@uuid);
 }
 
 =head2 C<statistics>
