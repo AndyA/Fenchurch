@@ -9,6 +9,7 @@ use MooseX::Storage;
 use Carp qw( confess );
 use Fenchurch::Util::Data qw( flatten );
 use Try::Tiny;
+use Time::HiRes qw( sleep );
 
 =head1 NAME
 
@@ -103,21 +104,39 @@ sub transaction {
     return;
   }
 
-  $self->in_transaction(1);
-  $self->do('START TRANSACTION');
+  # Is this naughty?
+  $self->dbh->{mysql_errno} = 0;
 
-  try {
-    $cb->();
-    $self->do('COMMIT');
+  my ( $tries, $sleep ) = ( 3, 0.1 );
+  while ( $tries > 0 ) {
+    $self->in_transaction(1);
+    $self->do('START TRANSACTION');
+
+    try {
+      $cb->();
+      $self->do('COMMIT');
+      $tries = 0;
+    }
+    catch {
+      my $e = $_;
+
+      if ( $self->dbh->{mysql_errno} == 1213 ) {
+        # Retry on deadlock
+        $tries--;
+        sleep $sleep;
+        $sleep *= 5;
+      }
+      else {
+        $self->do('ROLLBACK');
+        $tries = 0;
+        confess $e;
+      }
+
+    }
+    finally {
+      $self->in_transaction(0);
+    };
   }
-  catch {
-    my $e = $_;
-    $self->do('ROLLBACK');
-    confess $e;
-  }
-  finally {
-    $self->in_transaction(0);
-  };
 }
 
 sub server_variables {
