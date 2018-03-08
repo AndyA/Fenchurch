@@ -44,7 +44,7 @@ preflight;
       'test_versions',      'utf8_test',
       'utf8_test_chars'
     );
-    my @got = $db->tables;
+    my @got = grep { !/^temp_/ } $db->tables;
     eq_or_diff [@got], [@want], "got tables"
   }
 
