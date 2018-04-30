@@ -1,6 +1,6 @@
 package Fenchurch::Moose;
 
-use 5.24.0;
+use 5.22.1;
 use Moose                     ();
 use MooseX::StrictConstructor ();
 use Moose::Exporter;
@@ -18,7 +18,7 @@ sub init_meta {
   Moose->init_meta(@args);
   MooseX::StrictConstructor->import( { into => $params{for_class} } );
   warnings->unimport('experimental::signatures');
-  feature->import(qw/signatures :5.24/);
+  feature->import(qw/signatures :5.22/);
   mro::set_mro( scalar caller(), 'c3' );
 }
 
