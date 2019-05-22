@@ -1,6 +1,6 @@
 package Fenchurch::Module;
 
-use 5.24.0;
+use 5.22.1;
 use autodie;
 use strict;
 use warnings;
@@ -19,7 +19,7 @@ sub import {
   warnings->import;
   warnings->unimport('experimental::signatures');
   strict->import;
-  feature->import(qw/signatures :5.24/);
+  feature->import(qw/signatures :5.22/);
   utf8::all->import;
   Carp->import::into( $caller, qw(carp croak) );
 }
