@@ -45,13 +45,16 @@ with qw(
 sub reap {
   my $self = shift;
 
-  $self->db->do(
-    [ "DELETE FROM {:ping}",
-      " WHERE {when} < DATE_SUB(NOW(), INTERVAL ? SECOND)"
-    ],
-    {},
-    $self->max_age
-  );
+  # Ignore errors
+  eval {
+    $self->db->do(
+      [ "DELETE FROM {:ping}",
+        " WHERE {when} < DATE_SUB(NOW(), INTERVAL ? SECOND)"
+      ],
+      {},
+      $self->max_age
+    );
+  };
 }
 
 sub put {
