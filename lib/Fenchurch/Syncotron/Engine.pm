@@ -277,12 +277,10 @@ sub want {
   return @known if @known;
 
   my @want = $self->db->selectcol_array(
-    [ "SELECT DISTINCT {p1.parent} AS {uuid}",
-      "  FROM {:pending} AS {p1}",
-      "  LEFT JOIN {:pending} AS {p2}",
-      "    ON {p1.parent} = {p2.uuid}",
-      " WHERE {p2.uuid} IS NULL",
-      " ORDER BY {p1.serial}",
+    [ "SELECT DISTINCT {parent} AS {uuid} ",
+      "  FROM {:pending} ",
+      " WHERE {parent} NOT IN (SELECT {uuid} FROM {:pending}) ",
+      " ORDER BY {serial}",
       " LIMIT ?, ?"
     ],
     {},
