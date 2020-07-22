@@ -89,7 +89,9 @@ sub _build_app {
     'put.info' => sub {
       my $msg = shift;
       $self->_update_serial($msg);
-      $self->state->state('enumerate');
+      #      $self->state->state('enumerate');
+      $self->state->state('recent');
+
     }
   );
 
